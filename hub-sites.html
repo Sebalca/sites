@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frisk — Os meus sites</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #5f6570;
+    --accent: #2f6fed;
+    --border: #e3e5e9;
+    --shadow: rgba(0,0,0,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121316;
+      --card-bg: #1c1e22;
+      --text: #f0f1f3;
+      --muted: #9aa0aa;
+      --accent: #5b8dff;
+      --border: #2c2f34;
+      --shadow: rgba(0,0,0,0.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 32px 16px 60px;
+  }
+  header {
+    max-width: 720px;
+    margin: 0 auto 32px;
+    text-align: center;
+  }
+  header h1 {
+    font-size: 1.8rem;
+    margin: 0 0 8px;
+  }
+  header p {
+    color: var(--muted);
+    margin: 0;
+    font-size: 0.95rem;
+  }
+  .grid {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  a.card {
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 1px 3px var(--shadow);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  a.card:hover, a.card:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--shadow);
+  }
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .card-desc {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  footer {
+    max-width: 720px;
+    margin: 40px auto 0;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Os meus sites</h1>
+  <p>Uma conta, vários projetos.</p>
+</header>
+
+<div class="grid" id="siteGrid"></div>
+
+<footer>v1.0</footer>
+
+<script>
+  // Para adicionar um novo site, basta acrescentar um objeto aqui.
+  const sites = [
+    {
+      title: "Achievements",
+      url: "https://achievements.frisk.pt",
+      description: "Checklist de conquistas de vida por categorias — viagens, leitura, carreira e mais."
+    },
+    {
+      title: "Gestor de Impressão 3D",
+      url: "https://gestor3d.frisk.pt",
+      description: "Calculadora de custo real e preço de venda para peças de impressão 3D."
+    },
+    {
+      title: "Ore Factory Squad — Calculadora",
+      url: "https://ofs.frisk.pt",
+      description: "Calcula a árvore de fabrico completa até às matérias-primas para o jogo Ore Factory Squad."
+    }
+  ];
+
+  const grid = document.getElementById("siteGrid");
+  sites.forEach(site => {
+    const a = document.createElement("a");
+    a.className = "card";
+    a.href = site.url;
+    a.innerHTML = `
+      <div class="card-title">${site.title}</div>
+      <div class="card-desc">${site.description}</div>
+    `;
+    grid.appendChild(a);
+  });
+</script>
+
+</body>
+</html>
