@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Da Luz ao Universo Escuro</title>
+<style>
+  :root{
+    --bg:#0a0e1c;
+    --bg-2:#10162a;
+    --panel:#121a30;
+    --line:#232c47;
+    --line-2:#2e3a5c;
+    --ink:#ece6d6;
+    --ink-2:#c9c3b3;
+    --muted:#8790a8;
+    --faint:#5a647f;
+    --brass:#d9b26a;
+    --brass-deep:#b8904a;
+    --light:#7fe3ff;
+    --violet:#b18cff;
+    --rose:#ff9a8c;
+    --serif:"Palatino Linotype","Book Antiqua",Palatino,Georgia,'Times New Roman',serif;
+    --mono:ui-monospace,'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--serif);font-size:18px;line-height:1.72;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(900px 500px at 85% -5%, rgba(177,140,255,.10), transparent 60%),
+      radial-gradient(800px 500px at -5% 20%, rgba(127,227,255,.07), transparent 55%);
+    background-attachment:fixed;
+  }
+
+  /* progress bar */
+  #prog{position:fixed;top:0;left:0;height:3px;width:0;z-index:50;
+    background:linear-gradient(90deg,var(--light),var(--brass));box-shadow:0 0 12px rgba(217,178,106,.5)}
+
+  .layout{display:grid;grid-template-columns:230px minmax(0,720px);gap:56px;
+    max-width:1040px;margin:0 auto;padding:0 24px}
+
+  /* nav rail */
+  nav{position:sticky;top:0;height:100dvh;padding:40px 0;overflow-y:auto;align-self:start}
+  .tabs{display:flex;gap:6px;margin-bottom:22px}
+  .tabs a{flex:1;text-align:center;text-decoration:none;font-family:var(--mono);font-size:11px;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:9px 6px;border:1px solid var(--line-2);
+    border-radius:8px;transition:.15s}
+  .tabs a:hover{color:var(--ink);border-color:#3b4a72}
+  .tabs a.on{background:var(--brass);color:#0a0e18;border-color:var(--brass);font-weight:600}
+  nav .brand{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--brass);margin-bottom:26px;line-height:1.5}
+  nav ol{list-style:none;margin:0;padding:0}
+  nav li{margin:0}
+  nav a{display:flex;gap:11px;align-items:baseline;text-decoration:none;color:var(--muted);
+    font-family:var(--mono);font-size:12.5px;line-height:1.35;padding:7px 0;
+    border-left:2px solid transparent;padding-left:14px;margin-left:-2px;transition:color .2s,border-color .2s}
+  nav a .n{color:var(--faint);font-size:11px;min-width:1.6em}
+  nav a:hover{color:var(--ink)}
+  nav a.active{color:var(--brass);border-left-color:var(--brass)}
+  nav a.active .n{color:var(--brass)}
+
+  main{padding:0 0 120px}
+
+  /* hero */
+  .hero{min-height:88dvh;display:flex;flex-direction:column;justify-content:center;padding:60px 0 40px}
+  .hero .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--brass);margin-bottom:22px}
+  .hero h1{font-size:clamp(40px,7vw,74px);line-height:1.02;margin:0 0 26px;font-weight:600;letter-spacing:-.01em}
+  .hero h1 em{font-style:italic;color:var(--light)}
+  .hero .lede{font-size:clamp(19px,2.4vw,23px);color:var(--ink-2);max-width:34ch;margin:0 0 34px}
+  .thesis{font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--muted);
+    border-left:2px solid var(--brass);padding-left:16px;max-width:52ch}
+  .thesis b{color:var(--ink);font-weight:500}
+  .scrollcue{margin-top:44px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--faint);display:flex;align-items:center;gap:10px}
+  .scrollcue .ln{width:34px;height:1px;background:var(--line-2);position:relative;overflow:hidden}
+  .scrollcue .ln::after{content:"";position:absolute;inset:0;width:12px;background:var(--brass);
+    animation:cue 2.4s infinite ease-in-out}
+  @keyframes cue{0%{transform:translateX(-14px)}100%{transform:translateX(36px)}}
+
+  /* sections */
+  section{padding:64px 0;border-top:1px solid var(--line);scroll-margin-top:20px}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--brass);margin-bottom:16px;display:flex;gap:12px;align-items:center}
+  .eyebrow .num{color:var(--faint)}
+  h2{font-size:clamp(28px,4.4vw,40px);line-height:1.12;margin:0 0 22px;font-weight:600;letter-spacing:-.01em}
+  h3{font-size:20px;margin:34px 0 10px;color:var(--ink);font-weight:600}
+  p{margin:0 0 18px;color:var(--ink-2)}
+  p strong,li strong{color:var(--ink);font-weight:600}
+  em{color:var(--light);font-style:italic}
+  .lead{font-size:20px;color:var(--ink)}
+  code{font-family:var(--mono);font-size:.82em;color:var(--light);
+    background:rgba(127,227,255,.09);padding:2px 7px;border-radius:5px}
+
+  /* proof box */
+  .proof{background:linear-gradient(180deg,rgba(217,178,106,.08),rgba(217,178,106,.03));
+    border:1px solid rgba(217,178,106,.22);border-left:3px solid var(--brass);
+    border-radius:10px;padding:20px 22px;margin:26px 0;font-size:16.5px;line-height:1.62}
+  .proof .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--brass);display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .proof .tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--brass);
+    box-shadow:0 0 8px var(--brass)}
+  .proof p{color:var(--ink-2);margin:0 0 10px}
+  .proof p:last-child{margin:0}
+  .proof b{color:var(--ink)}
+
+  /* demo card */
+  .demo{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    margin:28px 0;overflow:hidden}
+  .demo-head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .demo-head .t{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .demo canvas{display:block;width:100%;touch-action:none;background:
+    radial-gradient(120% 120% at 50% 0%, #0d1530 0%, transparent 70%);
+    background-color:#0a0f1f}
+  .demo-ctrl{padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    border-top:1px solid var(--line)}
+  .demo-ctrl .cap{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--faint);white-space:nowrap}
+  .demo-ctrl .val{font-family:var(--mono);font-size:14px;color:var(--ink);font-variant-numeric:tabular-nums;
+    min-width:6ch;text-align:right}
+  input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:120px;height:4px;border-radius:4px;
+    background:linear-gradient(90deg,var(--violet) 0%,var(--violet) var(--fill,50%),#243052 var(--fill,50%),#243052 100%);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+    background:var(--ink);border:3px solid var(--violet);cursor:pointer;box-shadow:0 0 12px rgba(177,140,255,.5)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);
+    border:3px solid var(--violet);cursor:pointer}
+  button{font-family:var(--mono);font-size:12px;letter-spacing:.03em;background:var(--bg-2);color:var(--muted);
+    border:1px solid var(--line-2);border-radius:8px;padding:8px 14px;cursor:pointer;
+    transition:.15s color,.15s border-color,.15s background}
+  button:hover{color:var(--ink);border-color:#3b4a72}
+  button.on{color:#0a0e18;background:var(--brass);border-color:var(--brass);font-weight:600}
+  button:focus-visible{outline:2px solid var(--light);outline-offset:2px}
+  .seg{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
+  .seg button{border:none;border-radius:0}
+  .seg button + button{border-left:1px solid var(--line-2)}
+
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:7px}
+  .legend i{width:12px;height:3px;border-radius:2px;display:inline-block}
+
+  .eq{font-family:var(--mono);text-align:center;color:var(--ink);font-size:16px;
+    background:var(--bg-2);border:1px solid var(--line);border-radius:8px;padding:16px;margin:22px 0}
+  .eq b{color:var(--brass)}
+
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--muted);font-size:14px;
+    font-family:var(--mono);line-height:1.7}
+  footer b{color:var(--brass)}
+
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;gap:0}
+    nav{position:static;height:auto;padding:22px 0 6px}
+    nav ol{display:flex;flex-wrap:wrap;gap:2px 16px}
+    nav a{border-left:none;padding-left:0;margin-left:0}
+    nav a.active{border-left:none}
+    .hero{min-height:auto;padding:30px 0}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .reveal{opacity:1;transform:none;transition:none}
+    .scrollcue .ln::after{animation:none}
+  }
+</style>
+</head>
+<body>
+<div id="prog"></div>
+
+<div class="layout">
+  <nav>
+    <div class="tabs">
+      <a class="on" href="da-luz-ao-universo-escuro.html">Relatividade</a>
+      <a href="o-mundo-quantico.html">Quântica</a>
+    </div>
+    <div class="brand">Da Luz ao<br>Universo Escuro</div>
+    <ol id="toc">
+      <li><a href="#s1"><span class="n">01</span> A velocidade da luz</a></li>
+      <li><a href="#s2"><span class="n">02</span> A bola e o fotão</a></li>
+      <li><a href="#s3"><span class="n">03</span> Como Einstein lá chegou</a></li>
+      <li><a href="#s4"><span class="n">04</span> Tempo recíproco, c como limite</a></li>
+      <li><a href="#s5"><span class="n">05</span> Restrita vs. Geral</a></li>
+      <li><a href="#s6"><span class="n">06</span> Curvar tempo e espaço</a></li>
+      <li><a href="#s7"><span class="n">07</span> Buracos negros</a></li>
+      <li><a href="#s8"><span class="n">08</span> Ondas gravitacionais</a></li>
+      <li><a href="#s9"><span class="n">09</span> Expansão e energia escura</a></li>
+      <li><a href="#s10"><span class="n">10</span> Matéria escura</a></li>
+      <li><a href="#s11"><span class="n">11</span> A ideia que liga tudo</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">Um percurso pela relatividade</div>
+      <h1>Nunca vemos a coisa.<br>Vemos a <em>geometria</em>.</h1>
+      <p class="lede">Da primeira medição da velocidade da luz até aos 95% do universo que só conhecemos pela gravidade.</p>
+      <div class="thesis">A luz anda sempre à mesma velocidade — e essa teimosia obriga o <b>tempo</b> e o <b>espaço</b> a dobrarem-se. Seguindo essa única ideia até ao fim, chega-se aos buracos negros, às ondas no espaço-tempo e a um cosmos onde quase tudo é invisível.</div>
+      <div class="scrollcue"><span class="ln"></span> desliza para começar</div>
+    </header>
+
+    <!-- 01 -->
+    <section id="s1" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 01</span> · A descoberta</div>
+      <h2>A velocidade da luz</h2>
+      <p class="lead">Durante séculos julgou-se que a luz era instantânea. Galileu tentou medi-la com lanternas em colinas distantes e falhou — era rápida demais para o método.</p>
+      <p>A primeira medição séria foi indireta e veio do céu. Em <strong>1676</strong>, Ole Rømer observava os eclipses de Io, uma lua de Júpiter, e reparou que aconteciam mais cedo quando a Terra se aproximava de Júpiter e mais tarde quando se afastava. A explicação: a luz demora tempo a atravessar a órbita terrestre. Rømer tinha acabado de provar que a luz tem velocidade finita — e acertou na ordem de grandeza.</p>
+      <p>Depois vieram as medições em laboratório, cada vez mais finas. Mas o verdadeiro salto foi teórico: nos anos 1860, <strong>Maxwell</strong> mostrou que as suas equações do electromagnetismo previam uma onda que viajava a uma velocidade calculada a partir de constantes da natureza — e esse número batia certo com a velocidade medida da luz. Conclusão inesperada: a luz <em>é</em> uma onda electromagnética.</p>
+      <div class="eq">c = <b>299 792 458 m/s</b> &nbsp;·&nbsp; hoje fixada por definição</div>
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Rømer (1676):</b> o atraso dos eclipses de Io consoante a distância Terra–Júpiter deu a primeira estimativa da velocidade da luz.</p>
+        <p><b>Fizeau (1849) e Foucault (1862):</b> rodas dentadas e espelhos rotativos mediram <code>c</code> em laboratório, na Terra, já muito perto do valor moderno.</p>
+        <p><b>Maxwell (~1865):</b> a velocidade prevista para uma onda electromagnética coincidiu com a da luz — unificando luz, electricidade e magnetismo.</p>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section id="s2" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 02</span> · Relatividade restrita</div>
+      <h2>A bola e o fotão</h2>
+      <p class="lead">Atira uma bola para a frente num comboio: quem está na estação soma as velocidades. Acende uma lanterna: a luz <em>não</em> soma. Anda a <code>c</code> para toda a gente.</p>
+      <p>Daqui sai tudo. Imagina um relógio feito de dois espelhos e um fotão que salta entre eles — cada ida e volta é um "tique". Visto de fora, enquanto o fotão sobe, o espelho de cima foge para a frente com o comboio. O fotão tem de fazer um percurso <strong>diagonal</strong>, mais comprido. Mesma velocidade, distância maior: mais tempo por tique. O relógio em movimento bate mais devagar.</p>
+      <p>Repara na diferença crucial em relação à bola. A bola <em>ganha</em> a velocidade do comboio e mantém a sua subida — chega ao espelho no mesmo tempo. A luz está presa a <code>c</code>: se precisa de uma componente horizontal para acompanhar o espelho, tem de a tirar à vertical. Não pode acelerar para compensar. Só lhe resta demorar mais. A constância de <code>c</code> não impede a diferença de tempo — <strong>obriga-a</strong>.</p>
+
+      <div class="demo" data-demo="clock">
+        <div class="demo-head"><span class="t">Relógio de luz · dois referenciais</span>
+          <span class="t" style="color:var(--brass)">γ = <span data-clock="gamma">1.15</span></span></div>
+        <canvas data-clock="cv" height="260"></canvas>
+        <div class="demo-ctrl">
+          <span class="cap">velocidade</span>
+          <input type="range" data-clock="beta" min="0" max="0.95" step="0.01" value="0.5">
+          <span class="val" data-clock="beta-v">0.50 c</span>
+        </div>
+        <div class="demo-ctrl" style="border-top:none;padding-top:0">
+          <div class="legend">
+            <span><i style="background:#54d6c9"></i> parado — tiques <b data-clock="tr" style="color:var(--ink)">0</b></span>
+            <span><i style="background:#b18cff"></i> em movimento — tiques <b data-clock="tm" style="color:var(--ink)">0</b></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Muões:</b> partículas criadas no topo da atmosfera vivem tão pouco que não deviam chegar ao solo. Chegam aos milhões — o seu "relógio" interno anda mais devagar porque viajam quase a <code>c</code>. Dilatação do tempo medida todos os dias.</p>
+        <p><b>Relógios atómicos:</b> levados em aviões (Hafele–Keating, 1971) e comparados com gémeos em terra, voltaram dessincronizados exatamente na quantidade prevista.</p>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section id="s3" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 03</span> · Relatividade restrita</div>
+      <h2>Como Einstein lá chegou</h2>
+      <p class="lead">Einstein não descobriu a velocidade da luz. Pegou no facto de ela ser constante e teve a coragem de aceitar o preço: abdicar do tempo universal.</p>
+      <p>Toda a gente tentava salvar o "éter", um meio invisível em relação ao qual a luz teria a sua velocidade. A experiência de <strong>Michelson–Morley (1887)</strong> procurou o movimento da Terra através desse éter comparando a luz em direções perpendiculares. Não encontrou nada: a luz tinha a mesma velocidade em todas as direções. O éter não aparecia.</p>
+      <p>O golpe de génio (1905) foi <strong>inverter a lógica</strong>. Em vez de "como salvamos o éter e o tempo absoluto?", Einstein assumiu apenas dois postulados: as leis da física são iguais em todos os referenciais em movimento uniforme, e a velocidade da luz é a mesma para todos. Só com isto, e experiências mentais como a do comboio, deduziu a dilatação do tempo e a contração do espaço. Ajudou o contexto: trabalhava na repartição de patentes de Berna, a avaliar dispositivos de sincronização de relógios de estações — precisamente o problema de decidir se dois acontecimentos distantes são "simultâneos".</p>
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Michelson–Morley (1887):</b> a experiência mais famosa a dar "resultado nulo". A ausência de éter é hoje verificada com precisão milhões de vezes superior — a velocidade da luz não depende do movimento do observador.</p>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section id="s4" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 04</span> · Relatividade restrita</div>
+      <h2>Tempo recíproco, <code>c</code> como limite</h2>
+      <p class="lead">A dilatação não é uma propriedade de um sítio. É o que vês quando olhas para o relógio de quem se move em relação a ti — e o efeito é mútuo.</p>
+      <p>Dentro do comboio, o viajante vê o seu relógio bater normalmente; o café arrefece no tempo do costume. Para ele, nada abranda. E há mais: da plataforma vês o relógio dele atrasar-se, mas ele, olhando para fora, vê o <em>teu</em> a atrasar-se na mesma proporção. Ambos têm razão, porque Einstein deitou fora o relógio universal que os obrigaria a concordar. Sem relógio comum, não há contradição.</p>
+      <p>E a velocidade da luz? É um limite <strong>proibido</strong> para tudo o que tem massa. Ao aproximares-te de <code>c</code>, o fator <code>γ</code> dispara para infinito e seria preciso energia infinita para lá chegar. O "tempo parado" é um limite a que te aproximas, nunca um sítio onde chegas. Já a própria luz não tem um referencial válido — a matemática rebenta se tentares "sentar-te" no fotão. A pergunta "o que sente a luz" simplesmente deixa de fazer sentido.</p>
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Aceleradores de partículas:</b> no LHC, protões são empurrados com energias enormes e aproximam-se de <code>c</code> a menos de 0,0001% — mas nunca a atingem, por mais energia que se injete. O limite é real e testado diariamente.</p>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section id="s5" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 05</span> · Da restrita à geral</div>
+      <h2>Restrita vs. Geral</h2>
+      <p class="lead">A restrita trata do movimento uniforme, sem gravidade. A geral (1915) estende tudo à aceleração — e descobre que a gravidade <em>é</em> aceleração.</p>
+      <p>O ponto de partida foi o que Einstein chamou "o pensamento mais feliz da minha vida": numa cápsula fechada, não há maneira de distinguir estar <strong>parado num planeta</strong> de ser <strong>acelerado por um foguetão</strong>. Largas uma bola e ela cai igual nos dois casos. Gravidade e aceleração são localmente indistinguíveis.</p>
+      <p>Mas "localmente" é a palavra-chave. Aumenta a caixa e a diferença aparece. Na nave, duas bolas largadas lado a lado caem <strong>paralelas</strong> — o chão sobe a direito. Num planeta, caem ambas em direção ao <strong>centro</strong>, um único ponto, e por isso as trajetórias <strong>convergem</strong>. Essa convergência — as forças de maré — é a assinatura da <em>curvatura</em> do espaço-tempo. A nave imita a gravidade; só a gravidade a sério curva.</p>
+
+      <div class="demo" data-demo="equiv">
+        <div class="demo-head"><span class="t">Largar duas bolas</span>
+          <div class="seg">
+            <button data-equiv="mode" data-m="ship" class="on">Nave a acelerar</button>
+            <button data-equiv="mode" data-m="planet">Planeta</button>
+          </div>
+        </div>
+        <canvas data-equiv="cv" height="280"></canvas>
+        <div class="demo-ctrl"><button data-equiv="drop">largar de novo</button>
+          <span class="cap" data-equiv="label">trajetórias paralelas — pura aceleração</span></div>
+      </div>
+
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Princípio de equivalência:</b> testado desde Eötvös (1900) até ao satélite <b>MICROSCOPE</b> (2022), que confirmou que todos os corpos caem com a mesma aceleração — independentemente da massa ou do material — com precisão de uma parte em 10¹⁵.</p>
+      </div>
+    </section>
+
+    <!-- 06 -->
+    <section id="s6" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 06</span> · Relatividade geral</div>
+      <h2>Curvar o tempo e o espaço</h2>
+      <p class="lead">"Espaço-tempo curvo" não é uma coisa só. São dois efeitos, e a gravidade do dia-a-dia é quase toda <em>tempo</em> curvo.</p>
+      <p>O tempo passa mais devagar mais fundo num poço gravítico — o relógio no chão bate mais devagar que o do cimo do prédio, sem nada se mover no espaço. Isto é curvatura do <strong>tempo</strong>. E é ela que te faz cair: um objeto segue a linha mais reta pelo espaço-tempo, e como o eixo temporal está inclinado para onde o tempo é mais lento, essa linha dobra-se para o chão. Como um segundo de tempo equivale a 300 mil km de espaço, basta uma inclinação minúscula para gerar uma queda visível.</p>
+      <p>A curvatura do <strong>espaço</strong> é o outro pedaço: perto de uma massa, a própria geometria das distâncias deixa de ser plana. É fraca às nossas velocidades, mas a luz — que gasta o percurso todo a atravessar espaço — sente-a por inteiro. Por isso a luz sente <strong>as duas</strong> curvaturas, e uma bola lenta só sente uma.</p>
+      <p>Daí o teste decisivo: a luz encurva ao passar pelo Sol o <strong>dobro</strong> do que a física de Newton previa. Esse fator de dois é a curvatura do espaço a dar a cara — a metade que só Einstein tinha.</p>
+
+      <div class="demo" data-demo="bend">
+        <div class="demo-head"><span class="t">Desvio junto a uma massa</span></div>
+        <canvas data-bend="cv" height="260"></canvas>
+        <div class="demo-ctrl"><button data-bend="fire">disparar raios</button>
+          <div class="legend">
+            <span><i style="background:#8790a8"></i> previsão de Newton (×1)</span>
+            <span><i style="background:#7fe3ff"></i> luz real / Einstein (×2)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Eddington (1919):</b> durante um eclipse total, mediram-se estrelas junto ao Sol deslocadas exatamente o dobro do valor newtoniano. Foi a medição que tornou Einstein célebre da noite para o dia.</p>
+        <p><b>GPS:</b> os satélites estão mais alto no poço gravítico e o seu tempo corre mais depressa. Sem corrigir a dilatação gravítica (e a da velocidade), as posições acumulariam quilómetros de erro por dia.</p>
+      </div>
+    </section>
+
+    <!-- 07 -->
+    <section id="s7" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 07</span> · Relatividade geral</div>
+      <h2>Buracos negros</h2>
+      <p class="lead">Comprime massa suficiente num espaço pequeno e a curvatura torna-se tão extrema que se forma um ponto de não-retorno.</p>
+      <p>Meses depois de Einstein publicar, Schwarzschild resolveu as equações para uma massa concentrada e encontrou o <strong>horizonte de eventos</strong>: uma fronteira a partir da qual nem a luz escapa. Não é uma parede — quem cai atravessa-a sem sentir nada de especial — mas visto de fora, um relógio a cair parece congelar mesmo à beira, a dilatação gravítica levada ao limite. No centro, as equações apontam para uma <strong>singularidade</strong> de curvatura infinita, onde a própria teoria admite que precisaria de uma física quântica da gravidade que ainda não existe.</p>
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Órbitas estelares (Nobel 2020):</b> Genzel e Ghez seguiram estrelas a orbitar um objeto invisível e supermassivo no centro da Via Láctea — só um buraco negro explica aquelas órbitas.</p>
+        <p><b>Event Horizon Telescope:</b> em 2019 fotografou-se a sombra do buraco negro de M87, e em 2022 a do <b>Sagitário A*</b>, no coração da nossa galáxia. A forma bate certo com a relatividade geral.</p>
+      </div>
+    </section>
+
+    <!-- 08 -->
+    <section id="s8" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 08</span> · Relatividade geral</div>
+      <h2>Ondas gravitacionais</h2>
+      <p class="lead">Se a massa curva o espaço-tempo, massa em movimento violento fá-lo <em>ondular</em> — como uma pedra atirada a um lago, só que o lago é a própria geometria.</p>
+      <p>Einstein previu-as em 1916 e duvidou a vida toda de que fossem detetáveis, tão ínfimas eram. Quando dois buracos negros espiralam um para o outro e colidem, lançam ondas que esticam e comprimem tudo por onde passam. O sinal característico é um <strong>"chilrear"</strong> (chirp): frequência e amplitude a subir até à fusão, seguidas de um curto toque final.</p>
+
+      <div class="demo" data-demo="wave">
+        <div class="demo-head"><span class="t">Sinal de fusão — inspiral e toque final</span></div>
+        <canvas data-wave="cv" height="180"></canvas>
+        <div class="demo-ctrl"><button data-wave="play" class="on">reproduzir</button>
+          <span class="cap">amplitude e frequência sobem até à colisão</span></div>
+      </div>
+
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>LIGO (2015):</b> cem anos depois da previsão, detetou-se a ondulação de dois buracos negros que colidiram há mil milhões de anos. A deformação medida foi de uma fração de um milésimo do diâmetro de um protão. Nobel da Física 2017.</p>
+      </div>
+    </section>
+
+    <!-- 09 -->
+    <section id="s9" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 09</span> · O universo escuro</div>
+      <h2>Expansão e energia escura</h2>
+      <p class="lead">O universo não está parado. Está a expandir-se — e, contra toda a expectativa, essa expansão está a <em>acelerar</em>.</p>
+      <p>Quando resolveu as equações para o cosmos, Einstein viu que este tinha de expandir ou contrair. Achou aquilo absurdo e enfiou à mão um termo — a <strong>constante cosmológica</strong> — para o segurar quieto. Anos depois, Hubble mostrou que as galáxias se afastam mesmo: o universo expande-se. Einstein chamou ao remendo o maior erro da sua vida.</p>
+      <p>Em <strong>1998</strong>, duas equipas mediram supernovas distantes esperando ver a expansão a travar pela gravidade. Viram o oposto: a expansão acelera. Algo empurra o espaço para fora — a <strong>energia escura</strong> — e domina, cerca de <strong>68%</strong> de todo o conteúdo do universo. A melhor descrição, até hoje, é exatamente o termo que Einstein pôs e tirou. O erro ressuscitou como a explicação do maior mistério da cosmologia.</p>
+
+      <div class="demo" data-demo="expand">
+        <div class="demo-head"><span class="t">Distância entre galáxias ao longo do tempo</span>
+          <div class="seg">
+            <button data-expand="mode" data-m="const">Sem energia escura</button>
+            <button data-expand="mode" data-m="accel" class="on">Com energia escura</button>
+          </div>
+        </div>
+        <canvas data-expand="cv" height="200"></canvas>
+        <div class="demo-ctrl"><button data-expand="replay">recomeçar</button>
+          <span class="cap" data-expand="label">expansão a acelerar — o espaço estica-se cada vez mais depressa</span></div>
+      </div>
+
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Supernovas Ia (1998):</b> "velas-padrão" de brilho conhecido revelaram-se mais fracas e distantes do que deviam — prova da aceleração. Nobel da Física 2011.</p>
+        <p><b>DESI (2024–2025):</b> o maior mapa 3D do universo já feito seguiu a energia escura ao longo de 11 mil milhões de anos e vê indícios de que ela pode estar a <b>evoluir</b> com o tempo, e não a ser uma constante fixa. A confirmar-se, muda o destino previsto do universo. As observações continuam até 2028.</p>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section id="s10" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 10</span> · O universo escuro</div>
+      <h2>Matéria escura</h2>
+      <p class="lead">A outra face invisível — mas com o papel oposto: é cola. Mantém as galáxias inteiras quando elas deviam desfazer-se.</p>
+      <p>Nos anos 1930, Zwicky notou galáxias a mover-se depressa demais dentro dos enxames. Mas a prova decisiva foi de <strong>Vera Rubin</strong>, nos anos 1970: as estrelas na periferia das galáxias orbitam tão depressa como as do centro — o que, com a matéria visível apenas, faria a galáxia esvoaçar-se em pedaços. Falta massa invisível, um <strong>halo</strong> que envolve cada galáxia.</p>
+      <p>Arrasta o halo abaixo e vê a curva de rotação "esperada" cair; sobe-o e ela achata-se sobre o que realmente se observa.</p>
+
+      <div class="demo" data-demo="rot">
+        <div class="demo-head"><span class="t">Curva de rotação de uma galáxia</span></div>
+        <canvas data-rot="cv" height="240"></canvas>
+        <div class="demo-ctrl">
+          <span class="cap">halo escuro</span>
+          <input type="range" data-rot="dm" min="0" max="1" step="0.01" value="0">
+          <span class="val" data-rot="dm-v">0%</span>
+        </div>
+        <div class="demo-ctrl" style="border-top:none;padding-top:0">
+          <div class="legend">
+            <span><i style="background:#8790a8"></i> só matéria visível</span>
+            <span><i style="background:#b18cff"></i> com matéria escura</span>
+            <span><i style="background:#7fe3ff"></i> observado (plano)</span>
+          </div>
+        </div>
+      </div>
+
+      <p>Há mais provas, e a mais bonita usa a relatividade geral diretamente: a <strong>lente gravitacional</strong>. A massa curva a luz das galáxias por trás, e a distorção denuncia muito mais massa do que a que brilha. No <strong>Enxame da Bala</strong>, o gás visível ficou para trás numa colisão, mas a massa — medida pela lente — atravessou à frente, separada dele. A matéria escura ronda os <strong>27%</strong> do universo, cinco vezes mais do que toda a matéria normal.</p>
+
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Curvas de rotação (Rubin, anos 1970):</b> planas em vez de decrescentes — a assinatura de um halo invisível.</p>
+        <p><b>Enxame da Bala:</b> a separação entre o gás e a massa gravítica é difícil de explicar sem matéria escura.</p>
+        <p><b>Fundo cósmico de micro-ondas:</b> o padrão da luz mais antiga do universo só encaixa com ~27% de matéria escura.</p>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section id="s11" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 11</span> · Síntese</div>
+      <h2>A ideia que liga tudo</h2>
+      <p class="lead">Um único fio atravessa este percurso todo: raramente vemos a coisa em si. Vemos a geometria que ela impõe ao espaço e ao tempo.</p>
+      <p>A luz teimou em andar sempre à mesma velocidade, e o tempo teve de se esticar. A gravidade revelou-se não como uma força, mas como a forma curva do espaço-tempo. E quando olhamos para o universo inteiro, a matéria que brilha explica apenas 5% do que lá está — os outros 95% conhecemo-los só pela gravidade que exercem: a matéria escura que segura as galáxias e a energia escura que as afasta.</p>
+      <p>A relatividade geral, que começou numa experiência mental sobre um comboio e um raio de luz, é hoje o instrumento com que pesamos o invisível, fotografamos buracos negros e ouvimos duas estrelas mortas a colidir do outro lado do universo. E, como mostram os dados mais recentes sobre a energia escura, a história ainda está longe de estar escrita.</p>
+    </section>
+
+    <footer>
+      Explicador interativo · relatividade restrita, geral e o universo escuro<br>
+      Conteúdo educativo. Provas e datas conforme o consenso científico até <b>2026</b>.
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const R = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  /* progress + nav */
+  const prog = document.getElementById('prog');
+  const links = [...document.querySelectorAll('#toc a')];
+  const secs = links.map(a=>document.querySelector(a.getAttribute('href')));
+  function onScroll(){
+    const st=window.scrollY, h=document.body.scrollHeight-innerHeight;
+    prog.style.width=(h>0?st/h*100:0)+'%';
+    let cur=0;
+    secs.forEach((s,i)=>{ if(s && s.getBoundingClientRect().top<innerHeight*0.4) cur=i; });
+    links.forEach((a,i)=>a.classList.toggle('active',i===cur));
+  }
+  addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  /* reveal */
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  /* canvas helper: run only when visible */
+  function setup(cv){
+    const ctx=cv.getContext('2d');
+    function fit(){
+      const dpr=Math.min(devicePixelRatio||1,2.5);
+      const w=cv.clientWidth,h=cv.clientHeight||parseInt(cv.getAttribute('height'));
+      cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0); ctx._w=w; ctx._h=h;
+    }
+    fit(); addEventListener('resize',fit);
+    return ctx;
+  }
+  function runWhenVisible(cv,frame){
+    let running=false,last=0;
+    function loop(t){ if(!running)return; const dt=Math.min((t-(last||t))/1000,.05); last=t; frame(dt); requestAnimationFrame(loop); }
+    const ob=new IntersectionObserver(es=>es.forEach(e=>{
+      running=e.isIntersecting; if(running){last=0;requestAnimationFrame(loop);}
+    }),{threshold:.05});
+    ob.observe(cv);
+    return ()=>running;
+  }
+
+  /* ---------- DEMO: light clock ---------- */
+  (function(){
+    const root=document.querySelector('[data-demo="clock"]'); if(!root)return;
+    const cv=root.querySelector('[data-clock="cv"]');
+    const ctx=setup(cv);
+    let beta=0.5,gamma=1,t=0;
+    const q=s=>root.querySelector('[data-clock="'+s+'"]');
+    let trail=[];
+    function upd(){
+      gamma=1/Math.sqrt(1-beta*beta);
+      q('gamma').textContent=gamma.toFixed(2);
+      q('beta-v').textContent=beta.toFixed(2)+' c';
+      q('beta').style.setProperty('--fill',(beta/0.95*100)+'%');
+      t=0; trail=[];
+    }
+    q('beta').addEventListener('input',e=>{beta=parseFloat(e.target.value);upd();});
+    function triY(p,top,bot){return p<0.5?bot-(p/0.5)*(bot-top):top+((p-0.5)/0.5)*(bot-top);}
+    runWhenVisible(cv,dt=>{
+      if(!R) t+=dt;
+      const W=ctx._w,H=ctx._h,mid=W/2;
+      ctx.clearRect(0,0,W,H);
+      ctx.strokeStyle='rgba(35,44,71,.9)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(mid,14);ctx.lineTo(mid,H-14);ctx.stroke();
+      const top=42,bot=H-42,per=2.2,S=(2*(bot-top))/per;
+      // rest
+      const cx=mid*0.5;
+      ctx.strokeStyle='rgba(84,214,201,.8)';ctx.lineWidth=3;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(cx-34,top);ctx.lineTo(cx+34,top);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx-34,bot);ctx.lineTo(cx+34,bot);ctx.stroke();
+      const pr=(t%per)/per, ry=triY(pr,top,bot);
+      glow(ctx,cx,ry,'#9ff5ff');
+      // moving
+      const mper=per*gamma, vx=S*beta, travel=(mid-60);
+      let ax;
+      if(beta<1e-6) ax=mid+ (mid-30)*0.5;
+      else{ const wr=(vx*t)%travel; ax=mid+30+wr; if(trail.length&&ax<trail[trail.length-1].x)trail=[]; }
+      const pm=(t%mper)/mper, my=triY(pm,top,bot);
+      // guides
+      ctx.strokeStyle='rgba(177,140,255,.16)';ctx.setLineDash([4,6]);ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(mid,top);ctx.lineTo(W,top);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(mid,bot);ctx.lineTo(W,bot);ctx.stroke();ctx.setLineDash([]);
+      trail.push({x:ax,y:my}); if(trail.length>80)trail.shift();
+      for(let i=1;i<trail.length;i++){const a=i/trail.length;ctx.globalAlpha=a*.6;ctx.strokeStyle='#9ff5ff';
+        ctx.lineWidth=1+a*2;ctx.beginPath();ctx.moveTo(trail[i-1].x,trail[i-1].y);ctx.lineTo(trail[i].x,trail[i].y);ctx.stroke();}
+      ctx.globalAlpha=1;
+      ctx.strokeStyle='rgba(177,140,255,.95)';ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(ax-24,top);ctx.lineTo(ax+24,top);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(ax-24,bot);ctx.lineTo(ax+24,bot);ctx.stroke();
+      glow(ctx,ax,my,'#9ff5ff');
+      q('tr').textContent=Math.floor(t/per);
+      q('tm').textContent=Math.floor(t/mper);
+    });
+    function glow(ctx,x,y,c){ctx.save();ctx.shadowColor=c;ctx.shadowBlur=18;ctx.fillStyle=c;
+      ctx.beginPath();ctx.arc(x,y,4,0,7);ctx.fill();ctx.shadowBlur=6;ctx.fillStyle='#fff';
+      ctx.beginPath();ctx.arc(x,y,2,0,7);ctx.fill();ctx.restore();}
+    upd();
+  })();
+
+  /* ---------- DEMO: equivalence drop ---------- */
+  (function(){
+    const root=document.querySelector('[data-demo="equiv"]'); if(!root)return;
+    const cv=root.querySelector('[data-equiv="cv"]'); const ctx=setup(cv);
+    let mode='ship', t=0;
+    const balls=()=>{const W=ctx._w;return[{x:W*0.36,y:36},{x:W*0.64,y:36}];};
+    let st=balls();
+    function reset(){t=0;st=balls();}
+    root.querySelectorAll('[data-equiv="mode"]').forEach(b=>b.addEventListener('click',()=>{
+      root.querySelectorAll('[data-equiv="mode"]').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); mode=b.dataset.m;
+      root.querySelector('[data-equiv="label"]').textContent =
+        mode==='ship'?'trajetórias paralelas — pura aceleração':'trajetórias convergem — a marca da gravidade real';
+      reset();
+    }));
+    root.querySelector('[data-equiv="drop"]').addEventListener('click',reset);
+    let trails=[[],[]];
+    reset();
+    runWhenVisible(cv,dt=>{
+      const W=ctx._w,H=ctx._h; ctx.clearRect(0,0,W,H);
+      if(!R)t+=dt;
+      const g=140, floorY=H-30;
+      const cxCenter=W/2, centerBelow=H*3.4;
+      st.forEach((b,i)=>{
+        const fall=0.5*g*t*t;
+        let x=b.x,y=36+fall;
+        if(mode==='planet'){
+          // fall toward common center below → converge in x
+          const dx=cxCenter-b.x;
+          const frac=Math.min(y/(centerBelow-36),1);
+          x=b.x+dx*frac*0.42;
+        }
+        if(y>floorY-6){y=floorY-6;}
+        trails[i].push({x,y}); if(trails[i].length>200)trails[i].shift();
+      });
+      // floor
+      ctx.strokeStyle='rgba(217,178,106,.5)';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(20,floorY);ctx.lineTo(W-20,floorY);ctx.stroke();
+      if(mode==='ship'){ // thruster arrow
+        ctx.fillStyle='rgba(217,178,106,.5)';ctx.font='11px ui-monospace,monospace';
+        ctx.fillText('▲ aceleração',W-118,floorY+18);
+      }else{
+        ctx.fillStyle='rgba(177,140,255,.5)';ctx.font='11px ui-monospace,monospace';
+        ctx.textAlign='center';ctx.fillText('▼ centro do planeta',cxCenter,floorY+18);ctx.textAlign='left';
+      }
+      trails.forEach((tr,i)=>{
+        ctx.strokeStyle=i?'rgba(127,227,255,.5)':'rgba(177,140,255,.55)';ctx.lineWidth=1.5;
+        ctx.beginPath();tr.forEach((p,j)=>j?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+        const p=tr[tr.length-1]; if(p){const c=i?'#7fe3ff':'#b18cff';
+          ctx.save();ctx.shadowColor=c;ctx.shadowBlur=14;ctx.fillStyle=c;
+          ctx.beginPath();ctx.arc(p.x,p.y,6,0,7);ctx.fill();ctx.restore();}
+      });
+      if(t>2.4){trails=[[],[]];reset();}
+    });
+  })();
+
+  /* ---------- DEMO: light bending ---------- */
+  (function(){
+    const root=document.querySelector('[data-demo="bend"]'); if(!root)return;
+    const cv=root.querySelector('[data-bend="cv"]'); const ctx=setup(cv);
+    let shots=[]; // each: {x, y0, ang, color, x0}
+    function fire(){
+      const H=ctx._h; const b=H*0.30; // impact param above center
+      const cy=H/2;
+      shots=[
+        {p:0,y0:cy-b,color:'#8790a8',k:1},   // Newton ×1
+        {p:0,y0:cy-b,color:'#7fe3ff',k:2}    // Einstein ×2
+      ];
+    }
+    root.querySelector('[data-bend="fire"]').addEventListener('click',fire);
+    runWhenVisible(cv,dt=>{
+      const W=ctx._w,H=ctx._h,cx=W/2,cy=H/2; ctx.clearRect(0,0,W,H);
+      // mass
+      const rg=ctx.createRadialGradient(cx,cy,2,cx,cy,46);
+      rg.addColorStop(0,'rgba(217,178,106,.9)');rg.addColorStop(.4,'rgba(217,178,106,.25)');rg.addColorStop(1,'transparent');
+      ctx.fillStyle=rg;ctx.beginPath();ctx.arc(cx,cy,46,0,7);ctx.fill();
+      ctx.fillStyle='#d9b26a';ctx.beginPath();ctx.arc(cx,cy,9,0,7);ctx.fill();
+      ctx.fillStyle='rgba(135,144,168,.6)';ctx.font='11px ui-monospace,monospace';ctx.fillText('massa',cx+14,cy+4);
+      shots.forEach(s=>{
+        if(!R) s.p+=dt*230; else s.p=W;
+        const b=cy-s.y0; // impact param
+        const bendStart=cx-90, bendEnd=cx+90;
+        ctx.strokeStyle=s.color;ctx.lineWidth=2;ctx.beginPath();
+        for(let x=10;x<=Math.min(s.p,W-10);x+=3){
+          let y=s.y0;
+          if(x>bendStart){
+            const prog=Math.min((x-bendStart)/(bendEnd-bendStart),1);
+            const defl=s.k*22*Math.pow(prog,1.6); // total deflection scales with k
+            y=s.y0+defl;
+          }
+          x===10?ctx.moveTo(x,y):ctx.lineTo(x,y);
+        }
+        ctx.stroke();
+      });
+      if(!shots.length){ctx.fillStyle='rgba(135,144,168,.6)';ctx.font='12px ui-monospace,monospace';
+        ctx.fillText('carrega em "disparar raios"',16,24);}
+    });
+  })();
+
+  /* ---------- DEMO: gravitational wave chirp ---------- */
+  (function(){
+    const root=document.querySelector('[data-demo="wave"]'); if(!root)return;
+    const cv=root.querySelector('[data-wave="cv"]'); const ctx=setup(cv);
+    let t=0,playing=true;
+    const btn=root.querySelector('[data-wave="play"]');
+    btn.addEventListener('click',()=>{playing=!playing;btn.classList.toggle('on',playing);
+      btn.textContent=playing?'reproduzir':'pausar';});
+    runWhenVisible(cv,dt=>{
+      const W=ctx._w,H=ctx._h,cy=H/2; ctx.clearRect(0,0,W,H);
+      if(playing&&!R)t+=dt; const cyc=(t%3.2)/3.2; // 0..1 loop
+      ctx.strokeStyle='rgba(35,44,71,.8)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();
+      ctx.strokeStyle='#b18cff';ctx.lineWidth=2.4;ctx.beginPath();
+      for(let px=0;px<=W;px++){
+        const u=px/W; // 0..1 across
+        // inspiral until 0.82 then ringdown
+        let amp,freq,val;
+        if(u<0.82){
+          const s=u/0.82;
+          amp=(6+40*Math.pow(s,2.4));
+          freq=(6+34*Math.pow(s,2.2));
+          val=Math.sin((s*freq)*Math.PI*2 - cyc*0.0)* amp;
+        }else{
+          const s=(u-0.82)/0.18;
+          amp=46*Math.exp(-s*7)*Math.cos(0);
+          val=Math.sin((0.82*40)*Math.PI*2 + s*30)*46*Math.exp(-s*6);
+        }
+        // animate a travelling reveal
+        const reveal=cyc*1.15;
+        const y=cy - (u<=reveal? val : 0);
+        px===0?ctx.moveTo(px,y):ctx.lineTo(px,y);
+      }
+      ctx.stroke();
+      // merge flash
+      const mx=W*0.82, rv=cyc*1.15;
+      if(rv>0.82&&rv<0.95){ctx.save();ctx.globalAlpha=(0.95-rv)/0.13*0.8;
+        ctx.fillStyle='#d9b26a';ctx.beginPath();ctx.arc(mx,cy,10,0,7);ctx.fill();ctx.restore();}
+      ctx.fillStyle='rgba(135,144,168,.6)';ctx.font='10px ui-monospace,monospace';
+      ctx.fillText('inspiral',12,H-10);ctx.fillText('fusão',W*0.79,H-10);ctx.fillText('toque',W*0.9,H-10);
+    });
+  })();
+
+  /* ---------- DEMO: accelerating expansion ---------- */
+  (function(){
+    const root=document.querySelector('[data-demo="expand"]'); if(!root)return;
+    const cv=root.querySelector('[data-expand="cv"]'); const ctx=setup(cv);
+    let mode='accel',t=0; const N=7;
+    root.querySelectorAll('[data-expand="mode"]').forEach(b=>b.addEventListener('click',()=>{
+      root.querySelectorAll('[data-expand="mode"]').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');mode=b.dataset.m;t=0;
+      root.querySelector('[data-expand="label"]').textContent=
+        mode==='accel'?'expansão a acelerar — o espaço estica-se cada vez mais depressa':
+        'expansão a abrandar — a gravidade trava o afastamento';
+    }));
+    root.querySelector('[data-expand="replay"]').addEventListener('click',()=>t=0);
+    runWhenVisible(cv,dt=>{
+      const W=ctx._w,H=ctx._h; ctx.clearRect(0,0,W,H);
+      if(!R)t+=dt; const T=Math.min(t/6,1);
+      // scale factor
+      let a = mode==='accel'? (0.16*Math.exp(2.0*T)) : (0.16 + 0.9*Math.pow(T,0.6));
+      a=Math.min(a,1.15);
+      const cx=W/2, cy=H*0.42, base=(W*0.42)/((N-1)/2);
+      for(let i=0;i<N;i++){
+        const k=i-(N-1)/2;
+        const x=cx + k*base*a;
+        const y=cy;
+        const c=i===(N-1)/2?'#d9b26a':'#7fe3ff';
+        ctx.save();ctx.shadowColor=c;ctx.shadowBlur=12;ctx.fillStyle=c;
+        ctx.beginPath();ctx.arc(x,y,5,0,7);ctx.fill();ctx.restore();
+      }
+      // scale-factor curve
+      const gy0=H-24,gx0=24,gx1=W-24,gh=H*0.34;
+      ctx.strokeStyle='rgba(35,44,71,.9)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(gx0,gy0);ctx.lineTo(gx1,gy0);ctx.stroke();
+      ctx.strokeStyle=mode==='accel'?'#b18cff':'#8790a8';ctx.lineWidth=2;ctx.beginPath();
+      for(let s=0;s<=T+0.001;s+=0.02){
+        let av=mode==='accel'?0.16*Math.exp(2.0*s):0.16+0.9*Math.pow(s,0.6);
+        av=Math.min(av,1.15);
+        const px=gx0+(gx1-gx0)*s, py=gy0-(av/1.15)*gh;
+        s===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+      }
+      ctx.stroke();
+      ctx.fillStyle='rgba(135,144,168,.6)';ctx.font='10px ui-monospace,monospace';
+      ctx.fillText('fator de escala (tamanho do universo) →',gx0,gy0-gh-6);
+      ctx.fillText('tempo →',gx1-56,gy0-6);
+      if(t>7)t=0;
+    });
+  })();
+
+  /* ---------- DEMO: rotation curve ---------- */
+  (function(){
+    const root=document.querySelector('[data-demo="rot"]'); if(!root)return;
+    const cv=root.querySelector('[data-rot="cv"]'); const ctx=setup(cv);
+    let dm=0;
+    const sl=root.querySelector('[data-rot="dm"]'), out=root.querySelector('[data-rot="dm-v"]');
+    sl.addEventListener('input',()=>{dm=parseFloat(sl.value);out.textContent=Math.round(dm*100)+'%';
+      sl.style.setProperty('--fill',(dm*100)+'%');});
+    function draw(){
+      const W=ctx._w,H=ctx._h; ctx.clearRect(0,0,W,H);
+      const x0=44,x1=W-16,y0=H-30,y1=18,gw=x1-x0,gh=y0-y1;
+      // axes
+      ctx.strokeStyle='rgba(35,44,71,.9)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(x0,y1);ctx.lineTo(x0,y0);ctx.lineTo(x1,y0);ctx.stroke();
+      ctx.fillStyle='rgba(135,144,168,.7)';ctx.font='10px ui-monospace,monospace';
+      ctx.save();ctx.translate(14,(y0+y1)/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';
+      ctx.fillText('velocidade orbital',0,0);ctx.restore();
+      ctx.textAlign='center';ctx.fillText('raio (distância ao centro) →',(x0+x1)/2,H-6);ctx.textAlign='left';
+      const px=r=>x0+r*gw, py=v=>y0-v*gh;
+      // visible-only: rises then ~1/sqrt(r) falls (Keplerian)
+      function vVis(r){ if(r<0.16) return r/0.16*0.9; return 0.9*Math.sqrt(0.16/r); }
+      // dark halo contribution rising to plateau
+      function vHalo(r){ return 0.9*(1-Math.exp(-r*4)); }
+      function vTot(r){ const a=vVis(r),h=vHalo(r)*dm; return Math.min(Math.sqrt(a*a+h*h),1); }
+      function curve(fn,color,w,dash){ctx.strokeStyle=color;ctx.lineWidth=w;ctx.setLineDash(dash||[]);
+        ctx.beginPath();for(let r=0.001;r<=1;r+=0.01){const x=px(r),y=py(Math.min(fn(r),1));
+          r<=0.011?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();ctx.setLineDash([]);}
+      // observed flat reference
+      curve(r=>vVis(r)<0.9? Math.min(r/0.16*0.9,0.9):0.9,'rgba(127,227,255,.4)',2,[5,5]);
+      curve(vVis,'#8790a8',2);
+      curve(vTot,'#b18cff',2.6);
+    }
+    // redraw on slider + once visible
+    sl.style.setProperty('--fill','0%');
+    runWhenVisible(cv,()=>draw());
+    draw();
+  })();
+
+})();
+</script>
+</body>
+</html>

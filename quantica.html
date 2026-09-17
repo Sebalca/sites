@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>O Mundo Quântico</title>
+<style>
+  :root{
+    --bg:#0a0e1c;--bg-2:#10162a;--panel:#121a30;--line:#232c47;--line-2:#2e3a5c;
+    --ink:#ece6d6;--ink-2:#c9c3b3;--muted:#8790a8;--faint:#5a647f;
+    --brass:#d9b26a;--brass-deep:#b8904a;--light:#7fe3ff;--violet:#b18cff;
+    --teal:#54d6c9;--rose:#ff9a8c;--amber:#ffcf6b;
+    --serif:"Palatino Linotype","Book Antiqua",Palatino,Georgia,'Times New Roman',serif;
+    --mono:ui-monospace,'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.72;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(900px 500px at 85% -5%, rgba(84,214,201,.10), transparent 60%),
+      radial-gradient(800px 500px at -5% 20%, rgba(177,140,255,.08), transparent 55%);
+    background-attachment:fixed;}
+  #prog{position:fixed;top:0;left:0;height:3px;width:0;z-index:50;
+    background:linear-gradient(90deg,var(--teal),var(--brass));box-shadow:0 0 12px rgba(217,178,106,.5)}
+  .layout{display:grid;grid-template-columns:230px minmax(0,720px);gap:56px;max-width:1040px;margin:0 auto;padding:0 24px}
+  nav{position:sticky;top:0;height:100dvh;padding:34px 0;overflow-y:auto;align-self:start}
+  .tabs{display:flex;gap:6px;margin-bottom:22px}
+  .tabs a{flex:1;text-align:center;text-decoration:none;font-family:var(--mono);font-size:11px;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:9px 6px;border:1px solid var(--line-2);
+    border-radius:8px;transition:.15s}
+  .tabs a:hover{color:var(--ink);border-color:#3b4a72}
+  .tabs a.on{background:var(--brass);color:#0a0e18;border-color:var(--brass);font-weight:600}
+  nav .brand{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--teal);margin-bottom:22px;line-height:1.5}
+  nav ol{list-style:none;margin:0;padding:0}
+  nav a.toc{display:flex;gap:11px;align-items:baseline;text-decoration:none;color:var(--muted);
+    font-family:var(--mono);font-size:12.5px;line-height:1.35;padding:7px 0 7px 14px;
+    border-left:2px solid transparent;margin-left:-2px;transition:color .2s,border-color .2s}
+  nav a.toc .n{color:var(--faint);font-size:11px;min-width:1.6em}
+  nav a.toc:hover{color:var(--ink)}
+  nav a.toc.active{color:var(--brass);border-left-color:var(--brass)}
+  nav a.toc.active .n{color:var(--brass)}
+  main{padding:0 0 120px}
+  .hero{min-height:86dvh;display:flex;flex-direction:column;justify-content:center;padding:60px 0 40px}
+  .hero .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--teal);margin-bottom:22px}
+  .hero h1{font-size:clamp(40px,7vw,74px);line-height:1.02;margin:0 0 26px;font-weight:600;letter-spacing:-.01em}
+  .hero h1 em{font-style:italic;color:var(--teal)}
+  .hero .lede{font-size:clamp(19px,2.4vw,23px);color:var(--ink-2);max-width:36ch;margin:0 0 34px}
+  .thesis{font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--muted);border-left:2px solid var(--teal);padding-left:16px;max-width:52ch}
+  .thesis b{color:var(--ink);font-weight:500}
+  .scrollcue{margin-top:44px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);display:flex;align-items:center;gap:10px}
+  .scrollcue .ln{width:34px;height:1px;background:var(--line-2);position:relative;overflow:hidden}
+  .scrollcue .ln::after{content:"";position:absolute;inset:0;width:12px;background:var(--teal);animation:cue 2.4s infinite ease-in-out}
+  @keyframes cue{0%{transform:translateX(-14px)}100%{transform:translateX(36px)}}
+  section{padding:64px 0;border-top:1px solid var(--line);scroll-margin-top:20px}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--teal);margin-bottom:16px;display:flex;gap:12px;align-items:center}
+  .eyebrow .num{color:var(--faint)}
+  h2{font-size:clamp(28px,4.4vw,40px);line-height:1.12;margin:0 0 22px;font-weight:600;letter-spacing:-.01em}
+  h3{font-size:20px;margin:34px 0 10px;color:var(--ink);font-weight:600}
+  p{margin:0 0 18px;color:var(--ink-2)}
+  p strong,li strong{color:var(--ink);font-weight:600}
+  em{color:var(--teal);font-style:italic}
+  .lead{font-size:20px;color:var(--ink)}
+  code{font-family:var(--mono);font-size:.82em;color:var(--light);background:rgba(127,227,255,.09);padding:2px 7px;border-radius:5px}
+  .proof{background:linear-gradient(180deg,rgba(217,178,106,.08),rgba(217,178,106,.03));
+    border:1px solid rgba(217,178,106,.22);border-left:3px solid var(--brass);border-radius:10px;padding:20px 22px;margin:26px 0;font-size:16.5px;line-height:1.62}
+  .proof .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--brass);display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .proof .tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--brass);box-shadow:0 0 8px var(--brass)}
+  .proof p{color:var(--ink-2);margin:0 0 10px}.proof p:last-child{margin:0}.proof b{color:var(--ink)}
+  .demo{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:28px 0;overflow:hidden}
+  .demo-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .demo-head .t{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .demo canvas{display:block;width:100%;touch-action:none;background-color:#0a0f1f;
+    background-image:radial-gradient(120% 120% at 50% 0%, #0d1530 0%, transparent 70%)}
+  .demo-ctrl{padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line)}
+  .demo-ctrl .cap{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);white-space:nowrap}
+  .demo-ctrl .val{font-family:var(--mono);font-size:14px;color:var(--ink);font-variant-numeric:tabular-nums;min-width:6ch;text-align:right}
+  input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:120px;height:4px;border-radius:4px;
+    background:linear-gradient(90deg,var(--teal) 0%,var(--teal) var(--fill,50%),#243052 var(--fill,50%),#243052 100%);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--ink);border:3px solid var(--teal);cursor:pointer;box-shadow:0 0 12px rgba(84,214,201,.5)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);border:3px solid var(--teal);cursor:pointer}
+  button{font-family:var(--mono);font-size:12px;letter-spacing:.03em;background:var(--bg-2);color:var(--muted);border:1px solid var(--line-2);border-radius:8px;padding:8px 14px;cursor:pointer;transition:.15s}
+  button:hover{color:var(--ink);border-color:#3b4a72}
+  button.on{color:#0a0e18;background:var(--brass);border-color:var(--brass);font-weight:600}
+  button:focus-visible{outline:2px solid var(--light);outline-offset:2px}
+  .seg{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
+  .seg button{border:none;border-radius:0}.seg button + button{border-left:1px solid var(--line-2)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:7px}
+  .legend i{width:12px;height:3px;border-radius:2px;display:inline-block}
+  .eq{font-family:var(--mono);text-align:center;color:var(--ink);font-size:16px;background:var(--bg-2);border:1px solid var(--line);border-radius:8px;padding:16px;margin:22px 0}
+  .eq b{color:var(--brass)}
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+  footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--muted);font-size:14px;font-family:var(--mono);line-height:1.7}
+  footer b{color:var(--brass)}
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;gap:0}
+    nav{position:static;height:auto;padding:18px 0 6px}
+    nav ol{display:flex;flex-wrap:wrap;gap:2px 16px}
+    nav a.toc{border-left:none;padding-left:0}
+    .hero{min-height:auto;padding:30px 0}
+  }
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}.scrollcue .ln::after{animation:none}}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+<div class="layout">
+  <nav>
+    <div class="tabs">
+      <a href="da-luz-ao-universo-escuro.html">Relatividade</a>
+      <a class="on" href="o-mundo-quantico.html">Quântica</a>
+    </div>
+    <div class="brand">O Mundo Quântico</div>
+    <ol id="toc">
+      <li><a class="toc" href="#s1"><span class="n">01</span> A energia aos pedaços</a></li>
+      <li><a class="toc" href="#s2"><span class="n">02</span> A dupla fenda</a></li>
+      <li><a class="toc" href="#s3"><span class="n">03</span> Função de onda e probabilidade</a></li>
+      <li><a class="toc" href="#s4"><span class="n">04</span> Princípio da incerteza</a></li>
+      <li><a class="toc" href="#s5"><span class="n">05</span> Sobreposição e o gato</a></li>
+      <li><a class="toc" href="#s6"><span class="n">06</span> O átomo quantizado</a></li>
+      <li><a class="toc" href="#s7"><span class="n">07</span> Tunelamento</a></li>
+      <li><a class="toc" href="#s8"><span class="n">08</span> Spin: Stern–Gerlach</a></li>
+      <li><a class="toc" href="#s9"><span class="n">09</span> Emaranhamento e Bell</a></li>
+      <li><a class="toc" href="#s10"><span class="n">10</span> Quântica encontra relatividade</a></li>
+      <li><a class="toc" href="#s11"><span class="n">11</span> O que ainda não se resolve</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">O muito pequeno</div>
+      <h1>No fundo, a natureza não tem <em>valores</em>.<br>Tem probabilidades.</h1>
+      <p class="lede">A teoria mais precisa e mais estranha da física — contada pelas experiências que ninguém conseguiu explicar de outra forma.</p>
+      <div class="thesis">Um eletrão não tem posição <b>e</b> velocidade ao mesmo tempo. A luz é onda <b>e</b> partícula. Medir muda o resultado. E, no entanto, nada disto é filosofia solta: cada afirmação aqui saiu de uma <b>experiência</b> concreta que se pode repetir.</div>
+      <div class="scrollcue"><span class="ln"></span> desliza para começar</div>
+    </header>
+
+    <!-- 01 -->
+    <section id="s1" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 01</span> · O nascimento</div>
+      <h2>A energia aos pedaços</h2>
+      <p class="lead">A quântica começou com uma desistência. Em 1900, para explicar a luz emitida por um corpo quente, Planck teve de admitir que a energia só sai em <em>pacotes</em>, não de forma contínua.</p>
+      <p>Planck achou aquilo um truque matemático desesperado. Foi <strong>Einstein</strong>, em 1905, que o levou a sério: a própria luz é feita de grãos de energia, os <strong>fotões</strong>. E provou-o com o <strong>efeito fotoelétrico</strong> — luz a arrancar eletrões de um metal.</p>
+      <p>O detalhe demolidor: se a luz fosse só uma onda, luz muito intensa (mesmo que vermelha) deveria acabar por arrancar eletrões. Não arranca. Abaixo de uma certa <strong>frequência</strong>, não sai eletrão nenhum por mais brilhante que seja a luz. Acima dela, saem logo, mesmo com luz fraca. A cor (frequência) é que conta, porque cada fotão entrega a sua energia toda de uma vez. Experimenta:</p>
+
+      <div class="demo" data-demo="photo">
+        <div class="demo-head"><span class="t">Efeito fotoelétrico</span>
+          <span class="t" data-photo="status" style="color:var(--rose)">sem emissão</span></div>
+        <canvas data-photo="cv" height="220"></canvas>
+        <div class="demo-ctrl"><span class="cap">frequência (cor)</span>
+          <input type="range" data-photo="freq" min="0" max="1" step="0.01" value="0.25">
+          <span class="val" data-photo="freq-v">vermelho</span></div>
+        <div class="demo-ctrl" style="border-top:none;padding-top:0"><span class="cap">intensidade</span>
+          <input type="range" data-photo="int" min="0.2" max="1" step="0.01" value="0.6">
+          <span class="cap" data-photo="note">abaixo do limiar: mais luz não ajuda</span></div>
+      </div>
+
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Efeito fotoelétrico:</b> existe uma frequência-limiar abaixo da qual nenhum eletrão é emitido, seja qual for a intensidade. A energia dos eletrões depende da frequência, não do brilho. Foi por explicar isto — e não pela relatividade — que Einstein recebeu o <b>Nobel de 1921</b>.</p>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section id="s2" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 02</span> · A experiência central</div>
+      <h2>A dupla fenda</h2>
+      <p class="lead">Feynman chamou-lhe "o único mistério" da quântica. Dispara partículas, uma a uma, contra duas fendas — e elas constroem um padrão que só faz sentido se cada uma passar pelas duas ao mesmo tempo.</p>
+      <p>Manda eletrões um a um. Cada um chega ao ecrã como um ponto único — comporta-se como partícula. Mas deixa acumular milhares e aparece um padrão de <strong>faixas claras e escuras</strong>: interferência, a assinatura de uma onda. Cada eletrão interfere <em>consigo mesmo</em>, como se tivesse passado pelas duas fendas.</p>
+      <p>E aqui está o arrepio: liga um <strong>detetor</strong> para ver por que fenda passa cada eletrão. No instante em que a informação existe, o padrão de interferência <strong>desaparece</strong> — ficam só duas manchas, como se fossem balas. Observar muda o resultado. Carrega no botão do detetor e vê:</p>
+
+      <div class="demo" data-demo="slit">
+        <div class="demo-head"><span class="t">Dupla fenda · eletrões um a um</span>
+          <div class="seg">
+            <button data-slit="det" data-v="off" class="on">sem detetor</button>
+            <button data-slit="det" data-v="on">com detetor</button>
+          </div>
+        </div>
+        <canvas data-slit="cv" height="300"></canvas>
+        <div class="demo-ctrl"><button data-slit="reset">recomeçar</button>
+          <span class="cap" data-slit="label">padrão de interferência — comportamento de onda</span>
+          <span class="cap" style="margin-left:auto">impactos: <b data-slit="count" style="color:var(--ink)">0</b></span></div>
+      </div>
+
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Interferência de partículas únicas:</b> feita com eletrões (Tonomura, 1989), depois com átomos e até com moléculas enormes. Mesmo enviadas uma a uma, com o aparelho quase vazio, constroem o padrão de onda.</p>
+        <p><b>"Which-path":</b> sempre que se obtém informação sobre o caminho, a interferência some. Não é o detetor a "empurrar" o eletrão — é a própria existência da informação que o decide.</p>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section id="s3" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 03</span> · O formalismo</div>
+      <h2>Função de onda e probabilidade</h2>
+      <p class="lead">O que "ondula" na dupla fenda não é matéria — é uma onda de <em>possibilidades</em>. Chama-se função de onda, e o seu quadrado dá a probabilidade de encontrar a partícula em cada sítio.</p>
+      <p>Antes de medir, o eletrão não está "algalgures que não sabemos". Está numa <strong>sobreposição</strong> de todos os sítios possíveis, cada um com uma amplitude. É a chamada <strong>regra de Born</strong>: a probabilidade de o encontrar num ponto é o quadrado da amplitude aí. As amplitudes podem somar-se ou cancelar-se — é isso que cria as faixas escuras da dupla fenda, onde duas possibilidades se anulam.</p>
+      <div class="eq">probabilidade = |amplitude|² &nbsp;·&nbsp; <b>regra de Born</b></div>
+      <p>Entre medições, a função de onda evolui de forma perfeitamente previsível e determinista (a equação de Schrödinger). O acaso só entra no momento da <strong>medição</strong>, quando o leque de possibilidades "colapsa" num único resultado. Porque colapsa, e o que significa isso, é o problema em aberto da secção 11.</p>
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Estatística, não trajetória:</b> repete-se a mesma preparação milhares de vezes e os resultados distribuem-se exatamente como |amplitude|² prevê — nunca se consegue prever o resultado individual, só as probabilidades. Nenhuma "variável escondida" local reproduz estes números (ver secção 09).</p>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section id="s4" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 04</span> · Heisenberg</div>
+      <h2>Princípio da incerteza</h2>
+      <p class="lead">Não é limitação dos aparelhos. É que a partícula, no fundo, não <em>tem</em> ao mesmo tempo uma posição exata e uma velocidade exata. Quanto mais defines uma, mais indefinida fica a outra.</p>
+      <p>A razão está na onda. Uma onda muito localizada no espaço (posição bem definida) é, matematicamente, uma mistura de muitos comprimentos de onda — ou seja, de muitas velocidades. Aperta a posição e o leque de velocidades <strong>alarga</strong>. Espalha a posição e a velocidade fica precisa. Não há como ter as duas afiadas ao mesmo tempo. Arrasta o cursor e vê o compromisso:</p>
+
+      <div class="demo" data-demo="unc">
+        <div class="demo-head"><span class="t">Compromisso posição ↔ velocidade</span>
+          <span class="t" style="color:var(--brass)">Δx · Δp constante</span></div>
+        <canvas data-unc="cv" height="200"></canvas>
+        <div class="demo-ctrl"><span class="cap">largura em posição (Δx)</span>
+          <input type="range" data-unc="w" min="0.08" max="1" step="0.01" value="0.5">
+          <div class="legend" style="margin-left:auto">
+            <span><i style="background:#7fe3ff"></i> posição</span>
+            <span><i style="background:#b18cff"></i> velocidade</span></div></div>
+      </div>
+      <div class="eq">Δx · Δp ≥ <b>ħ / 2</b></div>
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Difração numa fenda:</b> quanto mais estreita a fenda (posição mais definida), mais a luz se espalha ao passar (mais incerteza na direção/momento). Vê-se a olho nu num laser e uma fenda fina — é o princípio da incerteza em ação, e o limite <code>ħ/2</code> nunca é ultrapassado.</p>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section id="s5" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 05</span> · Sobreposição</div>
+      <h2>Sobreposição e o gato</h2>
+      <p class="lead">Um sistema quântico pode estar em vários estados ao mesmo tempo — não "num deles sem sabermos qual", mas genuinamente nos dois de uma vez, até ser medido.</p>
+      <p>Schrödinger inventou o famoso gato para <em>ridicularizar</em> esta ideia, não para a defender. Um gato numa caixa ligado a um átomo radioativo em sobreposição de "decaiu / não decaiu" ficaria, pela lógica quântica, vivo <strong>e</strong> morto ao mesmo tempo. Era uma provocação: "vejam ao que isto leva". A provocação virou o ícone da teoria.</p>
+      <p>Na prática, objetos grandes nunca vemos em sobreposição porque interagem com o ambiente a toda a hora. Cada interação "regista" o estado e destrói a sobreposição — chama-se <strong>descoerência</strong>. É por isso que a estranheza quântica se esconde: não porque desapareça, mas porque um gato tem biliões de partículas a serem constantemente "medidas" pelo ar, pela luz, por tudo.</p>
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Sobreposição real:</b> mantêm-se átomos e circuitos supercondutores em sobreposição controlada — é o princípio dos <b>computadores quânticos</b>, cujos bits (qubits) são literalmente 0 e 1 ao mesmo tempo.</p>
+        <p><b>Descoerência medida:</b> em experiências com cavidades (Haroche, <b>Nobel 2012</b>) viu-se uma sobreposição a decair para um estado clássico à medida que o ambiente "espreita" — a fronteira entre quântico e clássico em direto.</p>
+      </div>
+    </section>
+
+    <!-- 06 -->
+    <section id="s6" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 06</span> · O átomo</div>
+      <h2>O átomo quantizado</h2>
+      <p class="lead">Dentro de um átomo, o eletrão não pode ter qualquer energia. Só valores discretos, como degraus de uma escada. Salta de degrau em degrau, e cada salto emite luz de uma cor exata.</p>
+      <p>Bohr propôs isto em 1913 para o hidrogénio, e explica uma coisa que se via desde o século XIX mas ninguém entendia: cada elemento, aquecido, emite luz só em <strong>cores específicas</strong> — as suas riscas espectrais, uma impressão digital. Quando o eletrão cai de um nível alto para um baixo, a diferença de energia sai como um fotão de frequência precisa. Escolhe um salto e vê a risca que ele produz:</p>
+
+      <div class="demo" data-demo="atom">
+        <div class="demo-head"><span class="t">Níveis do hidrogénio · série de Balmer (visível)</span></div>
+        <canvas data-atom="cv" height="260"></canvas>
+        <div class="demo-ctrl"><span class="cap">salto do eletrão (n → 2)</span>
+          <div class="seg">
+            <button data-atom="jump" data-n="3" class="on">3→2</button>
+            <button data-atom="jump" data-n="4">4→2</button>
+            <button data-atom="jump" data-n="5">5→2</button>
+            <button data-atom="jump" data-n="6">6→2</button>
+          </div>
+          <span class="cap" data-atom="wl" style="margin-left:auto">656 nm · vermelho</span></div>
+      </div>
+
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Espectros atómicos:</b> as riscas do hidrogénio caem exatamente onde a fórmula de Bohr prevê (656, 486, 434 nm...). É assim que sabemos de que são feitas as estrelas — lemos as suas riscas. O hélio foi <b>descoberto no Sol</b> por uma risca desconhecida, antes de o acharmos na Terra.</p>
+      </div>
+    </section>
+
+    <!-- 07 -->
+    <section id="s7" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 07</span> · Tunelamento</div>
+      <h2>Atravessar paredes</h2>
+      <p class="lead">Uma partícula pode aparecer do outro lado de uma barreira que, classicamente, não teria energia para transpor. Não salta por cima — atravessa.</p>
+      <p>Como a partícula é uma onda de probabilidade, essa onda não pára a seco numa barreira: penetra e decai lá dentro. Se a barreira for fina, sobra amplitude do outro lado — e há uma probabilidade real de a partícula <strong>surgir</strong> ali, tendo "atravessado" algo que devia ser intransponível. Vê o pacote a bater e a passar em parte:</p>
+
+      <div class="demo" data-demo="tunnel">
+        <div class="demo-head"><span class="t">Pacote de onda contra uma barreira</span>
+          <span class="t" style="color:var(--teal)">transmissão ≈ <span data-tunnel="T">30</span>%</span></div>
+        <canvas data-tunnel="cv" height="220"></canvas>
+        <div class="demo-ctrl"><span class="cap">espessura da barreira</span>
+          <input type="range" data-tunnel="w" min="0.1" max="1" step="0.01" value="0.4">
+          <button data-tunnel="fire" style="margin-left:auto">disparar pacote</button></div>
+      </div>
+
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Decaimento alfa:</b> os núcleos radioativos emitem partículas que "não têm energia" para escapar — só o tunelamento explica as taxas de decaimento (Gamow, 1928).</p>
+        <p><b>Microscópio de tunelamento (STM):</b> mede eletrões a tunelar através do vácuo entre uma ponta e a superfície, e mapeia <b>átomos individuais</b>. Nobel 1986.</p>
+        <p><b>O Sol:</b> a fusão só acontece porque os núcleos tunelam a repulsão mútua. Sem tunelamento, as estrelas não brilhariam.</p>
+      </div>
+    </section>
+
+    <!-- 08 -->
+    <section id="s8" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 08</span> · Spin</div>
+      <h2>Spin: o experimento de Stern–Gerlach</h2>
+      <p class="lead">As partículas têm uma propriedade sem equivalente clássico — o spin — e medi-la dá sempre um de dois valores. Nunca um valor intermédio.</p>
+      <p>Em 1922, Stern e Gerlach mandaram um feixe de átomos de prata através de um campo magnético não uniforme. Pela física clássica, os átomos, orientados ao acaso, deviam espalhar-se numa <strong>mancha contínua</strong>. Em vez disso, o feixe partiu-se em <strong>dois pontos separados</strong>: "spin para cima" ou "spin para baixo", nada no meio. A medida é intrinsecamente discreta.</p>
+
+      <div class="demo" data-demo="sg">
+        <div class="demo-head"><span class="t">Feixe de átomos · campo magnético</span>
+          <div class="seg">
+            <button data-sg="exp" data-v="q" class="on">real (quântico)</button>
+            <button data-sg="exp" data-v="c">esperado (clássico)</button>
+          </div>
+        </div>
+        <canvas data-sg="cv" height="220"></canvas>
+        <div class="demo-ctrl"><button data-sg="fire">disparar átomos</button>
+          <span class="cap" data-sg="label">resultado quântico — apenas dois valores possíveis</span></div>
+      </div>
+
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Stern–Gerlach (1922):</b> a separação em dois feixes provou que o spin é quantizado. Encadeando magnetos em ângulos diferentes revela-se algo ainda mais fundo: medir o spin numa direção <b>apaga</b> a informação sobre outra — as componentes do spin são incompatíveis, como posição e velocidade.</p>
+      </div>
+    </section>
+
+    <!-- 09 -->
+    <section id="s9" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 09</span> · O mais fundo</div>
+      <h2>Emaranhamento e o teorema de Bell</h2>
+      <p class="lead">Duas partículas podem ficar ligadas de tal forma que medir uma decide instantaneamente o resultado da outra — mesmo a anos-luz de distância. Einstein detestou isto e chamou-lhe "ação fantasmagórica à distância".</p>
+      <p>Em 1935, Einstein, Podolsky e Rosen argumentaram que a quântica tinha de estar incompleta: certamente as partículas já traziam os resultados "combinados" à partida (variáveis escondidas), e a correlação não passava disso — como dois sapatos separados em caixas, ver um esquerdo diz-te logo que o outro é direito. Nada de fantasmagórico.</p>
+      <p>Em 1964, <strong>John Bell</strong> descobriu que estas duas explicações fazem previsões <em>numericamente diferentes</em> quando se medem as partículas em ângulos variados. Há um limite que qualquer teoria de "sapatos em caixas" (variáveis escondidas locais) não pode ultrapassar. A quântica prevê ultrapassá-lo. Deixou de ser filosofia — passou a ser uma conta que se mede.</p>
+      <p>E mede-se. As experiências dão o resultado <strong>quântico</strong>: o limite de Bell é violado. A realidade não traz os resultados combinados de antemão. Vê as correlações a formarem-se:</p>
+
+      <div class="demo" data-demo="bell">
+        <div class="demo-head"><span class="t">Pares emaranhados · Alice e Bob</span>
+          <div class="seg">
+            <button data-bell="ang" data-a="same" class="on">mesmo ângulo</button>
+            <button data-bell="ang" data-a="cross">ângulos cruzados</button>
+          </div>
+        </div>
+        <canvas data-bell="cv" height="220"></canvas>
+        <div class="demo-ctrl"><button data-bell="fire">enviar pares</button>
+          <span class="cap" data-bell="label">no mesmo ângulo: correlação perfeita, sempre opostos</span></div>
+      </div>
+
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Testes de Bell:</b> Clauser (1972) e Aspect (1982) mediram violações do limite de Bell. Em 2015 fecharam-se as últimas "brechas" experimentais. O <b>Nobel de 2022</b> (Aspect, Clauser, Zeilinger) premiou precisamente isto.</p>
+        <p><b>Nota:</b> nada de informação viaja mais depressa que a luz — cada lado vê só ruído aleatório; a correlação só aparece quando se comparam os dois registos depois. A relatividade fica intacta.</p>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section id="s10" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 10</span> · A ponte</div>
+      <h2>Quando a quântica encontra a relatividade</h2>
+      <p class="lead">Juntar a quântica com a relatividade restrita foi um dos maiores feitos do século XX — e deu origem a previsões que ninguém tinha pedido, como a antimatéria.</p>
+      <p>Em 1928, <strong>Dirac</strong> escreveu uma equação quântica que respeitava a relatividade. A matemática exigiu, sozinha, que cada partícula tivesse um gémeo de carga oposta. Ninguém procurava isso — e em 1932 <strong>Anderson</strong> encontrou o <strong>positrão</strong>, a antimatéria do eletrão. A teoria previu uma metade escondida do universo antes de a vermos.</p>
+      <p>Desse casamento nasceu a <strong>teoria quântica de campos</strong>, onde as partículas são vibrações de campos e o <code>E = mc²</code> opera em direto: nos aceleradores, energia converte-se em partículas novas e partículas aniquilam-se em energia. É a física mais bem testada de sempre — a eletrodinâmica quântica prevê certas medidas com <strong>doze casas decimais</strong> certas.</p>
+      <p>Mas há um limite que este casamento nunca alcançou: a <strong>gravidade</strong>. A relatividade geral — o espaço-tempo curvo da outra aba — recusa-se a ser quantizada. No coração de um buraco negro ou no primeiro instante do Big Bang precisaríamos das duas ao mesmo tempo, e elas não coexistem. É o maior buraco em aberto da física.</p>
+      <div class="proof">
+        <div class="tag">Prova experimental</div>
+        <p><b>Positrão (Anderson, 1932):</b> a primeira antimatéria, exatamente como Dirac previra. Hoje é rotina — os aparelhos <b>PET</b> dos hospitais funcionam com aniquilação de positrões.</p>
+        <p><b>Momento magnético do eletrão:</b> teoria e experiência concordam até à 12ª casa decimal. Nenhuma outra previsão científica é tão precisa.</p>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section id="s11" class="reveal">
+      <div class="eyebrow"><span class="num">Secção 11</span> · Síntese</div>
+      <h2>O que ainda não se resolve</h2>
+      <p class="lead">A quântica calcula tudo com precisão sobre-humana. Mas o que ela <em>significa</em> — o que é realmente uma medição — continua por decidir.</p>
+      <p>É o <strong>problema da medição</strong>. A equação de Schrödinger diz como a função de onda evolui, suavemente, sem nunca colapsar. Mas quando medimos, obtemos sempre um único resultado. Onde e como se dá o salto do "tudo ao mesmo tempo" para o "isto"? A teoria não diz. Há várias <strong>interpretações</strong>, todas dando as mesmas previsões:</p>
+      <p>Na de <strong>Copenhaga</strong>, a medição colapsa a função de onda e não vale a pena perguntar mais. Nos <strong>muitos mundos</strong>, nada colapsa — todos os resultados acontecem, cada um no seu ramo do universo. Na <strong>onda-piloto</strong>, as partículas têm sempre posição definida, guiadas por uma onda real. Não há como distingui-las experimentalmente, por enquanto.</p>
+      <p>Fica a lição das duas abas juntas: a relatividade tirou-nos o tempo absoluto; a quântica tirou-nos a certeza de que as coisas têm propriedades definidas quando não olhamos. As duas descrições mais bem testadas da natureza recusam-se, ainda, a encaixar uma na outra — e é aí, nessa costura por coser, que provavelmente está a próxima grande revolução.</p>
+    </section>
+
+    <footer>
+      Explicador interativo · mecânica quântica e as suas experiências<br>
+      Segunda de duas abas · a outra: <b>Da Luz ao Universo Escuro</b>. Conteúdo educativo, consenso até <b>2026</b>.
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const R=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const prog=document.getElementById('prog');
+  const links=[...document.querySelectorAll('#toc a')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  function onScroll(){const st=scrollY,h=document.body.scrollHeight-innerHeight;
+    prog.style.width=(h>0?st/h*100:0)+'%';let cur=0;
+    secs.forEach((s,i)=>{if(s&&s.getBoundingClientRect().top<innerHeight*0.4)cur=i;});
+    links.forEach((a,i)=>a.classList.toggle('active',i===cur));}
+  addEventListener('scroll',onScroll,{passive:true});onScroll();
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  function setup(cv){const ctx=cv.getContext('2d');
+    function fit(){const dpr=Math.min(devicePixelRatio||1,2.5);
+      const w=cv.clientWidth,h=cv.clientHeight||parseInt(cv.getAttribute('height'));
+      cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);ctx._w=w;ctx._h=h;}
+    fit();addEventListener('resize',fit);return ctx;}
+  function runWhenVisible(cv,frame){let running=false,last=0;
+    function loop(t){if(!running)return;const dt=Math.min((t-(last||t))/1000,.05);last=t;frame(dt);requestAnimationFrame(loop);}
+    new IntersectionObserver(es=>es.forEach(e=>{running=e.isIntersecting;if(running){last=0;requestAnimationFrame(loop);}}),{threshold:.05}).observe(cv);}
+  function glow(ctx,x,y,r,c){ctx.save();ctx.shadowColor=c;ctx.shadowBlur=r*3;ctx.fillStyle=c;
+    ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.restore();}
+
+  /* ---- 01 photoelectric ---- */
+  (function(){const root=document.querySelector('[data-demo="photo"]');if(!root)return;
+    const cv=root.querySelector('[data-photo="cv"]'),ctx=setup(cv);
+    let freq=0.25,inten=0.6,ph=[],el=[];const q=s=>root.querySelector('[data-photo="'+s+'"]');
+    const THRESH=0.42;
+    function colFor(f){const hue=270-f*270;return 'hsl('+hue+',85%,62%)';}
+    function nameFor(f){return f<0.2?'infravermelho':f<0.4?'vermelho':f<0.55?'amarelo':f<0.7?'verde':f<0.85?'azul':'ultravioleta';}
+    q('freq').addEventListener('input',e=>{freq=parseFloat(e.target.value);q('freq-v').textContent=nameFor(freq);
+      q('freq').style.setProperty('--fill',(freq*100)+'%');});
+    q('int').addEventListener('input',e=>inten=parseFloat(e.target.value));
+    q('freq').style.setProperty('--fill','25%');
+    let acc=0;
+    runWhenVisible(cv,dt=>{const W=ctx._w,H=ctx._h;ctx.clearRect(0,0,W,H);
+      const plateX=W*0.62;
+      // metal plate
+      ctx.fillStyle='#2a3654';ctx.fillRect(plateX,30,26,H-60);
+      ctx.fillStyle='rgba(217,178,106,.5)';ctx.font='11px ui-monospace,monospace';ctx.fillText('metal',plateX-4,H-14);
+      // incoming photons
+      const c=colFor(freq);
+      if(!R){acc+=dt*(2+inten*8);while(acc>1){acc--;ph.push({x:20,y:40+Math.random()*(H-80)});}}
+      ph.forEach(p=>{p.x+=(R?0:260)*dt;});
+      ph=ph.filter(p=>{
+        if(p.x>=plateX-2){ if(freq>=THRESH){ // eject electron
+            el.push({x:plateX+26,y:p.y,vx:60+freq*260,vy:(Math.random()-0.5)*40});}
+          return false;}
+        return p.x<W;});
+      ph.forEach(p=>glow(ctx,p.x,p.y,3,c));
+      el.forEach(e2=>{e2.x+=(R?0:1)*e2.vx*dt;e2.y+=(R?0:1)*e2.vy*dt;});
+      el=el.filter(e2=>e2.x<W&&e2.x>0);
+      el.forEach(e2=>glow(ctx,e2.x,e2.y,3.4,'#ffcf6b'));
+      const on=freq>=THRESH;
+      q('status').textContent=on?'a emitir eletrões':'sem emissão';
+      q('status').style.color=on?'var(--teal)':'var(--rose)';
+      q('note').textContent=on?'acima do limiar: a cor tem energia suficiente':'abaixo do limiar: mais luz não ajuda';
+      // threshold marker
+      ctx.fillStyle='rgba(135,144,168,.5)';ctx.font='10px ui-monospace,monospace';
+      ctx.fillText('fotões '+nameFor(freq),16,20);
+    });
+  })();
+
+  /* ---- 02 double slit ---- */
+  (function(){const root=document.querySelector('[data-demo="slit"]');if(!root)return;
+    const cv=root.querySelector('[data-slit="cv"]'),ctx=setup(cv);
+    let det=false,dots=[],count=0,acc=0;
+    const q=s=>root.querySelector('[data-slit="'+s+'"]');
+    function reset(){dots=[];count=0;}
+    root.querySelectorAll('[data-slit="det"]').forEach(b=>b.addEventListener('click',()=>{
+      root.querySelectorAll('[data-slit="det"]').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');det=b.dataset.v==='on';
+      q('label').textContent=det?'duas manchas — o padrão de onda desaparece':'padrão de interferência — comportamento de onda';
+      reset();}));
+    q('reset').addEventListener('click',reset);
+    // sample y on screen from probability
+    function sampleY(H){
+      const cy=H/2, spread=H*0.32;
+      if(det){ // two gaussians at slit projections
+        const s=(Math.random()<0.5?-1:1)*H*0.12;
+        return cy+s+gauss()*H*0.05;
+      } else { // interference envelope
+        for(let i=0;i<40;i++){
+          const y=cy+(Math.random()-0.5)*2*spread;
+          const u=(y-cy)/spread;
+          const env=Math.exp(-u*u*1.6);
+          const fr=Math.cos(u*9)*Math.cos(u*9);
+          if(Math.random()<env*fr) return y;
+        }
+        return cy+(Math.random()-0.5)*2*spread;
+      }
+    }
+    function gauss(){let s=0;for(let i=0;i<3;i++)s+=Math.random();return (s-1.5)/1.5;}
+    runWhenVisible(cv,dt=>{const W=ctx._w,H=ctx._h;ctx.clearRect(0,0,W,H);
+      const srcX=24, wallX=W*0.42, scrX=W-24, cy=H/2, gap=H*0.12;
+      // source
+      glow(ctx,srcX,cy,4,'#7fe3ff');
+      ctx.fillStyle='rgba(135,144,168,.6)';ctx.font='10px ui-monospace,monospace';ctx.fillText('fonte',srcX-8,cy-14);
+      // wall with two slits
+      ctx.fillStyle='#2a3654';
+      ctx.fillRect(wallX-4,20,8,(cy-gap)-20);
+      ctx.fillRect(wallX-4,cy-gap+14,8,(cy+gap-14)-(cy-gap+14));
+      ctx.fillRect(wallX-4,cy+gap+14,8,(H-20)-(cy+gap+14));
+      if(det){ctx.fillStyle='var(--rose)';ctx.fillStyle='#ff9a8c';ctx.font='10px ui-monospace,monospace';
+        ctx.fillText('detetor',wallX-14,16);
+        glow(ctx,wallX,cy-gap+14,2.4,'#ff9a8c');glow(ctx,wallX,cy+gap+14,2.4,'#ff9a8c');}
+      // screen
+      ctx.fillStyle='#1a2440';ctx.fillRect(scrX,20,6,H-40);
+      // fire electrons
+      if(!R){acc+=dt*22;}
+      while(acc>=1){acc--;const y=sampleY(H);dots.push({x:scrX,y,a:1});count++;
+        // a travelling dot animation could be added; keep simple: land instantly
+      }
+      // draw accumulated
+      dots.forEach(d=>{ctx.fillStyle='rgba(127,227,255,.85)';ctx.beginPath();ctx.arc(d.x+3,d.y,1.5,0,7);ctx.fill();});
+      if(dots.length>4000)dots.splice(0,dots.length-4000);
+      // occasional in-flight streak
+      q('count').textContent=count;
+    });
+  })();
+
+  /* ---- 04 uncertainty ---- */
+  (function(){const root=document.querySelector('[data-demo="unc"]');if(!root)return;
+    const cv=root.querySelector('[data-unc="cv"]'),ctx=setup(cv);let w=0.5;
+    const sl=root.querySelector('[data-unc="w"]');
+    sl.addEventListener('input',()=>{w=parseFloat(sl.value);sl.style.setProperty('--fill',((w-0.08)/0.92*100)+'%');});
+    sl.style.setProperty('--fill','45%');
+    function draw(){const W=ctx._w,H=ctx._h;ctx.clearRect(0,0,W,H);
+      const midX=W/2,baseY=H-28,amp=H*0.6;
+      // position packet width ~ w ; momentum width ~ 1/w (normalized)
+      const sx=w*W*0.18+6, sp=(1/w)*W*0.02+6;
+      function bell(cx,s,color,fill){ctx.strokeStyle=color;ctx.lineWidth=2.4;ctx.beginPath();
+        for(let x=0;x<=W;x+=2){const u=(x-cx)/s;const y=baseY-amp*Math.exp(-u*u/2);x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+        ctx.stroke();
+        ctx.globalAlpha=.14;ctx.fillStyle=fill;ctx.lineTo(W,baseY);ctx.lineTo(0,baseY);ctx.closePath();ctx.fill();ctx.globalAlpha=1;}
+      ctx.strokeStyle='rgba(35,44,71,.9)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,baseY);ctx.lineTo(W,baseY);ctx.stroke();
+      bell(midX-W*0.22,sx,'#7fe3ff','#7fe3ff');
+      bell(midX+W*0.22,sp,'#b18cff','#b18cff');
+      ctx.fillStyle='rgba(135,144,168,.7)';ctx.font='11px ui-monospace,monospace';ctx.textAlign='center';
+      ctx.fillText('POSIÇÃO',midX-W*0.22,H-8);ctx.fillText('VELOCIDADE',midX+W*0.22,H-8);ctx.textAlign='left';}
+    runWhenVisible(cv,()=>draw());draw();
+  })();
+
+  /* ---- 06 atom spectrum ---- */
+  (function(){const root=document.querySelector('[data-demo="atom"]');if(!root)return;
+    const cv=root.querySelector('[data-atom="cv"]'),ctx=setup(cv);let nHi=3;
+    const q=s=>root.querySelector('[data-atom="'+s+'"]');
+    // Balmer: 1/λ = R(1/4 - 1/n^2); λ in nm
+    const Rr=1.0973731568e7;
+    function lambda(n){const inv=Rr*(1/4-1/(n*n));return 1e9/inv;}
+    function wlColor(nm){ // approximate visible spectrum color
+      let r=0,g=0,b=0;
+      if(nm<440){r=-(nm-440)/60;b=1;}
+      else if(nm<490){g=(nm-440)/50;b=1;}
+      else if(nm<510){g=1;b=-(nm-510)/20;}
+      else if(nm<580){r=(nm-510)/70;g=1;}
+      else if(nm<645){r=1;g=-(nm-645)/65;}
+      else{r=1;}
+      return 'rgb('+(r*255|0)+','+(g*255|0)+','+(b*255|0)+')';}
+    root.querySelectorAll('[data-atom="jump"]').forEach(b=>b.addEventListener('click',()=>{
+      root.querySelectorAll('[data-atom="jump"]').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');nHi=parseInt(b.dataset.n);draw();
+      const nm=Math.round(lambda(nHi));const names={656:'vermelho',486:'ciano',434:'violeta',410:'violeta'};
+      q('wl').textContent=nm+' nm · '+(nm>620?'vermelho':nm>490?'ciano':'violeta');}));
+    function draw(){const W=ctx._w,H=ctx._h;ctx.clearRect(0,0,W,H);
+      // energy levels on left half
+      const lx=30,lw=W*0.42;const topY=30,botY=H-70;
+      ctx.strokeStyle='rgba(35,44,71,.9)';ctx.lineWidth=1;
+      const levels=[1,2,3,4,5,6];
+      levels.forEach(n=>{const E=-13.6/(n*n);const y=botY+(E/-13.6)*(topY-botY); // map E in [-13.6,0]
+        const yy=topY+(1-(E+13.6)/13.6)*(botY-topY);
+        const yPos=mapE(E,topY,botY);
+        ctx.strokeStyle=n===2?'rgba(217,178,106,.7)':'rgba(120,132,168,.5)';
+        ctx.lineWidth=n===2?2:1;ctx.beginPath();ctx.moveTo(lx,yPos);ctx.lineTo(lx+lw,yPos);ctx.stroke();
+        ctx.fillStyle='rgba(135,144,168,.75)';ctx.font='11px ui-monospace,monospace';ctx.fillText('n='+n,lx+lw+6,yPos+4);});
+      // transition arrow
+      const yHi=mapE(-13.6/(nHi*nHi),topY,botY),yLo=mapE(-13.6/4,topY,botY);
+      const ax=lx+lw*0.5;const nm=lambda(nHi),col=wlColor(nm);
+      ctx.strokeStyle=col;ctx.lineWidth=2.6;ctx.beginPath();ctx.moveTo(ax,yHi);ctx.lineTo(ax,yLo);ctx.stroke();
+      // arrowhead
+      ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(ax,yLo);ctx.lineTo(ax-4,yLo-7);ctx.lineTo(ax+4,yLo-7);ctx.fill();
+      glow(ctx,ax,(yHi+yLo)/2,3,col);
+      // spectrum bar on right
+      const sx=W*0.5,sw=W*0.46,sy=H-46,sh=26;
+      for(let i=0;i<sw;i++){const nmv=400+(i/sw)*300;ctx.fillStyle=wlColor(nmv);ctx.fillRect(sx+i,sy,1.5,sh);}
+      ctx.strokeStyle='rgba(255,255,255,.15)';ctx.strokeRect(sx,sy,sw,sh);
+      ctx.fillStyle='rgba(135,144,168,.7)';ctx.font='10px ui-monospace,monospace';
+      ctx.fillText('400 nm',sx-6,sy-6);ctx.fillText('700 nm',sx+sw-30,sy-6);
+      // emitted line
+      const px=sx+((nm-400)/300)*sw;
+      ctx.fillStyle='#fff';ctx.fillRect(px-1,sy-10,2.5,sh+20);
+      ctx.fillStyle=col;ctx.font='11px ui-monospace,monospace';ctx.fillText(Math.round(nm)+' nm',px-16,sy+sh+16);
+    }
+    function mapE(E,topY,botY){ // E from -13.6..0 → y (0 at top). Use compressed scale
+      const f=(E+13.6)/13.6; // 0 at ground..1 at 0
+      return botY-(botY-topY)*Math.pow(f,0.6);}
+    runWhenVisible(cv,()=>{});draw();
+  })();
+
+  /* ---- 07 tunneling ---- */
+  (function(){const root=document.querySelector('[data-demo="tunnel"]');if(!root)return;
+    const cv=root.querySelector('[data-tunnel="cv"]'),ctx=setup(cv);
+    let bw=0.4,phase=0,firing=false;
+    const q=s=>root.querySelector('[data-tunnel="'+s+'"]');
+    function Tcoef(){return Math.max(2,Math.round(85*Math.exp(-bw*4.2)));}
+    const sl=root.querySelector('[data-tunnel="w"]');
+    sl.addEventListener('input',()=>{bw=parseFloat(sl.value);sl.style.setProperty('--fill',((bw-0.1)/0.9*100)+'%');q('T').textContent=Tcoef();});
+    sl.style.setProperty('--fill','33%');q('T').textContent=Tcoef();
+    root.querySelector('[data-tunnel="fire"]').addEventListener('click',()=>{firing=true;phase=0;});
+    runWhenVisible(cv,dt=>{const W=ctx._w,H=ctx._h,cy=H/2;ctx.clearRect(0,0,W,H);
+      const bx=W*0.5,bwid=bw*W*0.14+8;
+      // barrier
+      ctx.fillStyle='rgba(217,178,106,.16)';ctx.fillRect(bx-bwid/2,20,bwid,H-40);
+      ctx.strokeStyle='rgba(217,178,106,.5)';ctx.strokeRect(bx-bwid/2,20,bwid,H-40);
+      ctx.fillStyle='rgba(217,178,106,.6)';ctx.font='10px ui-monospace,monospace';ctx.fillText('barreira',bx-22,16);
+      // baseline
+      ctx.strokeStyle='rgba(35,44,71,.9)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();
+      if(firing&&!R)phase+=dt*0.5;
+      const T=Tcoef()/100;
+      // incident/reflected packet centre
+      const startX=40,hitTime=0.5;
+      let cInc, drawInc=true, cRefl=null, cTrans=null;
+      if(phase<hitTime){cInc=startX+(bx-bwid/2-startX)*(phase/hitTime);}
+      else{drawInc=false;
+        const p2=(phase-hitTime)/(1-hitTime);
+        cRefl=(bx-bwid/2)-((bx-bwid/2)-startX)*p2;
+        cTrans=(bx+bwid/2)+((W-40)-(bx+bwid/2))*p2;}
+      function packet(cx,scale,color){if(cx==null)return;ctx.strokeStyle=color;ctx.lineWidth=2.2;ctx.beginPath();
+        for(let x=Math.max(0,cx-70);x<=Math.min(W,cx+70);x+=2){const u=(x-cx)/22;
+          const env=Math.exp(-u*u/2)*scale;const y=cy-Math.cos(u*6)*env*(H*0.34);
+          x<=cx-70+2?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();}
+      if(drawInc)packet(cInc,1,'#7fe3ff');
+      packet(cRefl,1-T,'#8790a8');
+      packet(cTrans,T,'#54d6c9');
+      if(phase>=1)firing=false;
+      if(!firing&&phase===0){ctx.fillStyle='rgba(135,144,168,.6)';ctx.font='12px ui-monospace,monospace';
+        ctx.fillText('carrega em "disparar pacote"',16,24);}
+      ctx.fillStyle='rgba(84,214,201,.7)';ctx.font='10px ui-monospace,monospace';ctx.fillText('transmitido',W-90,cy-6);
+    });
+  })();
+
+  /* ---- 08 Stern-Gerlach ---- */
+  (function(){const root=document.querySelector('[data-demo="sg"]');if(!root)return;
+    const cv=root.querySelector('[data-sg="cv"]'),ctx=setup(cv);
+    let mode='q',atoms=[],hits=[];const q=s=>root.querySelector('[data-sg="'+s+'"]');
+    root.querySelectorAll('[data-sg="exp"]').forEach(b=>b.addEventListener('click',()=>{
+      root.querySelectorAll('[data-sg="exp"]').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');mode=b.dataset.v;hits=[];atoms=[];
+      q('label').textContent=mode==='q'?'resultado quântico — apenas dois valores possíveis':'previsão clássica — uma mancha contínua (não é o que se observa)';}));
+    function fire(){for(let i=0;i<28;i++)setTimeout(()=>{
+      const H=ctx._h;atoms.push({x:20,y:H/2,vy:0,mode});},i*40);}
+    root.querySelector('[data-sg="fire"]').addEventListener('click',fire);
+    runWhenVisible(cv,dt=>{const W=ctx._w,H=ctx._h,cy=H/2;ctx.clearRect(0,0,W,H);
+      const magX0=W*0.32,magX1=W*0.62,scrX=W-30;
+      // magnet
+      ctx.fillStyle='rgba(177,140,255,.12)';ctx.fillRect(magX0,cy-60,magX1-magX0,120);
+      ctx.strokeStyle='rgba(177,140,255,.4)';ctx.strokeRect(magX0,cy-60,magX1-magX0,120);
+      ctx.fillStyle='rgba(177,140,255,.6)';ctx.font='10px ui-monospace,monospace';
+      ctx.fillText('N',(magX0+magX1)/2-4,cy-64);ctx.fillText('S',(magX0+magX1)/2-4,cy+74);
+      // screen
+      ctx.fillStyle='#1a2440';ctx.fillRect(scrX,20,6,H-40);
+      atoms.forEach(a=>{
+        a.x+=(R?400:140)*dt;
+        if(a.x>magX0&&a.x<magX1){
+          if(a.mode==='q'){if(a.spin===undefined)a.spin=Math.random()<0.5?-1:1;a.vy=a.spin*46;}
+          else{if(a.vy===0)a.vy=(Math.random()-0.5)*90;}
+          a.y+=a.vy*dt;
+        }
+        if(a.x>=scrX){hits.push({y:a.y});a.dead=true;}
+      });
+      atoms=atoms.filter(a=>!a.dead&&a.x<W);
+      atoms.forEach(a=>glow(ctx,a.x,a.y,3,'#c9c3b3'));
+      hits.forEach(h=>{ctx.fillStyle='rgba(84,214,201,.8)';ctx.beginPath();ctx.arc(scrX+3,h.y,2,0,7);ctx.fill();});
+      if(hits.length>600)hits.splice(0,hits.length-600);
+      ctx.fillStyle='rgba(135,144,168,.6)';ctx.font='10px ui-monospace,monospace';ctx.fillText('feixe',6,cy-8);
+    });
+  })();
+
+  /* ---- 09 Bell / entanglement ---- */
+  (function(){const root=document.querySelector('[data-demo="bell"]');if(!root)return;
+    const cv=root.querySelector('[data-bell="cv"]'),ctx=setup(cv);
+    let ang='same',pairs=[],agree=0,total=0;
+    const q=s=>root.querySelector('[data-bell="'+s+'"]');
+    root.querySelectorAll('[data-bell="ang"]').forEach(b=>b.addEventListener('click',()=>{
+      root.querySelectorAll('[data-bell="ang"]').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');ang=b.dataset.a;agree=0;total=0;pairs=[];
+      q('label').textContent=ang==='same'?'no mesmo ângulo: correlação perfeita, sempre opostos':'ângulos a 90°: resultados totalmente aleatórios entre si';}));
+    function fire(){for(let i=0;i<10;i++)setTimeout(()=>{
+      const W=ctx._w,H=ctx._h;
+      let a=Math.random()<0.5?1:-1,b;
+      if(ang==='same')b=-a; else b=Math.random()<0.5?1:-1;
+      pairs.push({t:0,a,b});total++;if((ang==='same'&&b===-a)||(ang==='cross'))agree+=(b===-a?1:0);
+    },i*70);}
+    root.querySelector('[data-bell="fire"]').addEventListener('click',fire);
+    runWhenVisible(cv,dt=>{const W=ctx._w,H=ctx._h,cy=H/2,src=W/2;ctx.clearRect(0,0,W,H);
+      // source + detectors
+      glow(ctx,src,cy,4,'#d9b26a');
+      ctx.fillStyle='rgba(135,144,168,.7)';ctx.font='11px ui-monospace,monospace';ctx.textAlign='center';
+      ctx.fillText('fonte de pares',src,cy-16);
+      ctx.fillText('ALICE',60,26);ctx.fillText('BOB',W-60,26);ctx.textAlign='left';
+      // detector boxes
+      ctx.strokeStyle='rgba(127,227,255,.4)';ctx.strokeRect(30,cy-26,52,52);
+      ctx.strokeStyle='rgba(177,140,255,.4)';ctx.strokeRect(W-82,cy-26,52,52);
+      pairs.forEach(p=>{p.t+=(R?3:1.2)*dt;});
+      pairs=pairs.filter(p=>p.t<1.05);
+      pairs.forEach(p=>{
+        const ax=src-(src-56)*Math.min(p.t,1),bx=src+(W-56-src)*Math.min(p.t,1);
+        glow(ctx,ax,cy,3,p.a>0?'#7fe3ff':'#ff9a8c');
+        glow(ctx,bx,cy,3,p.b>0?'#7fe3ff':'#ff9a8c');
+      });
+      // last outcomes
+      const last=pairs[pairs.length-1];
+      function mark(x,v){ctx.fillStyle=v>0?'#7fe3ff':'#ff9a8c';ctx.font='16px ui-monospace,monospace';
+        ctx.fillText(v>0?'↑':'↓',x-5,cy+6);}
+      if(last&&last.t>0.98){mark(56,last.a);mark(W-56,last.b);}
+      // stats
+      ctx.fillStyle='rgba(236,230,214,.9)';ctx.font='12px ui-monospace,monospace';
+      const corr=total?Math.round(agree/total*100):0;
+      ctx.fillText('pares: '+total+'   opostos: '+(ang==='same'?'100':corr)+'%',src-70,H-12);
+    });
+  })();
+
+})();
+</script>
+</body>
+</html>
