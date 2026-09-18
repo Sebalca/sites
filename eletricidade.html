@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Como se gera eletricidade</title>
+<style>
+  :root{
+    --paper:#F4F5F3;--surface:#FFFFFF;--ink:#14202E;--muted:#556069;
+    --line:#DBE0DB;--amber:#E0900A;--teal:#14806E;--low:#C0552B;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --serif: Georgia, "Times New Roman", serif;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;font-size:17px;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 22px;}
+
+  .hero{position:relative;padding:74px 0 40px;overflow:hidden;}
+  .hero::before{content:"";position:absolute;top:-140px;right:-120px;width:420px;height:420px;
+    background:radial-gradient(circle, rgba(224,144,10,.22), rgba(224,144,10,0) 68%);pointer-events:none;}
+  .kicker{font-size:.82rem;letter-spacing:.02em;color:var(--teal);font-weight:600;margin:0 0 18px;}
+  h1{font-weight:800;font-size:clamp(2.3rem,8vw,4.1rem);line-height:1.02;letter-spacing:-0.02em;margin:0 0 20px;}
+  h1 .spin{color:var(--amber);}
+  .lede{font-family:var(--serif);font-size:1.18rem;line-height:1.62;color:#2c3742;max-width:56ch;margin:0;}
+
+  section{padding:34px 0;}
+  h2{font-size:1.7rem;font-weight:800;letter-spacing:-0.01em;margin:0 0 6px;}
+  h2 + .sub{color:var(--muted);margin:0 0 22px;font-size:1rem;}
+  .prose{font-family:var(--serif);line-height:1.68;color:#2b3641;}
+  .prose p{margin:0 0 16px;max-width:62ch;}
+  .prose strong{color:var(--ink);}
+  hr.rule{border:0;border-top:1px solid var(--line);margin:0;}
+
+  .toc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:6px 0 8px;}
+  .toc h3{margin:0 0 12px;font-size:.95rem;color:var(--muted);font-weight:600;}
+  .toc ol{margin:0;padding-left:1.1em;columns:2;column-gap:26px;}
+  @media(max-width:520px){.toc ol{columns:1;}}
+  .toc li{margin:5px 0;}
+  .toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent;}
+  .toc a:hover{border-bottom-color:var(--amber);}
+
+  .flow{margin:26px 0 4px;}
+  .flow svg{width:100%;height:auto;display:block;}
+
+  .group-head{display:flex;align-items:baseline;gap:14px;padding-top:8px;border-top:2px solid var(--ink);margin-top:14px;}
+  .group-head .num{font-size:1.05rem;font-weight:800;color:var(--amber);font-variant-numeric:tabular-nums;}
+  .group-head h2{margin:0;}
+  .group-desc{color:var(--muted);margin:8px 0 22px;font-size:1.02rem;max-width:60ch;}
+
+  .method{padding:24px 0 26px;border-bottom:1px solid var(--line);}
+  .method:last-child{border-bottom:0;}
+  .method h3{font-size:1.2rem;font-weight:700;margin:0 0 12px;}
+  .method .how{font-family:var(--serif);color:#2b3641;line-height:1.6;margin:0 0 16px;max-width:60ch;}
+  .method .note{font-size:.92rem;color:var(--muted);margin:14px 0 0;max-width:60ch;}
+
+  .schematic{margin:0 0 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:12px 12px 8px;}
+  .schematic svg{width:100%;height:auto;display:block;}
+  .schematic .cap{font-size:.78rem;color:var(--muted);margin:6px 2px 2px;}
+
+  .eff{display:flex;align-items:center;gap:14px;}
+  .eff-track{position:relative;flex:1;height:16px;border-radius:9px;
+    background:
+      linear-gradient(90deg, transparent 0 calc(25% - 1px), var(--line) calc(25% - 1px) 25%, transparent 25%),
+      linear-gradient(90deg, transparent 0 calc(50% - 1px), var(--line) calc(50% - 1px) 50%, transparent 50%),
+      linear-gradient(90deg, transparent 0 calc(75% - 1px), var(--line) calc(75% - 1px) 75%, transparent 75%),
+      #EAEDEA;overflow:hidden;}
+  .eff-band{position:absolute;top:0;bottom:0;left:0;width:0;border-radius:9px;transition:width .9s cubic-bezier(.22,.61,.36,1);}
+  .eff-val{font-weight:700;font-variant-numeric:tabular-nums;font-size:.98rem;min-width:74px;text-align:right;}
+  .eff-cap{font-size:.8rem;color:var(--muted);font-weight:500;}
+  @media(prefers-reduced-motion:reduce){.eff-band{transition:none;}}
+
+  .stats{display:flex;flex-wrap:wrap;margin:16px 0 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);}
+  .stat{flex:1 1 25%;min-width:150px;padding:12px 15px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .stat .k{font-size:.72rem;color:var(--muted);font-weight:600;margin:0 0 4px;}
+  .stat .v{font-size:1.05rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2;}
+  .stat .v.prod{color:var(--amber);}
+  .stat .v.area{color:var(--teal);}
+  .stat .v small{display:block;font-size:.72rem;font-weight:500;color:var(--muted);margin-top:3px;line-height:1.35;}
+  @media(max-width:520px){.stat{flex:1 1 100%;}}
+
+  .callout{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:10px;padding:18px 20px;margin:20px 0;font-size:.98rem;}
+  .callout strong{color:var(--ink);}
+
+  .cmp-tabs{display:flex;gap:8px;margin:0 0 20px;flex-wrap:wrap;}
+  .cmp-tab{border:1px solid var(--line);background:var(--surface);color:var(--muted);font:inherit;font-size:.9rem;font-weight:600;padding:8px 15px;border-radius:999px;cursor:pointer;}
+  .cmp-tab[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .cmp-row{display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);}
+  .cmp-row:last-child{border-bottom:0;}
+  .cmp-name{width:40%;font-weight:600;font-size:.94rem;}
+  .cmp-name .cmp-sub{font-size:.74rem;color:var(--muted);font-weight:500;margin-top:2px;}
+  @media(max-width:520px){.cmp-name{width:46%;font-size:.88rem;}}
+  .cmp-track{position:relative;flex:1;height:14px;border-radius:8px;background:#EAEDEA;overflow:hidden;}
+  .cmp-band{position:absolute;top:0;bottom:0;left:0;width:0;border-radius:8px;transition:width .9s cubic-bezier(.22,.61,.36,1);}
+  .cmp-val{font-variant-numeric:tabular-nums;font-weight:700;font-size:.84rem;min-width:92px;text-align:right;}
+  .cmp-note{font-size:.84rem;color:var(--muted);margin:16px 0 0;max-width:62ch;}
+  @media(prefers-reduced-motion:reduce){.cmp-band{transition:none;}}
+
+  footer{padding:40px 0 60px;color:var(--muted);font-size:.85rem;}
+  footer p{max-width:62ch;margin:0 0 10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <p class="kicker">Como nasce a eletricidade</p>
+    <h1>Quase toda a eletricidade nasce de qualquer coisa <span class="spin">a girar</span>.</h1>
+    <p class="lede">Por trás da maioria das tomadas está um íman a rodar dentro de bobinas de cobre. O que muda de método para método é apenas o que faz esse íman girar — vapor, água, vento ou átomos. Só duas tecnologias fogem à regra.</p>
+  </header>
+
+  <div class="toc">
+    <h3>Neste guia</h3>
+    <ol>
+      <li><a href="#base">O essencial</a></li>
+      <li><a href="#termicas">Térmicas (calor → vapor)</a></li>
+      <li><a href="#cineticas">Cinéticas (movimento)</a></li>
+      <li><a href="#diretas">Diretas (sem turbina)</a></li>
+      <li><a href="#comparacao">Comparação (3 vistas)</a></li>
+    </ol>
+  </div>
+
+  <!-- ============ BASE ============ -->
+  <section id="base">
+    <h2>O essencial</h2>
+    <p class="sub">Energia, eletricidade e o que significa "rendimento".</p>
+    <div class="prose">
+      <p>A energia é a capacidade de realizar trabalho. Não se cria nem se destrói — apenas se <strong>transforma</strong> de uma forma noutra. Uma central elétrica não "fabrica" energia: converte energia que já existe (química no carvão, nuclear no urânio, cinética no vento) em energia <strong>elétrica</strong>.</p>
+      <p>A eletricidade é o movimento ordenado de eletrões por um condutor. A quase totalidade da eletricidade mundial é produzida pelo mesmo princípio, descoberto por Faraday: mover um íman junto a uma bobina de cobre gera corrente. É isso o <strong>gerador</strong>. Por isso, a maior parte dos métodos resume-se a encontrar maneira de fazer girar esse íman.</p>
+    </div>
+
+    <div class="flow" aria-label="Fonte de energia leva a turbina, que aciona o gerador, que alimenta a rede">
+      <svg viewBox="0 0 720 150" xmlns="http://www.w3.org/2000/svg" role="img">
+        <defs><marker id="arw" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#14202E"/></marker></defs>
+        <rect x="8" y="42" width="120" height="60" rx="10" fill="#FFFFFF" stroke="#14202E" stroke-width="1.6"/>
+        <text x="68" y="70" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#14202E">Fonte</text>
+        <text x="68" y="88" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#556069">calor · água · vento</text>
+        <line x1="132" y1="72" x2="196" y2="72" stroke="#14202E" stroke-width="1.6" marker-end="url(#arw)"/>
+        <circle cx="250" cy="72" r="34" fill="#FFFFFF" stroke="#E0900A" stroke-width="2"/>
+        <g stroke="#E0900A" stroke-width="2" stroke-linecap="round"><line x1="250" y1="72" x2="250" y2="44"/><line x1="250" y1="72" x2="274" y2="86"/><line x1="250" y1="72" x2="226" y2="86"/></g>
+        <text x="250" y="128" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#14202E">Turbina</text>
+        <line x1="288" y1="72" x2="352" y2="72" stroke="#14202E" stroke-width="1.6" marker-end="url(#arw)"/>
+        <rect x="356" y="46" width="104" height="52" rx="10" fill="#14202E"/>
+        <text x="408" y="70" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">Gerador</text>
+        <text x="408" y="86" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#B9C3CC">íman + bobina</text>
+        <line x1="464" y1="72" x2="528" y2="72" stroke="#14202E" stroke-width="1.6" marker-end="url(#arw)"/>
+        <g stroke="#14806E" stroke-width="2" fill="none"><path d="M582 100 L594 44 L606 100 M582 100 L606 100 M584 86 L604 86 M586 72 L602 72"/></g>
+        <line x1="612" y1="72" x2="676" y2="72" stroke="#14202E" stroke-width="1.6" marker-end="url(#arw)"/>
+        <text x="594" y="128" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#14202E">Rede</text>
+        <text x="694" y="79" text-anchor="middle" font-family="system-ui,sans-serif" font-size="22" fill="#E0900A">&#9889;</text>
+      </svg>
+    </div>
+
+    <div class="prose">
+      <p>O <strong>rendimento</strong> é a fração da energia de partida que sai como eletricidade. O resto perde-se, quase sempre em forma de calor. Um rendimento de 40% significa que 40% da energia do combustível vira eletricidade e 60% escapa.</p>
+    </div>
+
+    <div class="callout">
+      <strong>Porque é que as centrais térmicas raramente passam dos 60%?</strong> Tudo o que produz eletricidade a partir de calor está preso ao limite termodinâmico de Carnot: quanto maior a diferença de temperatura entre o vapor quente e o ambiente, maior o rendimento possível — mas há um teto físico. Já a energia hídrica, que é puramente mecânica, não sofre esse limite e chega perto dos 90%.
+    </div>
+
+    <div class="prose">
+      <p>Cada método traz quatro números. A <strong>potência típica</strong> de uma instalação; o <strong>fator de capacidade</strong> — quantas horas funciona a plena carga; a <strong>energia gerada por ano</strong> por uma instalação representativa; e a <strong>energia por m²</strong> de área ocupada, a chamada densidade de potência.</p>
+      <p>É neste último que aparecem as maiores diferenças. Uma central nuclear ou a gás produz <strong>milhares</strong> de kWh por m² e por ano; a biomassa, a hídrica (com a albufeira) ou a eólica precisam de áreas enormes para a mesma energia. Traz também um <strong>esquema técnico</strong> do funcionamento de cada um. O valor por m² depende muito do que se conta como "área ocupada", por isso é sempre uma ordem de grandeza.</p>
+    </div>
+  </section>
+
+  <!-- ============ TÉRMICAS ============ -->
+  <section id="termicas">
+    <div class="group-head"><span class="num">A</span><h2>Térmicas</h2></div>
+    <p class="group-desc">Uma fonte de calor ferve água, o vapor a alta pressão faz girar a turbina, e a turbina aciona o gerador. É o esquema mais comum no mundo.</p>
+
+    <!-- CARVÃO -->
+    <div class="method">
+      <h3>Carvão</h3>
+      <div class="schematic" aria-label="Esquema: carvão queimado na caldeira produz vapor que move a turbina e o gerador">
+        <svg viewBox="0 0 560 150" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="c1" markerWidth="8" markerHeight="8" refX="5.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#14202E"/></marker></defs>
+          <path d="M18 112 L58 78 L98 112 Z" fill="#3a4652"/>
+          <text x="58" y="130" text-anchor="middle" font-size="12" font-weight="700" fill="#14202E">Carvão</text>
+          <line x1="102" y1="90" x2="140" y2="90" stroke="#14202E" stroke-width="1.6" marker-end="url(#c1)"/>
+          <rect x="144" y="54" width="104" height="66" rx="9" fill="#FFF" stroke="#14202E" stroke-width="1.6"/>
+          <g transform="translate(178,68) scale(0.9)"><path d="M12 2 C12 2 6 9 6 14 a6 6 0 0 0 12 0 c0 -3 -2 -5 -3 -7 c-1 2 -2 3 -3 3 c0 -3 1 -6 0 -10 Z" fill="#E0900A"/></g>
+          <text x="196" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Caldeira</text>
+          <text x="196" y="46" text-anchor="middle" font-size="10" fill="#556069">água → vapor</text>
+          <path d="M250 74 q10 -6 20 0 t20 0" fill="none" stroke="#14806E" stroke-width="2"/>
+          <line x1="252" y1="90" x2="300" y2="90" stroke="#14202E" stroke-width="1.6" marker-end="url(#c1)"/>
+          <circle cx="330" cy="90" r="22" fill="#FFF" stroke="#E0900A" stroke-width="2"/>
+          <g stroke="#E0900A" stroke-width="2" stroke-linecap="round"><line x1="330" y1="90" x2="330" y2="72"/><line x1="330" y1="90" x2="346" y2="100"/><line x1="330" y1="90" x2="314" y2="100"/></g>
+          <text x="330" y="130" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Turbina</text>
+          <line x1="352" y1="90" x2="372" y2="90" stroke="#14202E" stroke-width="1.6"/>
+          <rect x="374" y="68" width="70" height="44" rx="8" fill="#14202E"/>
+          <text x="409" y="95" text-anchor="middle" font-size="13" font-weight="700" fill="#FFF">G</text>
+          <text x="409" y="130" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Gerador</text>
+          <line x1="446" y1="90" x2="486" y2="90" stroke="#14202E" stroke-width="1.6" marker-end="url(#c1)"/>
+          <g stroke="#14806E" stroke-width="2" fill="none"><path d="M500 116 L512 60 L524 116 M500 116 L524 116 M502 102 L522 102 M504 88 L520 88"/></g>
+          <text x="512" y="132" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Rede</text>
+        </svg>
+        <p class="cap">Combustão → vapor → turbina → gerador. O esquema-base de todas as térmicas.</p>
+      </div>
+      <p class="how">Queima-se carvão numa caldeira, o calor transforma água em vapor e o vapor move a turbina. Tecnologia madura e barata, mas a mais poluente: liberta muito CO&#8322; e partículas.</p>
+      <div class="eff"><span class="eff-cap">Rendimento</span><div class="eff-track"><div class="eff-band" data-min="33" data-max="45"></div></div><span class="eff-val">33–45%</span></div>
+      <div class="stats">
+        <div class="stat"><p class="k">Potência típica</p><div class="v">300–1000 MW<small>por grupo</small></div></div>
+        <div class="stat"><p class="k">Fator de capacidade</p><div class="v">40–60%</div></div>
+        <div class="stat"><p class="k">Produção anual</p><div class="v prod">~2,6 TWh<small>grupo de 600 MW · ~880 mil lares</small></div></div>
+        <div class="stat"><p class="k">Energia por m²</p><div class="v area">~1.200 kWh<small>≈135 W/m² · por ano</small></div></div>
+      </div>
+      <p class="note">As centrais supercríticas modernas aproximam-se dos 45%; as antigas ficam-se pelos 33%.</p>
+    </div>
+
+    <!-- GÁS CCGT -->
+    <div class="method">
+      <h3>Gás natural — ciclo combinado</h3>
+      <div class="schematic" aria-label="Esquema: turbina a gás gera eletricidade e o calor de escape alimenta uma segunda turbina a vapor">
+        <svg viewBox="0 0 560 170" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="c2" markerWidth="8" markerHeight="8" refX="5.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#14202E"/></marker></defs>
+          <text x="40" y="60" text-anchor="middle" font-size="12" font-weight="700" fill="#14202E">Gás</text>
+          <line x1="58" y1="56" x2="92" y2="56" stroke="#14202E" stroke-width="1.6" marker-end="url(#c2)"/>
+          <rect x="96" y="34" width="96" height="46" rx="8" fill="#FFF" stroke="#E0900A" stroke-width="2"/>
+          <text x="144" y="54" text-anchor="middle" font-size="10.5" font-weight="700" fill="#14202E">Turbina gás</text>
+          <text x="144" y="70" text-anchor="middle" font-size="9.5" fill="#556069">1.º ciclo</text>
+          <line x1="192" y1="56" x2="222" y2="56" stroke="#14202E" stroke-width="1.6" marker-end="url(#c2)"/>
+          <rect x="224" y="36" width="44" height="42" rx="7" fill="#14202E"/><text x="246" y="62" text-anchor="middle" font-size="12" font-weight="700" fill="#FFF">G</text>
+          <path d="M144 80 L144 104" stroke="#C0552B" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#c2)"/>
+          <text x="150" y="98" font-size="9.5" fill="#C0552B">calor de escape</text>
+          <rect x="96" y="108" width="96" height="46" rx="8" fill="#FFF" stroke="#14806E" stroke-width="2"/>
+          <text x="144" y="128" text-anchor="middle" font-size="10.5" font-weight="700" fill="#14202E">Recuperador</text>
+          <text x="144" y="144" text-anchor="middle" font-size="9.5" fill="#556069">gera vapor</text>
+          <line x1="192" y1="130" x2="222" y2="130" stroke="#14202E" stroke-width="1.6" marker-end="url(#c2)"/>
+          <rect x="224" y="108" width="96" height="46" rx="8" fill="#FFF" stroke="#E0900A" stroke-width="2"/>
+          <text x="272" y="128" text-anchor="middle" font-size="10.5" font-weight="700" fill="#14202E">Turbina vapor</text>
+          <text x="272" y="144" text-anchor="middle" font-size="9.5" fill="#556069">2.º ciclo</text>
+          <line x1="320" y1="130" x2="350" y2="130" stroke="#14202E" stroke-width="1.6" marker-end="url(#c2)"/>
+          <rect x="352" y="110" width="44" height="42" rx="7" fill="#14202E"/><text x="374" y="136" text-anchor="middle" font-size="12" font-weight="700" fill="#FFF">G</text>
+          <path d="M268 58 L470 58 L470 92" fill="none" stroke="#14202E" stroke-width="1.4"/>
+          <path d="M396 131 L470 131 L470 98" fill="none" stroke="#14202E" stroke-width="1.4" marker-end="url(#c2)"/>
+          <g stroke="#14806E" stroke-width="2" fill="none"><path d="M458 120 L470 66 L482 120 M458 120 L482 120 M460 106 L480 106"/></g>
+          <text x="470" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Rede</text>
+        </svg>
+        <p class="cap">Dois geradores no mesmo sítio: o calor que sobra do 1.º ciclo alimenta o 2.º.</p>
+      </div>
+      <p class="how">O gás arde numa turbina a gás (primeiro ciclo) e o calor dos gases de escape, ainda muito quente, é aproveitado para gerar vapor e mover uma segunda turbina. Dois ciclos no mesmo sítio.</p>
+      <div class="eff"><span class="eff-cap">Rendimento</span><div class="eff-track"><div class="eff-band" data-min="50" data-max="62"></div></div><span class="eff-val">50–62%</span></div>
+      <div class="stats">
+        <div class="stat"><p class="k">Potência típica</p><div class="v">400–900 MW<small>por bloco</small></div></div>
+        <div class="stat"><p class="k">Fator de capacidade</p><div class="v">40–60%</div></div>
+        <div class="stat"><p class="k">Produção anual</p><div class="v prod">~3,5 TWh<small>bloco de 800 MW · ~1,2 milhões de lares</small></div></div>
+        <div class="stat"><p class="k">Energia por m²</p><div class="v area">~4.200 kWh<small>≈480 W/m² · a mais alta</small></div></div>
+      </div>
+      <p class="note">É a central térmica mais eficiente que existe — o dobro do rendimento de uma turbina a gás simples — e a que ocupa menos espaço por unidade de energia.</p>
+    </div>
+
+    <!-- NUCLEAR -->
+    <div class="method">
+      <h3>Nuclear (fissão)</h3>
+      <div class="schematic" aria-label="Esquema: o reator aquece água, o gerador de vapor produz vapor que move a turbina e o gerador">
+        <svg viewBox="0 0 560 150" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="c3" markerWidth="8" markerHeight="8" refX="5.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#14202E"/></marker></defs>
+          <path d="M30 118 a56 56 0 0 1 112 0 Z" fill="none" stroke="#556069" stroke-width="1.4" stroke-dasharray="3 3"/>
+          <rect x="62" y="70" width="48" height="48" rx="6" fill="#FFF" stroke="#E0900A" stroke-width="2"/>
+          <g stroke="#E0900A" stroke-width="3" stroke-linecap="round"><line x1="74" y1="80" x2="74" y2="108"/><line x1="86" y1="80" x2="86" y2="108"/><line x1="98" y1="80" x2="98" y2="108"/></g>
+          <text x="86" y="134" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Reator</text>
+          <text x="86" y="62" text-anchor="middle" font-size="9.5" fill="#556069">fissão · calor</text>
+          <line x1="112" y1="94" x2="146" y2="94" stroke="#C0552B" stroke-width="1.6" marker-end="url(#c3)"/>
+          <rect x="150" y="66" width="82" height="56" rx="8" fill="#FFF" stroke="#14806E" stroke-width="2"/>
+          <text x="191" y="90" text-anchor="middle" font-size="10" font-weight="700" fill="#14202E">Gerador</text>
+          <text x="191" y="103" text-anchor="middle" font-size="10" font-weight="700" fill="#14202E">de vapor</text>
+          <path d="M234 82 q10 -6 20 0 t20 0" fill="none" stroke="#14806E" stroke-width="2"/>
+          <line x1="234" y1="98" x2="300" y2="98" stroke="#14202E" stroke-width="1.6" marker-end="url(#c3)"/>
+          <circle cx="330" cy="98" r="22" fill="#FFF" stroke="#E0900A" stroke-width="2"/>
+          <g stroke="#E0900A" stroke-width="2" stroke-linecap="round"><line x1="330" y1="98" x2="330" y2="80"/><line x1="330" y1="98" x2="346" y2="108"/><line x1="330" y1="98" x2="314" y2="108"/></g>
+          <text x="330" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Turbina</text>
+          <line x1="352" y1="98" x2="372" y2="98" stroke="#14202E" stroke-width="1.6"/>
+          <rect x="374" y="76" width="70" height="44" rx="8" fill="#14202E"/><text x="409" y="103" text-anchor="middle" font-size="13" font-weight="700" fill="#FFF">G</text>
+          <text x="409" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Gerador</text>
+          <line x1="446" y1="98" x2="486" y2="98" stroke="#14202E" stroke-width="1.6" marker-end="url(#c3)"/>
+          <g stroke="#14806E" stroke-width="2" fill="none"><path d="M500 122 L512 70 L524 122 M500 122 L524 122 M502 108 L522 108"/></g>
+          <text x="512" y="138" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Rede</text>
+        </svg>
+        <p class="cap">A fissão substitui a fornalha; daí em diante é igual a uma térmica clássica.</p>
+      </div>
+      <p class="how">A divisão de núcleos de urânio liberta enormes quantidades de calor. Esse calor ferve água num circuito fechado, e daí em diante o processo é igual a uma central a carvão: vapor, turbina, gerador. Não emite CO&#8322; em funcionamento.</p>
+      <div class="eff"><span class="eff-cap">Rendimento</span><div class="eff-track"><div class="eff-band" data-min="33" data-max="37"></div></div><span class="eff-val">33–37%</span></div>
+      <div class="stats">
+        <div class="stat"><p class="k">Potência típica</p><div class="v">900–1600 MW<small>por reator</small></div></div>
+        <div class="stat"><p class="k">Fator de capacidade</p><div class="v">85–92%</div></div>
+        <div class="stat"><p class="k">Produção anual</p><div class="v prod">~7,9 TWh<small>reator de 1000 MW · ~2,6 milhões de lares</small></div></div>
+        <div class="stat"><p class="k">Energia por m²</p><div class="v area">~2.100 kWh<small>≈240 W/m² · por ano</small></div></div>
+      </div>
+      <p class="note">Rendimento modesto, mas fator de capacidade e densidade por m² dos mais altos: produz muito, quase sem parar, em pouco espaço.</p>
+    </div>
+
+    <!-- BIOMASSA -->
+    <div class="method">
+      <h3>Biomassa</h3>
+      <div class="schematic" aria-label="Esquema: biomassa queimada na caldeira produz vapor que move a turbina e o gerador">
+        <svg viewBox="0 0 560 150" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="c4" markerWidth="8" markerHeight="8" refX="5.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#14202E"/></marker></defs>
+          <g transform="translate(40,78)"><path d="M0 0 L18 -30 L36 0 Z" fill="#2f7d4f"/><path d="M6 14 L18 -14 L30 14 Z" fill="#2f7d4f"/><rect x="15" y="14" width="6" height="12" fill="#7a5230"/></g>
+          <text x="58" y="126" text-anchor="middle" font-size="12" font-weight="700" fill="#14202E">Biomassa</text>
+          <line x1="98" y1="90" x2="140" y2="90" stroke="#14202E" stroke-width="1.6" marker-end="url(#c4)"/>
+          <rect x="144" y="54" width="104" height="66" rx="9" fill="#FFF" stroke="#14202E" stroke-width="1.6"/>
+          <g transform="translate(178,68) scale(0.9)"><path d="M12 2 C12 2 6 9 6 14 a6 6 0 0 0 12 0 c0 -3 -2 -5 -3 -7 c-1 2 -2 3 -3 3 c0 -3 1 -6 0 -10 Z" fill="#E0900A"/></g>
+          <text x="196" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Caldeira</text>
+          <text x="196" y="46" text-anchor="middle" font-size="10" fill="#556069">água → vapor</text>
+          <path d="M250 74 q10 -6 20 0 t20 0" fill="none" stroke="#14806E" stroke-width="2"/>
+          <line x1="252" y1="90" x2="300" y2="90" stroke="#14202E" stroke-width="1.6" marker-end="url(#c4)"/>
+          <circle cx="330" cy="90" r="22" fill="#FFF" stroke="#E0900A" stroke-width="2"/>
+          <g stroke="#E0900A" stroke-width="2" stroke-linecap="round"><line x1="330" y1="90" x2="330" y2="72"/><line x1="330" y1="90" x2="346" y2="100"/><line x1="330" y1="90" x2="314" y2="100"/></g>
+          <text x="330" y="130" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Turbina</text>
+          <line x1="352" y1="90" x2="372" y2="90" stroke="#14202E" stroke-width="1.6"/>
+          <rect x="374" y="68" width="70" height="44" rx="8" fill="#14202E"/><text x="409" y="95" text-anchor="middle" font-size="13" font-weight="700" fill="#FFF">G</text>
+          <text x="409" y="130" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Gerador</text>
+          <line x1="446" y1="90" x2="486" y2="90" stroke="#14202E" stroke-width="1.6" marker-end="url(#c4)"/>
+          <g stroke="#14806E" stroke-width="2" fill="none"><path d="M500 116 L512 60 L524 116 M500 116 L524 116 M502 102 L522 102"/></g>
+          <text x="512" y="132" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Rede</text>
+        </svg>
+        <p class="cap">Como o carvão, mas o combustível é matéria vegetal, reposta ao ritmo do consumo.</p>
+      </div>
+      <p class="how">Queima de matéria orgânica — resíduos florestais, pellets, culturas — para aquecer água e gerar vapor. Considera-se de baixo carbono quando a biomassa é reposta ao ritmo a que é consumida.</p>
+      <div class="eff"><span class="eff-cap">Rendimento</span><div class="eff-track"><div class="eff-band" data-min="20" data-max="35"></div></div><span class="eff-val">20–35%</span></div>
+      <div class="stats">
+        <div class="stat"><p class="k">Potência típica</p><div class="v">10–150 MW</div></div>
+        <div class="stat"><p class="k">Fator de capacidade</p><div class="v">50–70%</div></div>
+        <div class="stat"><p class="k">Produção anual</p><div class="v prod">~260 GWh<small>central de 50 MW · ~88 mil lares</small></div></div>
+        <div class="stat"><p class="k">Energia por m²</p><div class="v area">~0,7 kWh<small>≈0,08 W/m² · a mais baixa</small></div></div>
+      </div>
+      <p class="note">O m² é enganador: a densidade contabiliza a floresta ou o campo preciso para cultivar o combustível — a mais baixa de todas. Sobe muito em cogeração.</p>
+    </div>
+
+    <!-- GEOTÉRMICA -->
+    <div class="method">
+      <h3>Geotérmica</h3>
+      <div class="schematic" aria-label="Esquema: poços profundos trazem calor da Terra que gera vapor para mover a turbina">
+        <svg viewBox="0 0 560 160" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="c5" markerWidth="8" markerHeight="8" refX="5.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#14202E"/></marker></defs>
+          <rect x="0" y="112" width="230" height="48" fill="#f0e4d4"/>
+          <path d="M40 112 L40 150 M70 112 L70 150" stroke="#556069" stroke-width="2"/>
+          <text x="20" y="128" font-size="9.5" fill="#8a5a2b">poço de produção</text>
+          <text x="78" y="128" font-size="9.5" fill="#8a5a2b">reinjeção</text>
+          <path d="M40 150 q6 -12 0 -24" stroke="#C0552B" stroke-width="1.6" fill="none"/>
+          <text x="120" y="150" text-anchor="middle" font-size="10" fill="#8a5a2b">rocha quente</text>
+          <line x1="40" y1="112" x2="40" y2="92" stroke="#C0552B" stroke-width="2" marker-end="url(#c5)"/>
+          <path d="M32 88 q8 -6 16 0" fill="none" stroke="#14806E" stroke-width="2"/>
+          <text x="40" y="78" text-anchor="middle" font-size="9.5" fill="#556069">vapor</text>
+          <line x1="60" y1="86" x2="120" y2="86" stroke="#14202E" stroke-width="1.6" marker-end="url(#c5)"/>
+          <circle cx="150" cy="86" r="22" fill="#FFF" stroke="#E0900A" stroke-width="2"/>
+          <g stroke="#E0900A" stroke-width="2" stroke-linecap="round"><line x1="150" y1="86" x2="150" y2="68"/><line x1="150" y1="86" x2="166" y2="96"/><line x1="150" y1="86" x2="134" y2="96"/></g>
+          <text x="150" y="126" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Turbina</text>
+          <line x1="172" y1="86" x2="192" y2="86" stroke="#14202E" stroke-width="1.6"/>
+          <rect x="194" y="64" width="70" height="44" rx="8" fill="#14202E"/><text x="229" y="91" text-anchor="middle" font-size="13" font-weight="700" fill="#FFF">G</text>
+          <text x="229" y="126" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Gerador</text>
+          <line x1="266" y1="86" x2="306" y2="86" stroke="#14202E" stroke-width="1.6" marker-end="url(#c5)"/>
+          <g stroke="#14806E" stroke-width="2" fill="none"><path d="M320 112 L332 58 L344 112 M320 112 L344 112 M322 98 L342 98"/></g>
+          <text x="332" y="128" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Rede</text>
+        </svg>
+        <p class="cap">O calor vem da própria Terra; um poço reinjeta a água para o ciclo se repetir.</p>
+      </div>
+      <p class="how">Aproveita o calor do interior da Terra. Injeta-se água em profundidade ou usa-se vapor natural para mover a turbina. Fonte constante e independente do clima, mas restrita a zonas geologicamente ativas.</p>
+      <div class="eff"><span class="eff-cap">Rendimento</span><div class="eff-track"><div class="eff-band" data-min="10" data-max="20"></div></div><span class="eff-val">10–20%</span></div>
+      <div class="stats">
+        <div class="stat"><p class="k">Potência típica</p><div class="v">20–150 MW</div></div>
+        <div class="stat"><p class="k">Fator de capacidade</p><div class="v">70–90%</div></div>
+        <div class="stat"><p class="k">Produção anual</p><div class="v prod">~350 GWh<small>central de 50 MW · ~117 mil lares</small></div></div>
+        <div class="stat"><p class="k">Energia por m²</p><div class="v area">~350 kWh<small>≈40 W/m² · varia muito</small></div></div>
+      </div>
+      <p class="note">Rendimento baixo (o recurso não é muito quente), mas funciona quase sem parar. O valor por m² depende de se contar só a central ou todo o campo de poços.</p>
+    </div>
+
+    <!-- CSP -->
+    <div class="method">
+      <h3>Solar concentrada (CSP)</h3>
+      <div class="schematic" aria-label="Esquema: espelhos concentram o sol numa torre, o calor gera vapor que move a turbina">
+        <svg viewBox="0 0 560 160" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="c6" markerWidth="8" markerHeight="8" refX="5.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#14202E"/></marker></defs>
+          <circle cx="40" cy="34" r="13" fill="#E0900A"/>
+          <g stroke="#E0900A" stroke-width="2" stroke-linecap="round"><line x1="40" y1="14" x2="40" y2="6"/><line x1="20" y1="34" x2="12" y2="34"/><line x1="26" y1="20" x2="20" y2="14"/></g>
+          <g stroke="#E0900A" stroke-width="1.4" stroke-dasharray="3 3"><line x1="52" y1="44" x2="150" y2="70"/><line x1="70" y1="86" x2="150" y2="74"/><line x1="70" y1="112" x2="150" y2="78"/></g>
+          <g fill="#9fb0bd"><rect x="44" y="86" width="20" height="6" transform="rotate(-25 54 89)"/><rect x="44" y="112" width="20" height="6" transform="rotate(-15 54 115)"/></g>
+          <text x="52" y="138" text-anchor="middle" font-size="10" fill="#556069">espelhos</text>
+          <line x1="150" y1="40" x2="150" y2="120" stroke="#556069" stroke-width="3"/>
+          <circle cx="150" cy="72" r="9" fill="#E0900A"/>
+          <text x="150" y="134" text-anchor="middle" font-size="10" font-weight="700" fill="#14202E">Torre</text>
+          <line x1="160" y1="72" x2="196" y2="72" stroke="#C0552B" stroke-width="1.6" marker-end="url(#c6)"/>
+          <rect x="200" y="52" width="70" height="42" rx="8" fill="#FFF" stroke="#14806E" stroke-width="2"/>
+          <text x="235" y="70" text-anchor="middle" font-size="9.5" font-weight="700" fill="#14202E">Vapor</text>
+          <text x="235" y="83" text-anchor="middle" font-size="9" fill="#556069">(± armazém)</text>
+          <line x1="272" y1="72" x2="300" y2="72" stroke="#14202E" stroke-width="1.6" marker-end="url(#c6)"/>
+          <circle cx="330" cy="72" r="21" fill="#FFF" stroke="#E0900A" stroke-width="2"/>
+          <g stroke="#E0900A" stroke-width="2" stroke-linecap="round"><line x1="330" y1="72" x2="330" y2="55"/><line x1="330" y1="72" x2="345" y2="82"/><line x1="330" y1="72" x2="315" y2="82"/></g>
+          <text x="330" y="110" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Turbina</text>
+          <line x1="351" y1="72" x2="371" y2="72" stroke="#14202E" stroke-width="1.6"/>
+          <rect x="373" y="52" width="66" height="42" rx="8" fill="#14202E"/><text x="406" y="78" text-anchor="middle" font-size="12" font-weight="700" fill="#FFF">G</text>
+          <text x="406" y="110" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Gerador</text>
+          <line x1="441" y1="72" x2="481" y2="72" stroke="#14202E" stroke-width="1.6" marker-end="url(#c6)"/>
+          <g stroke="#14806E" stroke-width="2" fill="none"><path d="M495 98 L507 46 L519 98 M495 98 L519 98 M497 84 L517 84"/></g>
+          <text x="507" y="114" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Rede</text>
+        </svg>
+        <p class="cap">Concentra o sol para fazer calor; pode guardá-lo e produzir depois de escurecer.</p>
+      </div>
+      <p class="how">Milhares de espelhos concentram a luz solar num ponto, aquecendo um fluido a centenas de graus. Esse calor gera vapor e move a turbina. Ao contrário dos painéis, pode armazenar o calor e produzir depois do pôr do sol.</p>
+      <div class="eff"><span class="eff-cap">Rendimento</span><div class="eff-track"><div class="eff-band" data-min="20" data-max="35"></div></div><span class="eff-val">20–35%</span></div>
+      <div class="stats">
+        <div class="stat"><p class="k">Potência típica</p><div class="v">50–400 MW</div></div>
+        <div class="stat"><p class="k">Fator de capacidade</p><div class="v">25–45%<small>mais, com armazenamento</small></div></div>
+        <div class="stat"><p class="k">Produção anual</p><div class="v prod">~350 GWh<small>central de 100 MW · ~117 mil lares</small></div></div>
+        <div class="stat"><p class="k">Energia por m²</p><div class="v area">~90 kWh<small>≈10 W/m² · por ano</small></div></div>
+      </div>
+      <p class="note">Valor da conversão calor→eletricidade. Contando toda a cadeia sol→rede, o rendimento global fica nos 15–25%.</p>
+    </div>
+  </section>
+
+  <!-- ============ CINÉTICAS ============ -->
+  <section id="cineticas">
+    <div class="group-head"><span class="num">B</span><h2>Cinéticas</h2></div>
+    <p class="group-desc">Sem combustão nem calor. O movimento de um fluido — água ou ar — faz girar a turbina diretamente. Rendimentos muito diferentes, consoante o fluido esteja canalizado ou em campo aberto.</p>
+
+    <!-- HÍDRICA -->
+    <div class="method">
+      <h3>Hídrica</h3>
+      <div class="schematic" aria-label="Esquema: água da albufeira cai pela conduta forçada e move a turbina e o gerador">
+        <svg viewBox="0 0 560 160" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="c7" markerWidth="8" markerHeight="8" refX="5.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#14202E"/></marker></defs>
+          <path d="M20 40 L200 40 L200 70 L20 70 Z" fill="#cfe6ec"/>
+          <path d="M20 40 q20 6 40 0 t40 0 t40 0 t40 0" fill="none" stroke="#14806E" stroke-width="1.6"/>
+          <text x="100" y="58" text-anchor="middle" font-size="11" font-weight="700" fill="#14806E">Albufeira</text>
+          <path d="M200 40 L214 40 L214 150 L200 150 Z" fill="#3a4652"/>
+          <path d="M200 66 L300 118" stroke="#14806E" stroke-width="7" fill="none"/>
+          <text x="238" y="104" font-size="9.5" fill="#556069" transform="rotate(27 238 104)">conduta forçada</text>
+          <circle cx="322" cy="118" r="21" fill="#FFF" stroke="#E0900A" stroke-width="2"/>
+          <g stroke="#E0900A" stroke-width="2" stroke-linecap="round"><line x1="322" y1="118" x2="322" y2="101"/><line x1="322" y1="118" x2="337" y2="128"/><line x1="322" y1="118" x2="307" y2="128"/></g>
+          <text x="322" y="152" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Turbina</text>
+          <line x1="343" y1="118" x2="363" y2="118" stroke="#14202E" stroke-width="1.6"/>
+          <rect x="365" y="98" width="66" height="42" rx="8" fill="#14202E"/><text x="398" y="124" text-anchor="middle" font-size="12" font-weight="700" fill="#FFF">G</text>
+          <text x="398" y="152" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Gerador</text>
+          <line x1="433" y1="118" x2="473" y2="118" stroke="#14202E" stroke-width="1.6" marker-end="url(#c7)"/>
+          <g stroke="#14806E" stroke-width="2" fill="none"><path d="M487 144 L499 92 L511 144 M487 144 L511 144 M489 130 L509 130"/></g>
+          <text x="499" y="158" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Rede</text>
+        </svg>
+        <p class="cap">Sem calor: a queda da água move a turbina diretamente. Daí o rendimento altíssimo.</p>
+      </div>
+      <p class="how">Água represada em altura cai por condutas e atravessa uma turbina, empurrando-a. Como a água está canalizada e se aproveita toda a queda, é o método com maior rendimento de todos.</p>
+      <div class="eff"><span class="eff-cap">Rendimento</span><div class="eff-track"><div class="eff-band" data-min="85" data-max="92"></div></div><span class="eff-val">85–92%</span></div>
+      <div class="stats">
+        <div class="stat"><p class="k">Potência típica</p><div class="v">10 MW – 22 GW</div></div>
+        <div class="stat"><p class="k">Fator de capacidade</p><div class="v">30–50%</div></div>
+        <div class="stat"><p class="k">Produção anual</p><div class="v prod">~3,5 TWh<small>barragem de 1000 MW · ~1,2 milhões de lares</small></div></div>
+        <div class="stat"><p class="k">Energia por m²</p><div class="v area">~1,2 kWh<small>≈0,14 W/m² · com a albufeira</small></div></div>
+      </div>
+      <p class="note">Rendimento imbatível, mas a área da albufeira arrasta a densidade por m² para muito baixo. A maior barragem do mundo (22,5 GW) gera ~95 TWh/ano.</p>
+    </div>
+
+    <!-- EÓLICA -->
+    <div class="method">
+      <h3>Eólica</h3>
+      <div class="schematic" aria-label="Esquema: o vento gira as pás, a nacela contém o gerador e a energia desce pela torre até à rede">
+        <svg viewBox="0 0 560 160" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="c8" markerWidth="8" markerHeight="8" refX="5.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#14202E"/></marker></defs>
+          <g stroke="#14806E" stroke-width="2" fill="none"><path d="M20 40 q16 -6 32 0" marker-end="url(#c8)"/><path d="M20 62 q16 -6 32 0" marker-end="url(#c8)"/></g>
+          <text x="30" y="86" font-size="10" fill="#556069">vento</text>
+          <line x1="150" y1="52" x2="150" y2="140" stroke="#3a4652" stroke-width="4"/>
+          <circle cx="150" cy="52" r="5" fill="#14202E"/>
+          <g stroke="#E0900A" stroke-width="4" stroke-linecap="round"><line x1="150" y1="52" x2="150" y2="16"/><line x1="150" y1="52" x2="181" y2="70"/><line x1="150" y1="52" x2="119" y2="70"/></g>
+          <rect x="150" y="46" width="26" height="12" rx="3" fill="#14202E"/>
+          <text x="196" y="50" font-size="9.5" font-weight="700" fill="#14202E">Nacela</text>
+          <text x="196" y="63" font-size="9" fill="#556069">gerador</text>
+          <text x="150" y="156" text-anchor="middle" font-size="10" fill="#556069">torre</text>
+          <path d="M150 140 L260 140" stroke="#14202E" stroke-width="1.6" marker-end="url(#c8)"/>
+          <g stroke="#14806E" stroke-width="2" fill="none"><path d="M272 140 L284 92 L296 140 M272 140 L296 140 M274 126 L294 126"/></g>
+          <text x="284" y="156" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Rede</text>
+        </svg>
+        <p class="cap">O vento roda o rotor; o gerador está lá em cima, na nacela.</p>
+      </div>
+      <p class="how">O vento empurra as pás, que fazem girar o rotor e o gerador alojado na nacela. Como o ar corre em campo aberto, é fisicamente impossível captar toda a sua energia: a lei de Betz limita a captura a 59,3%.</p>
+      <div class="eff"><span class="eff-cap">Rendimento</span><div class="eff-track"><div class="eff-band" data-min="35" data-max="45"></div></div><span class="eff-val">35–45%</span></div>
+      <div class="stats">
+        <div class="stat"><p class="k">Potência típica</p><div class="v">3–6 MW<small>por aerogerador</small></div></div>
+        <div class="stat"><p class="k">Fator de capacidade</p><div class="v">30–45%<small>até ~55% no mar</small></div></div>
+        <div class="stat"><p class="k">Produção anual</p><div class="v prod">~525 GWh<small>parque de 200 MW · ~175 mil lares</small></div></div>
+        <div class="stat"><p class="k">Energia por m²</p><div class="v area">~16 kWh<small>≈1,8 W/m² · área do parque</small></div></div>
+      </div>
+      <p class="note">Um só aerogerador de 4 MW gera ~10 GWh/ano. A densidade por m² conta a área toda do parque, mas o solo entre torres continua livre para agricultura ou pastoreio.</p>
+    </div>
+
+    <!-- MARÉS -->
+    <div class="method">
+      <h3>Marés e correntes</h3>
+      <div class="schematic" aria-label="Esquema: a corrente da maré atravessa uma turbina submersa ligada por cabo à rede">
+        <svg viewBox="0 0 560 150" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="c9" markerWidth="8" markerHeight="8" refX="5.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#14202E"/></marker></defs>
+          <rect x="0" y="26" width="330" height="14" fill="#cfe6ec"/>
+          <path d="M0 33 q20 -6 40 0 t40 0 t40 0 t40 0 t40 0" fill="none" stroke="#14806E" stroke-width="1.4"/>
+          <rect x="0" y="40" width="330" height="86" fill="#e8f1f3"/>
+          <g stroke="#14806E" stroke-width="2" fill="none"><path d="M20 80 q16 -6 32 0" marker-end="url(#c9)"/></g>
+          <text x="30" y="104" font-size="10" fill="#556069">corrente</text>
+          <line x1="150" y1="86" x2="150" y2="126" stroke="#3a4652" stroke-width="4"/>
+          <circle cx="150" cy="80" r="18" fill="#FFF" stroke="#E0900A" stroke-width="2"/>
+          <g stroke="#E0900A" stroke-width="2" stroke-linecap="round"><line x1="150" y1="80" x2="150" y2="66"/><line x1="150" y1="80" x2="163" y2="88"/><line x1="150" y1="80" x2="137" y2="88"/></g>
+          <text x="150" y="140" text-anchor="middle" font-size="10" font-weight="700" fill="#14202E">Turbina submersa</text>
+          <path d="M168 80 L360 80 L360 96" fill="none" stroke="#14202E" stroke-width="1.6" marker-end="url(#c9)"/>
+          <text x="300" y="74" font-size="9.5" fill="#556069">cabo submarino</text>
+          <g stroke="#14806E" stroke-width="2" fill="none"><path d="M348 122 L360 74 L372 122 M348 122 L372 122 M350 108 L370 108"/></g>
+          <text x="360" y="138" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Rede</text>
+        </svg>
+        <p class="cap">Uma "eólica debaixo de água": a corrente da maré roda a turbina.</p>
+      </div>
+      <p class="how">A subida e descida das marés, ou as correntes marinhas, atravessam turbinas submersas — o mesmo princípio da eólica, mas debaixo de água. A grande vantagem é a previsibilidade total: sabe-se ao minuto quando haverá produção.</p>
+      <div class="eff"><span class="eff-cap">Rendimento</span><div class="eff-track"><div class="eff-band" data-min="30" data-max="45"></div></div><span class="eff-val">30–45%</span></div>
+      <div class="stats">
+        <div class="stat"><p class="k">Potência típica</p><div class="v">1–250 MW</div></div>
+        <div class="stat"><p class="k">Fator de capacidade</p><div class="v">20–30%</div></div>
+        <div class="stat"><p class="k">Produção anual</p><div class="v prod">~500 GWh<small>central de 240 MW · ~175 mil lares</small></div></div>
+        <div class="stat"><p class="k">Energia por m²</p><div class="v area">~35 kWh<small>≈4 W/m² · por ano</small></div></div>
+      </div>
+      <p class="note">Também limitado por Betz, mas a água é ~800× mais densa que o ar, o que dá muita força por turbina.</p>
+    </div>
+
+    <!-- ONDAS -->
+    <div class="method">
+      <h3>Ondas</h3>
+      <div class="schematic" aria-label="Esquema: o movimento das ondas aciona um flutuador ligado a um gerador">
+        <svg viewBox="0 0 560 150" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="c10" markerWidth="8" markerHeight="8" refX="5.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#14202E"/></marker></defs>
+          <path d="M0 70 q30 -22 60 0 t60 0 t60 0 t60 0" fill="none" stroke="#14806E" stroke-width="2.4"/>
+          <rect x="150" y="34" width="34" height="30" rx="6" fill="#E0900A"/>
+          <line x1="167" y1="64" x2="167" y2="96" stroke="#3a4652" stroke-width="4"/>
+          <g stroke="#14202E" stroke-width="2" stroke-linecap="round"><line x1="167" y1="20" x2="167" y2="32"/></g>
+          <text x="167" y="112" text-anchor="middle" font-size="10" font-weight="700" fill="#14202E">Flutuador</text>
+          <text x="230" y="42" font-size="9.5" fill="#556069">sobe e desce</text>
+          <rect x="150" y="96" width="34" height="26" rx="5" fill="#14202E"/><text x="167" y="113" text-anchor="middle" font-size="11" font-weight="700" fill="#FFF">G</text>
+          <path d="M184 109 L360 109" stroke="#14202E" stroke-width="1.6" marker-end="url(#c10)"/>
+          <g stroke="#14806E" stroke-width="2" fill="none"><path d="M348 122 L360 74 L372 122 M348 122 L372 122 M350 108 L370 108"/></g>
+          <text x="360" y="138" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Rede</text>
+        </svg>
+        <p class="cap">O sobe-e-desce da onda aciona um gerador. Tecnologia ainda em testes.</p>
+      </div>
+      <p class="how">Dispositivos flutuantes ou fixos convertem o sobe-e-desce das ondas em movimento que aciona um gerador. Tecnologia ainda emergente, com muitas variantes em teste e poucas instalações comerciais.</p>
+      <div class="eff"><span class="eff-cap">Rendimento</span><div class="eff-track"><div class="eff-band" data-min="10" data-max="35"></div></div><span class="eff-val">10–35%</span></div>
+      <div class="stats">
+        <div class="stat"><p class="k">Potência típica</p><div class="v">0,1–5 MW<small>protótipos</small></div></div>
+        <div class="stat"><p class="k">Fator de capacidade</p><div class="v">10–30%</div></div>
+        <div class="stat"><p class="k">Produção anual</p><div class="v prod">~1,7 GWh<small>dispositivo de 1 MW · ~600 lares</small></div></div>
+        <div class="stat"><p class="k">Energia por m²</p><div class="v area">~18 kWh<small>≈2 W/m² · estimativa</small></div></div>
+      </div>
+      <p class="note">Muito variável e ainda pouco otimizada; o ambiente marinho agressivo dificulta a durabilidade. Todos os valores são preliminares.</p>
+    </div>
+  </section>
+
+  <!-- ============ DIRETAS ============ -->
+  <section id="diretas">
+    <div class="group-head"><span class="num">C</span><h2>Diretas</h2></div>
+    <p class="group-desc">As exceções à regra do íman a girar. Aqui não há turbina nem partes móveis: a eletricidade sai diretamente de um processo físico ou químico.</p>
+
+    <!-- SOLAR PV -->
+    <div class="method">
+      <h3>Solar fotovoltaico (PV)</h3>
+      <div class="schematic" aria-label="Esquema: a luz solar liberta eletrões numa célula, gerando corrente contínua que o inversor converte para a rede">
+        <svg viewBox="0 0 560 150" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="c11" markerWidth="8" markerHeight="8" refX="5.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#14202E"/></marker></defs>
+          <circle cx="44" cy="30" r="13" fill="#E0900A"/>
+          <g stroke="#E0900A" stroke-width="2" stroke-linecap="round"><line x1="44" y1="10" x2="44" y2="3"/><line x1="24" y1="30" x2="17" y2="30"/><line x1="30" y1="16" x2="24" y2="10"/></g>
+          <g stroke="#E0900A" stroke-width="1.4" stroke-dasharray="3 3"><line x1="44" y1="44" x2="120" y2="74"/><line x1="60" y1="44" x2="130" y2="74"/></g>
+          <rect x="96" y="72" width="90" height="40" rx="4" fill="#1e3a5c"/>
+          <line x1="126" y1="72" x2="126" y2="112" stroke="#8fb3d9" stroke-width="1.4"/><line x1="156" y1="72" x2="156" y2="112" stroke="#8fb3d9" stroke-width="1.4"/>
+          <text x="141" y="130" text-anchor="middle" font-size="10" font-weight="700" fill="#14202E">Painel (célula)</text>
+          <text x="141" y="64" text-anchor="middle" font-size="9" fill="#556069">liberta eletrões</text>
+          <line x1="186" y1="92" x2="222" y2="92" stroke="#14202E" stroke-width="1.6" marker-end="url(#c11)"/>
+          <text x="204" y="84" text-anchor="middle" font-size="9" fill="#556069">CC</text>
+          <rect x="224" y="70" width="74" height="44" rx="8" fill="#FFF" stroke="#14202E" stroke-width="1.6"/>
+          <text x="261" y="90" text-anchor="middle" font-size="10" font-weight="700" fill="#14202E">Inversor</text>
+          <text x="261" y="104" text-anchor="middle" font-size="9" fill="#556069">CC → CA</text>
+          <line x1="298" y1="92" x2="334" y2="92" stroke="#14202E" stroke-width="1.6" marker-end="url(#c11)"/>
+          <text x="316" y="84" text-anchor="middle" font-size="9" fill="#556069">CA</text>
+          <g stroke="#14806E" stroke-width="2" fill="none"><path d="M346 118 L358 66 L370 118 M346 118 L370 118 M348 104 L368 104"/></g>
+          <text x="358" y="134" text-anchor="middle" font-size="11" font-weight="700" fill="#14202E">Rede</text>
+        </svg>
+        <p class="cap">Sem partes móveis: a luz gera corrente contínua; o inversor passa-a para a rede.</p>
+      </div>
+      <p class="how">A luz do Sol arranca eletrões a um material semicondutor (silício), gerando corrente sem qualquer peça em movimento. O inversor transforma essa corrente contínua na alternada da rede. É a razão pela qual um painel é silencioso e quase não precisa de manutenção.</p>
+      <div class="eff"><span class="eff-cap">Rendimento</span><div class="eff-track"><div class="eff-band" data-min="15" data-max="22"></div></div><span class="eff-val">15–22%</span></div>
+      <div class="stats">
+        <div class="stat"><p class="k">Potência típica</p><div class="v">3 kW – 1 GW<small>telhado a parque</small></div></div>
+        <div class="stat"><p class="k">Fator de capacidade</p><div class="v">10–25%<small>~18% em Portugal</small></div></div>
+        <div class="stat"><p class="k">Produção anual</p><div class="v prod">~158 GWh<small>parque de 100 MW · ~53 mil lares</small></div></div>
+        <div class="stat"><p class="k">Energia por m²</p><div class="v area">~58 kWh<small>≈6,6 W/m² · painéis ~150</small></div></div>
+      </div>
+      <p class="note">Um sistema doméstico de 5 kW gera ~7.900 kWh/ano. Por m²: ~58 se contar o terreno do parque; ~150 se contar só a área dos painéis. Em laboratório já se ultrapassam os 47% de rendimento.</p>
+    </div>
+
+    <!-- FUEL CELL -->
+    <div class="method">
+      <h3>Células de combustível</h3>
+      <div class="schematic" aria-label="Esquema: hidrogénio e oxigénio reagem na célula, os eletrões percorrem o circuito e sai água">
+        <svg viewBox="0 0 560 150" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="c12" markerWidth="8" markerHeight="8" refX="5.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#14202E"/></marker></defs>
+          <text x="30" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#14202E">H&#8322;</text>
+          <line x1="46" y1="76" x2="150" y2="76" stroke="#14202E" stroke-width="1.6" marker-end="url(#c12)"/>
+          <rect x="152" y="40" width="20" height="72" fill="#3a4652"/>
+          <rect x="172" y="40" width="40" height="72" fill="#e8f1f3" stroke="#14806E" stroke-width="1.4"/>
+          <rect x="212" y="40" width="20" height="72" fill="#3a4652"/>
+          <text x="162" y="128" text-anchor="middle" font-size="9.5" fill="#556069">ânodo</text>
+          <text x="192" y="128" text-anchor="middle" font-size="9.5" fill="#14806E">eletrólito</text>
+          <text x="222" y="128" text-anchor="middle" font-size="9.5" fill="#556069">cátodo</text>
+          <text x="252" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#14202E">O&#8322;</text>
+          <line x1="234" y1="76" x2="238" y2="76" stroke="#14202E" stroke-width="0"/>
+          <line x1="266" y1="76" x2="240" y2="76" stroke="#14202E" stroke-width="1.6" marker-end="url(#c12)"/>
+          <path d="M162 40 L162 20 L410 20" fill="none" stroke="#E0900A" stroke-width="2.2" marker-end="url(#c12)"/>
+          <path d="M222 40 L222 30" fill="none" stroke="#E0900A" stroke-width="2.2"/>
+          <path d="M222 30 L300 30" fill="none" stroke="#E0900A" stroke-width="2.2"/>
+          <text x="250" y="14" text-anchor="middle" font-size="9.5" fill="#E0900A">eletrões (corrente)</text>
+          <rect x="360" y="8" width="70" height="26" rx="6" fill="#14202E"/><text x="395" y="25" text-anchor="middle" font-size="10" font-weight="700" fill="#FFF">Carga</text>
+          <path d="M395 34 L395 60" fill="none" stroke="#E0900A" stroke-width="2.2"/>
+          <path d="M395 60 L222 60 L222 112" fill="none" stroke="#E0900A" stroke-width="2.2" marker-end="url(#c12)"/>
+          <text x="300" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#14806E">H&#8322;O (água)</text>
+        </svg>
+        <p class="cap">Reação eletroquímica, não combustão: os eletrões fazem o trabalho e só sai água.</p>
+      </div>
+      <p class="how">Combinam hidrogénio com oxigénio numa reação eletroquímica controlada. O resultado é eletricidade, calor e água — sem combustão e sem partes móveis. Funcionam como uma pilha que se abastece.</p>
+      <div class="eff"><span class="eff-cap">Rendimento</span><div class="eff-track"><div class="eff-band" data-min="40" data-max="60"></div></div><span class="eff-val">40–60%</span></div>
+      <div class="stats">
+        <div class="stat"><p class="k">Potência típica</p><div class="v">1 kW – 60 MW</div></div>
+        <div class="stat"><p class="k">Fator de capacidade</p><div class="v">85–95%<small>funcionamento contínuo</small></div></div>
+        <div class="stat"><p class="k">Produção anual</p><div class="v prod">~7,9 GWh<small>instalação de 1 MW · ~2.600 lares</small></div></div>
+        <div class="stat"><p class="k">Energia por m²</p><div class="v area">Compacto<small>depende da origem do H&#8322;</small></div></div>
+      </div>
+      <p class="note">O equipamento ocupa muito pouco espaço, mas o m² "real" depende de onde se produz o hidrogénio — se vier de eletrólise solar, arrasta a área para trás. Com aproveitamento do calor, o rendimento total chega aos 85%.</p>
+    </div>
+  </section>
+
+  <!-- ============ COMPARAÇÃO ============ -->
+  <section id="comparacao">
+    <h2>Comparação</h2>
+    <p class="sub">Três formas de olhar para os mesmos métodos.</p>
+
+    <div class="cmp-tabs" role="tablist">
+      <button class="cmp-tab" role="tab" data-key="rendimento" aria-selected="true">Rendimento</button>
+      <button class="cmp-tab" role="tab" data-key="producao" aria-selected="false">Produção anual</button>
+      <button class="cmp-tab" role="tab" data-key="area" aria-selected="false">Energia por m²</button>
+    </div>
+
+    <div id="cmp"></div>
+    <p class="cmp-note" id="cmpNote"></p>
+
+    <div class="callout" style="margin-top:26px;">
+      <strong>As três vistas contam histórias diferentes.</strong> A hídrica lidera em rendimento, mas fica no fundo por m² por causa da albufeira. O gás e o nuclear geram milhares de kWh por cada m² ocupado, enquanto o solar e a eólica, apesar de limpos, precisam de dezenas de vezes mais espaço. E "produção anual" reflete sobretudo o tamanho da instalação. Nenhum número decide sozinho: a escolha certa depende de haver terreno, combustível, sol ou vento — e de quanto pesam as emissões.
+    </div>
+  </section>
+
+  <footer>
+    <hr class="rule" style="margin-bottom:24px;">
+    <p>Rendimentos, potências e fatores de capacidade são intervalos representativos de instalações reais; os valores exatos variam com a tecnologia, a idade e as condições de cada central.</p>
+    <p>As produções anuais e os lares abastecidos assumem um consumo médio de ~3.000 kWh por lar/ano em Portugal e escalam com a dimensão da instalação.</p>
+    <p>As densidades de potência (energia por m²) seguem as medianas da meta-análise de Van Zalk &amp; Behrens (Energy Policy, 2018) e variam muito conforme a área contabilizada — servem de ordem de grandeza, não de valores exatos.</p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function color(mid){
+    var stops=[{p:0,c:[192,85,43]},{p:50,c:[224,144,10]},{p:100,c:[20,128,110]}];
+    var lo=stops[0],hi=stops[stops.length-1];
+    for(var i=0;i<stops.length-1;i++){if(mid>=stops[i].p&&mid<=stops[i+1].p){lo=stops[i];hi=stops[i+1];break;}}
+    var t=(mid-lo.p)/(hi.p-lo.p||1);
+    var r=Math.round(lo.c[0]+(hi.c[0]-lo.c[0])*t);
+    var g=Math.round(lo.c[1]+(hi.c[1]-lo.c[1])*t);
+    var b=Math.round(lo.c[2]+(hi.c[2]-lo.c[2])*t);
+    return 'rgb('+r+','+g+','+b+')';
+  }
+
+  // ---- method-card efficiency bars ----
+  var mbands=document.querySelectorAll('.method .eff-band');
+  mbands.forEach(function(b){
+    var mn=parseFloat(b.getAttribute('data-min')),mx=parseFloat(b.getAttribute('data-max'));
+    b.style.left=mn+'%';b.style.background=color((mn+mx)/2);b.dataset.target=(mx-mn)+'%';
+    if(reduce)b.style.width=b.dataset.target;
+  });
+  if(!reduce){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var b=e.target;requestAnimationFrame(function(){b.style.width=b.dataset.target;});io.unobserve(b);}});},{threshold:0.35});
+    mbands.forEach(function(b){io.observe(b);});
+  }
+
+  // ---- comparison tabs ----
+  var DATA={
+    rendimento:{
+      note:'Eficiência com que a energia de partida é convertida em eletricidade.',
+      scale:'linear',
+      rows:[
+        {n:'Hídrica',min:85,max:92},{n:'Gás — ciclo combinado',min:50,max:62},
+        {n:'Células de combustível',min:40,max:60},{n:'Eólica',min:35,max:45},
+        {n:'Carvão',min:33,max:45},{n:'Marés e correntes',min:30,max:45},
+        {n:'Nuclear',min:33,max:37},{n:'Biomassa',min:20,max:35},
+        {n:'Solar concentrada',min:20,max:35},{n:'Ondas',min:10,max:35},
+        {n:'Solar fotovoltaico',min:15,max:22},{n:'Geotérmica',min:10,max:20}
+      ]
+    },
+    producao:{
+      note:'Cada barra é uma instalação representativa — repare que os tamanhos diferem muito (de 1 MW a 1000 MW). Escala logarítmica.',
+      scale:'log',unit:'GWh/ano',
+      rows:[
+        {n:'Nuclear',v:7900,d:'7.900 GWh',s:'reator 1000 MW'},
+        {n:'Gás — ciclo combinado',v:3500,d:'3.500 GWh',s:'bloco 800 MW'},
+        {n:'Hídrica',v:3500,d:'3.500 GWh',s:'barragem 1000 MW'},
+        {n:'Carvão',v:2600,d:'2.600 GWh',s:'grupo 600 MW'},
+        {n:'Eólica',v:525,d:'525 GWh',s:'parque 200 MW'},
+        {n:'Marés e correntes',v:500,d:'500 GWh',s:'central 240 MW'},
+        {n:'Geotérmica',v:350,d:'350 GWh',s:'central 50 MW'},
+        {n:'Solar concentrada',v:350,d:'350 GWh',s:'central 100 MW'},
+        {n:'Biomassa',v:260,d:'260 GWh',s:'central 50 MW'},
+        {n:'Solar fotovoltaico',v:158,d:'158 GWh',s:'parque 100 MW'},
+        {n:'Células de combustível',v:8,d:'8 GWh',s:'1 MW'},
+        {n:'Ondas',v:1.7,d:'1,7 GWh',s:'dispositivo 1 MW'}
+      ]
+    },
+    area:{
+      note:'Energia por m² de área ocupada, por ano (medianas de Van Zalk & Behrens, 2018). Varia muito conforme se conta só a central ou também a extração/cultivo. As células de combustível não entram: o equipamento é compacto, mas o m² real depende de onde se produz o hidrogénio. Escala logarítmica.',
+      scale:'log',unit:'kWh/m²/ano',
+      rows:[
+        {n:'Gás — ciclo combinado',v:4200,d:'4.200 kWh/m²',s:'≈480 W/m²'},
+        {n:'Nuclear',v:2100,d:'2.100 kWh/m²',s:'≈240 W/m²'},
+        {n:'Carvão',v:1200,d:'1.200 kWh/m²',s:'≈135 W/m²'},
+        {n:'Geotérmica',v:350,d:'350 kWh/m²',s:'≈40 W/m² · varia muito'},
+        {n:'Solar concentrada',v:90,d:'90 kWh/m²',s:'≈10 W/m²'},
+        {n:'Solar fotovoltaico',v:58,d:'58 kWh/m²',s:'≈6,6 W/m² · painéis ~150'},
+        {n:'Marés e correntes',v:35,d:'35 kWh/m²',s:'≈4 W/m²'},
+        {n:'Ondas',v:18,d:'18 kWh/m²',s:'≈2 W/m² · estimativa'},
+        {n:'Eólica',v:16,d:'16 kWh/m²',s:'≈1,8 W/m² · área do parque'},
+        {n:'Hídrica',v:1.2,d:'1,2 kWh/m²',s:'≈0,14 W/m² · reservatório'},
+        {n:'Biomassa',v:0.7,d:'0,7 kWh/m²',s:'≈0,08 W/m²'}
+      ]
+    }
+  };
+
+  var cmp=document.getElementById('cmp');
+  var cmpNote=document.getElementById('cmpNote');
+  var tabs=document.querySelectorAll('.cmp-tab');
+
+  function logWidth(v,min,max){
+    if(v<=0)return 4;
+    var w=(Math.log10(v)-Math.log10(min))/(Math.log10(max)-Math.log10(min))*100;
+    return Math.max(5,Math.min(100,w));
+  }
+
+  function render(key){
+    var set=DATA[key];cmp.innerHTML='';cmpNote.textContent=set.note||'';
+    var vmin,vmax;
+    if(set.scale==='log'){var vals=set.rows.map(function(r){return r.v;});vmin=Math.min.apply(null,vals);vmax=Math.max.apply(null,vals);}
+    var pending=[];
+    set.rows.forEach(function(r){
+      var row=document.createElement('div');row.className='cmp-row';
+      var name='<div class="cmp-name">'+r.n+(r.s?'<div class="cmp-sub">'+r.s+'</div>':'')+'</div>';
+      var band=document.createElement('div');band.className='cmp-band';
+      var val;
+      if(set.scale==='linear'){
+        band.style.left=r.min+'%';band.style.background=color((r.min+r.max)/2);band.dataset.tw=(r.max-r.min)+'%';
+        val=r.min+'–'+r.max+'%';
+      }else{
+        band.style.left='0%';band.style.background='var(--amber)';band.dataset.tw=logWidth(r.v,vmin,vmax)+'%';
+        val=r.d;
+      }
+      row.innerHTML=name+'<div class="cmp-track"></div><span class="cmp-val">'+val+'</span>';
+      row.querySelector('.cmp-track').appendChild(band);
+      cmp.appendChild(row);pending.push(band);
+    });
+    pending.forEach(function(b){
+      if(reduce){b.style.width=b.dataset.tw;}
+      else{requestAnimationFrame(function(){requestAnimationFrame(function(){b.style.width=b.dataset.tw;});});}
+    });
+  }
+
+  tabs.forEach(function(t){
+    t.addEventListener('click',function(){
+      tabs.forEach(function(x){x.setAttribute('aria-selected','false');});
+      t.setAttribute('aria-selected','true');
+      render(t.getAttribute('data-key'));
+    });
+  });
+
+  render('rendimento');
+})();
+</script>
+</body>
+</html>
