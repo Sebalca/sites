@@ -1,0 +1,857 @@
+<title>Código Binário</title>
+<meta name="description" content="Guia interativo sobre código binário, ASCII, hexadecimal, Morse e níveis de linguagem — com simuladores, conversores e exercícios.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#f6f7f9;
+  --surface:#ffffff;
+  --surface-2:#eef1f5;
+  --border:#dde2e8;
+  --text:#161b22;
+  --muted:#5b6674;
+  --accent:#0f9d84;
+  --accent-2:#b9790a;
+  --accent-ink:#053b32;
+  --bit0:#dde2e8;
+  --bit1:#0f9d84;
+  --code-bg:#101418;
+  --code-text:#dbe6e2;
+  --danger:#c1443c;
+  --good:#0f9d84;
+  --shadow: 0 1px 2px rgba(20,25,30,.06), 0 8px 24px -12px rgba(20,25,30,.15);
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b0f14;
+    --surface:#12181f;
+    --surface-2:#171e26;
+    --border:#232c37;
+    --text:#e7edf2;
+    --muted:#8a97a6;
+    --accent:#5ee6c5;
+    --accent-2:#f2b544;
+    --accent-ink:#04231d;
+    --bit0:#232c37;
+    --bit1:#5ee6c5;
+    --code-bg:#080b0e;
+    --code-text:#cfe8e0;
+    --danger:#ff7a70;
+    --good:#5ee6c5;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px -14px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0f14;
+  --surface:#12181f;
+  --surface-2:#171e26;
+  --border:#232c37;
+  --text:#e7edf2;
+  --muted:#8a97a6;
+  --accent:#5ee6c5;
+  --accent-2:#f2b544;
+  --accent-ink:#04231d;
+  --bit0:#232c37;
+  --bit1:#5ee6c5;
+  --code-bg:#080b0e;
+  --code-text:#cfe8e0;
+  --danger:#ff7a70;
+  --good:#5ee6c5;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px -14px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Inter",system-ui,sans-serif;
+  padding-inline:16px;
+  padding-block:24px;
+  line-height:1.55;
+}
+.wrap{max-width:760px;margin:0 auto;}
+h1,h2,h3{font-family:"JetBrains Mono",ui-monospace,monospace;text-wrap:balance;line-height:1.15;letter-spacing:-0.01em;}
+h1{font-size:clamp(1.7rem,5vw,2.4rem);font-weight:800;margin:0 0 6px;}
+h2{font-size:1.35rem;font-weight:700;margin:0 0 4px;}
+h3{font-size:1.02rem;font-weight:700;margin:0 0 8px;}
+p{margin:0 0 12px;max-width:65ch;}
+.lede{color:var(--muted);font-size:1.02rem;margin-bottom:0;}
+.eyebrow{
+  font-family:"JetBrains Mono",monospace;
+  font-size:.72rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--accent);
+  font-weight:700;
+}
+
+header.top{margin-bottom:8px;}
+.header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.bitstrip{
+  font-family:"JetBrains Mono",monospace;
+  font-size:.7rem;
+  color:var(--muted);
+  letter-spacing:.08em;
+  padding:4px 10px;
+  border:1px solid var(--border);
+  border-radius:100px;
+  white-space:nowrap;
+}
+
+nav.toc{
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  padding:10px 0 18px;
+  margin-bottom:8px;
+  border-bottom:1px solid var(--border);
+  -webkit-overflow-scrolling:touch;
+}
+nav.toc a{
+  flex:0 0 auto;
+  font-family:"JetBrains Mono",monospace;
+  font-size:.74rem;
+  color:var(--muted);
+  text-decoration:none;
+  padding:6px 11px;
+  border-radius:100px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  white-space:nowrap;
+}
+nav.toc a:hover{color:var(--text);border-color:var(--accent);}
+
+section{margin-block:34px;scroll-margin-top:14px;}
+section > .eyebrow{display:block;margin-bottom:4px;}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  box-shadow:var(--shadow);
+  margin-top:14px;
+}
+.card + .card{margin-top:12px;}
+.card h3{display:flex;align-items:center;gap:8px;}
+.tag{
+  font-family:"JetBrains Mono",monospace;
+  font-size:.64rem;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--accent-ink);
+  background:var(--accent);
+  padding:2px 7px;
+  border-radius:5px;
+}
+
+/* history timeline */
+.timeline{position:relative;margin-top:18px;padding-left:22px;border-left:2px solid var(--border);}
+.tl-item{position:relative;padding-bottom:20px;}
+.tl-item:last-child{padding-bottom:0;}
+.tl-item::before{
+  content:"";
+  position:absolute;left:-27.5px;top:3px;
+  width:11px;height:11px;border-radius:50%;
+  background:var(--accent);
+  border:2px solid var(--surface);
+  box-shadow:0 0 0 2px var(--accent);
+}
+.tl-year{
+  font-family:"JetBrains Mono",monospace;
+  font-weight:700;color:var(--accent);font-size:.85rem;
+}
+.tl-item h4{margin:2px 0 3px;font-size:.98rem;font-weight:700;}
+.tl-item p{margin:0;font-size:.92rem;color:var(--muted);max-width:56ch;}
+
+/* bit toggles */
+.byte-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:16px 0 10px;}
+.bit-btn{
+  width:44px;height:52px;
+  border-radius:9px;
+  border:1px solid var(--border);
+  background:var(--bit0);
+  color:var(--muted);
+  font-family:"JetBrains Mono",monospace;
+  font-size:1.3rem;font-weight:700;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .08s ease;
+  user-select:none;
+}
+.bit-btn.on{background:var(--bit1);color:var(--accent-ink);border-color:var(--bit1);}
+.bit-btn:active{transform:scale(.94);}
+.bit-labels{display:flex;gap:6px;justify-content:center;font-family:"JetBrains Mono",monospace;font-size:.62rem;color:var(--muted);margin-bottom:2px;}
+.bit-labels span{width:44px;text-align:center;}
+.byte-result{
+  text-align:center;
+  margin-top:10px;
+  font-family:"JetBrains Mono",monospace;
+}
+.byte-result .big{font-size:2.1rem;font-weight:800;color:var(--accent);}
+.byte-result .small{color:var(--muted);font-size:.82rem;}
+.sum-steps{
+  font-family:"JetBrains Mono",monospace;
+  font-size:.82rem;
+  color:var(--muted);
+  text-align:center;
+  margin-top:8px;
+  overflow-x:auto;
+  white-space:nowrap;
+  padding:2px 4px;
+}
+.sum-steps b{color:var(--text);}
+
+/* generic converter rows */
+.field{margin-bottom:10px;}
+.field label{
+  display:block;font-family:"JetBrains Mono",monospace;font-size:.7rem;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;
+}
+input[type="text"], input[type="number"]{
+  width:100%;
+  font-family:"JetBrains Mono",monospace;
+  font-size:.95rem;
+  padding:10px 12px;
+  border-radius:9px;
+  border:1px solid var(--border);
+  background:var(--surface-2);
+  color:var(--text);
+}
+input:focus, .bit-btn:focus, button:focus, select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+input[type="range"]{width:100%;accent-color:var(--accent);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media (max-width:420px){.grid2{grid-template-columns:1fr;}}
+.readout{
+  font-family:"JetBrains Mono",monospace;
+  background:var(--code-bg);
+  color:var(--code-text);
+  border-radius:9px;
+  padding:10px 12px;
+  font-size:.9rem;
+  word-break:break-all;
+  min-height:40px;
+}
+.readout .dim{opacity:.55;}
+
+table{width:100%;border-collapse:collapse;font-size:.88rem;}
+.tbl-wrap{overflow-x:auto;}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--border);white-space:nowrap;}
+th{font-family:"JetBrains Mono",monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;}
+td.mono, th.mono{font-family:"JetBrains Mono",monospace;}
+
+.char-table{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;}
+.char-cell{
+  font-family:"JetBrains Mono",monospace;
+  font-size:.78rem;
+  border:1px solid var(--border);
+  background:var(--surface-2);
+  border-radius:7px;
+  padding:5px 6px;
+  display:flex;flex-direction:column;align-items:center;gap:2px;min-width:46px;
+}
+.char-cell .ch{font-size:1.05rem;font-weight:700;color:var(--accent);}
+.char-cell .bin{font-size:.62rem;color:var(--muted);}
+
+button.btn{
+  font-family:"JetBrains Mono",monospace;
+  font-size:.8rem;font-weight:600;
+  background:var(--accent);
+  color:var(--accent-ink);
+  border:none;border-radius:9px;
+  padding:9px 14px;cursor:pointer;
+}
+button.btn.ghost{
+  background:transparent;color:var(--text);border:1px solid var(--border);
+}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+
+.morse-bars{display:flex;align-items:flex-end;gap:3px;height:34px;margin-top:10px;overflow-x:auto;padding-bottom:2px;}
+.morse-bars .bar{background:var(--accent);border-radius:2px;flex:0 0 auto;height:100%;}
+.morse-bars .dot{width:8px;}
+.morse-bars .dash{width:22px;}
+.morse-bars .gap{background:transparent;width:8px;}
+.morse-bars .gapword{background:transparent;width:20px;border-right:1px dashed var(--border);}
+
+.compare-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px;}
+.compare-card{border:1px solid var(--border);background:var(--surface-2);border-radius:11px;padding:13px;}
+.compare-card .lvl{font-family:"JetBrains Mono",monospace;font-size:.68rem;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:6px;}
+.compare-card code{
+  display:block;font-family:"JetBrains Mono",monospace;background:var(--code-bg);color:var(--code-text);
+  padding:8px 10px;border-radius:7px;font-size:.82rem;overflow-x:auto;
+}
+.compare-card p{margin:8px 0 0;font-size:.85rem;color:var(--muted);}
+
+/* exercises */
+.exercise{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface-2);margin-top:14px;}
+.exercise .qn{font-family:"JetBrains Mono",monospace;font-size:.7rem;color:var(--accent);font-weight:700;margin-bottom:6px;letter-spacing:.05em;}
+.opt-row{display:flex;flex-direction:column;gap:7px;margin:10px 0;}
+.opt{
+  text-align:left;border:1px solid var(--border);background:var(--surface);
+  border-radius:9px;padding:9px 11px;cursor:pointer;font-size:.9rem;color:var(--text);
+  font-family:"Inter",sans-serif;
+}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{border-color:var(--good);background:color-mix(in srgb, var(--good) 16%, var(--surface));}
+.opt.wrong{border-color:var(--danger);background:color-mix(in srgb, var(--danger) 14%, var(--surface));}
+.explain{
+  margin-top:8px;padding:10px 12px;border-radius:9px;background:var(--surface);
+  border:1px dashed var(--border);font-size:.86rem;display:none;
+}
+.explain.show{display:block;}
+.explain b{color:var(--accent);}
+
+.note{
+  font-size:.85rem;color:var(--muted);
+  border-left:3px solid var(--accent-2);
+  padding-left:10px;margin-top:12px;
+}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:.78rem;font-family:"JetBrains Mono",monospace;}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <span class="eyebrow">Sistemas de codificação</span>
+  <div class="header-row">
+    <h1>Código binário &amp; outras linguagens</h1>
+    <span class="bitstrip" id="headerBits">01001000 01001001</span>
+  </div>
+  <p class="lede">Como reduzir tudo a dois símbolos — e como, a partir daí, se constroem o texto, as cores, o som e as próprias linguagens de programação.</p>
+</header>
+
+<nav class="toc">
+  <a href="#intro">Introdução</a>
+  <a href="#historia">História</a>
+  <a href="#binario">Binário</a>
+  <a href="#texto">Texto</a>
+  <a href="#outras">Hex · Morse · Base64</a>
+  <a href="#niveis">Níveis de linguagem</a>
+  <a href="#comparacao">Comparação</a>
+  <a href="#exercicios">Exercícios</a>
+</nav>
+
+<!-- ================= INTRO ================= -->
+<section id="intro">
+  <span class="eyebrow">01 · Fundamentos</span>
+  <h2>O que é o código binário</h2>
+  <p>Binário é um sistema de numeração com apenas <b>dois símbolos</b>: 0 e 1. Cada um chama-se um <b>bit</b> (<i>binary digit</i>). É a linguagem nativa dos computadores porque um circuito eletrónico distingue facilmente dois estados — corrente a passar ou não passar, tensão alta ou baixa — mas tem muito mais dificuldade em distinguir, de forma fiável, dez níveis diferentes de tensão (o que seria preciso para trabalhar diretamente em decimal).</p>
+  <p>Tudo o que um computador processa — texto, imagens, som, vídeo, instruções — é, no fundo, uma sequência muito longa de 0s e 1s. O que muda entre um ficheiro de texto e uma fotografia não é o "material" (bits), mas a <b>convenção</b> usada para os interpretar.</p>
+  <div class="card">
+    <h3>Vocabulário essencial <span class="tag">base</span></h3>
+    <div class="tbl-wrap">
+    <table>
+      <tr><th>Termo</th><th>Significado</th></tr>
+      <tr><td class="mono">bit</td><td>um único 0 ou 1</td></tr>
+      <tr><td class="mono">byte</td><td>um grupo de 8 bits (256 combinações possíveis)</td></tr>
+      <tr><td class="mono">nibble</td><td>metade de um byte, 4 bits</td></tr>
+      <tr><td class="mono">kilobyte (KB)</td><td>≈1000 bytes (ou 1024, em contexto binário estrito)</td></tr>
+      <tr><td class="mono">codificação</td><td>a convenção que diz o que cada padrão de bits representa</td></tr>
+    </table>
+    </div>
+  </div>
+  <p class="note">Porque exatamente dois símbolos e não três ou dez? Não é uma limitação arbitrária — é uma decisão de engenharia: distinguir dois estados é mais barato, mais rápido e muito mais resistente a ruído elétrico do que distinguir vários níveis.</p>
+</section>
+
+<!-- ================= HISTÓRIA ================= -->
+<section id="historia">
+  <span class="eyebrow">02 · Evolução</span>
+  <h2>Uma linha do tempo</h2>
+  <p>O binário não nasceu com o computador — é uma ideia matemática muito mais antiga que só se tornou tecnologia útil no séc. XX.</p>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-year">séc. II a.C. (aprox.)</div>
+      <h4>Precedentes na Índia e na China</h4>
+      <p>Sistemas de padrões binários aparecem em contextos como a prosódia sânscrita (Pingala) e, mais tarde, no I Ching chinês — sem ligação direta ao binário moderno, mas mostrando que a ideia de "combinações de dois estados" é antiga.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">1679</div>
+      <h4>Gottfried Leibniz formaliza a aritmética binária</h4>
+      <p>Leibniz descreve o sistema de numeração de base 2 e as suas operações, influenciado (segundo o próprio) pelo I Ching. Trata-se sobretudo de um exercício matemático/filosófico — ainda sem aplicação tecnológica.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">1847</div>
+      <h4>George Boole — a álgebra que dá nome à "lógica booleana"</h4>
+      <p>Boole desenvolve uma álgebra em que as variáveis só podem ter dois valores (verdadeiro/falso). Um século mais tarde, esta é exatamente a matemática usada para desenhar circuitos digitais.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">1874</div>
+      <h4>Código Baudot</h4>
+      <p>Émile Baudot cria um código de 5 bits para telegrafia, um dos primeiros sistemas a representar caracteres de texto como padrões binários de largura fixa.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">1937–1945</div>
+      <h4>Primeiros computadores eletromecânicos e eletrónicos binários</h4>
+      <p>Claude Shannon (1937) mostra que circuitos com relés podem implementar álgebra booleana. Máquinas como o Atanasoff–Berry Computer e o ENIAC (anos 1940) consolidam o binário como base do cálculo eletrónico.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">1963</div>
+      <h4>ASCII</h4>
+      <p>Publicada a primeira versão do <i>American Standard Code for Information Interchange</i>: 7 bits, 128 posições, para uniformizar a troca de texto entre máquinas diferentes.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">1991</div>
+      <h4>Unicode</h4>
+      <p>O Consórcio Unicode publica a versão 1.0, com o objetivo de representar, com um único padrão, os caracteres de (idealmente) todas as escritas do mundo — resolvendo a fragmentação de dezenas de codificações regionais incompatíveis entre si.</p>
+    </div>
+  </div>
+  <p class="note">Datas de invenção de tecnologias antigas têm frequentemente alguma incerteza ou disputa de prioridade entre investigadores — as datas acima seguem os marcos de publicação mais citados.</p>
+</section>
+
+<!-- ================= BINÁRIO INTERATIVO ================= -->
+<section id="binario">
+  <span class="eyebrow">03 · Simulador</span>
+  <h2>Construir um byte</h2>
+  <p>Cada bit vale uma potência de 2, de acordo com a sua posição. Toca nos interruptores para ligar/desligar bits e observa o valor decimal a formar-se.</p>
+  <div class="card">
+    <h3>Conversor binário → decimal <span class="tag">experimenta</span></h3>
+    <div class="bit-labels" id="bitLabels"></div>
+    <div class="byte-row" id="byteRow"></div>
+    <div class="byte-result">
+      <div class="small" id="sumSteps">soma das potências ativas</div>
+      <div class="big" id="byteDecimal">0</div>
+      <div class="small">decimal</div>
+    </div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn ghost" id="btnRandomByte">valor aleatório</button>
+      <button class="btn ghost" id="btnClearByte">limpar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Conversor de números <span class="tag">decimal ⇄ binário ⇄ hex</span></h3>
+    <div class="field">
+      <label for="numDec">Decimal</label>
+      <input type="number" id="numDec" value="72" min="0" max="1114111">
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label for="numBin">Binário</label>
+        <input type="text" id="numBin" value="1001000">
+      </div>
+      <div class="field">
+        <label for="numHex">Hexadecimal</label>
+        <input type="text" id="numHex" value="48">
+      </div>
+    </div>
+    <div class="readout" id="numSteps"></div>
+  </div>
+</section>
+
+<!-- ================= TEXTO ================= -->
+<section id="texto">
+  <span class="eyebrow">04 · Representar texto</span>
+  <h2>De letras a bits: ASCII e Unicode</h2>
+  <p>Um computador não "sabe" o que é a letra A — sabe apenas números. A codificação de caracteres é a tabela de correspondência entre número e símbolo. O <b>ASCII</b> (1963) usa 7 bits e cobre 128 caracteres: letras maiúsculas e minúsculas do alfabeto latino, dígitos, pontuação e alguns comandos de controlo — suficiente para inglês, mas não para "ã", "ç" ou "€".</p>
+  <p>O <b>Unicode</b> resolve esse limite atribuindo um número (<i>code point</i>) a praticamente qualquer caráter usado por qualquer escrita humana — de "A" a "字" a emojis. O <b>UTF-8</b> é a forma mais comum de guardar esses números em bytes: caracteres ASCII ocupam 1 byte (compatibilidade retroativa total), outros ocupam até 4.</p>
+
+  <div class="card">
+    <h3>Codificador de texto <span class="tag">experimenta</span></h3>
+    <div class="field">
+      <label for="txtInput">Escreve uma palavra ou frase curta</label>
+      <input type="text" id="txtInput" value="Olá!" maxlength="24">
+    </div>
+    <div class="char-table" id="charTable"></div>
+    <div class="field" style="margin-top:12px;">
+      <label>Binário concatenado (UTF-8)</label>
+      <div class="readout" id="txtBinaryOut"></div>
+    </div>
+  </div>
+  <p class="note">Experimenta escrever "ç" ou "€" e repara que, em UTF-8, esses caracteres ocupam 2 ou 3 bytes — mais do que as letras simples do alfabeto inglês, que ocupam sempre 1.</p>
+</section>
+
+<!-- ================= OUTRAS LINGUAGENS ================= -->
+<section id="outras">
+  <span class="eyebrow">05 · Outros sistemas de representação</span>
+  <h2>Hexadecimal, Morse e Base64</h2>
+  <p>Binário é fundamental, mas incómodo para humanos lerem — uma cor num website como <code>11111111 00000000 00000000</code> é difícil de digerir. Por isso surgiram notações intermédias, feitas para serem mais compactas ou mais robustas a um determinado meio de transmissão.</p>
+
+  <div class="card">
+    <h3>Hexadecimal <span class="tag">base 16</span></h3>
+    <p style="font-size:.9rem;">Cada dígito hexadecimal representa exatamente 4 bits (um nibble), o que torna a conversão para/de binário direta — ao contrário do decimal. Por isso é a notação preferida para endereços de memória e cores (<code>#FF9900</code>).</p>
+    <div class="tbl-wrap">
+    <table>
+      <tr><th>Bin</th><th>Hex</th><th>Bin</th><th>Hex</th></tr>
+      <tr><td class="mono">0000</td><td class="mono">0</td><td class="mono">1000</td><td class="mono">8</td></tr>
+      <tr><td class="mono">0001</td><td class="mono">1</td><td class="mono">1001</td><td class="mono">9</td></tr>
+      <tr><td class="mono">0010</td><td class="mono">2</td><td class="mono">1010</td><td class="mono">A</td></tr>
+      <tr><td class="mono">0011</td><td class="mono">3</td><td class="mono">1011</td><td class="mono">B</td></tr>
+      <tr><td class="mono">0100</td><td class="mono">4</td><td class="mono">1100</td><td class="mono">C</td></tr>
+      <tr><td class="mono">0101</td><td class="mono">5</td><td class="mono">1101</td><td class="mono">D</td></tr>
+      <tr><td class="mono">0110</td><td class="mono">6</td><td class="mono">1110</td><td class="mono">E</td></tr>
+      <tr><td class="mono">0111</td><td class="mono">7</td><td class="mono">1111</td><td class="mono">F</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Código Morse <span class="tag">áudio / luz</span></h3>
+    <p style="font-size:.9rem;">Criado nos anos 1830–40 para o telégrafo elétrico, o Morse não é binário no sentido estrito (usa sinal curto, sinal longo <i>e</i> pausas com durações diferentes), mas partilha a ideia central: representar informação com um alfabeto mínimo de símbolos temporais.</p>
+    <div class="field">
+      <label for="morseInput">Texto a converter</label>
+      <input type="text" id="morseInput" value="SOS" maxlength="20">
+    </div>
+    <div class="readout" id="morseOut"></div>
+    <div class="morse-bars" id="morseBars"></div>
+  </div>
+
+  <div class="card">
+    <h3>Base64 <span class="tag">binário → texto seguro</span></h3>
+    <p style="font-size:.9rem;">Muitos sistemas antigos (email, certas partes da web) só garantem transportar texto simples de forma fiável. O Base64 reagrupa os bits de qualquer ficheiro binário em blocos de 6 bits (64 valores possíveis) e mapeia-os para letras, números, <code>+</code> e <code>/</code> — permitindo enviar imagens ou ficheiros dentro de mensagens de texto.</p>
+    <div class="field">
+      <label for="b64Input">Texto original</label>
+      <input type="text" id="b64Input" value="Olá, mundo!" maxlength="40">
+    </div>
+    <div class="readout" id="b64Out"></div>
+  </div>
+</section>
+
+<!-- ================= NÍVEIS DE LINGUAGEM ================= -->
+<section id="niveis">
+  <span class="eyebrow">06 · Da máquina ao humano</span>
+  <h2>Níveis de linguagem de programação</h2>
+  <p>Ninguém escreve software real diretamente em 0s e 1s. As linguagens de programação são camadas sucessivas de abstração construídas <i>em cima</i> do binário, cada uma mais próxima da forma como uma pessoa pensa e mais longe da forma como o processador realmente trabalha.</p>
+  <div class="compare-grid" id="stackDemo"></div>
+  <p class="note">Cada seta neste percurso é executada por outro programa: um <b>compilador</b> ou <b>interpretador</b> traduz o nível de cima para o nível de baixo. É "linguagens" a construir outras linguagens.</p>
+</section>
+
+<!-- ================= COMPARAÇÃO ================= -->
+<section id="comparacao">
+  <span class="eyebrow">07 · Comparação objetiva</span>
+  <h2>Quando usar cada notação</h2>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>Sistema</th><th>Base</th><th>Uso típico</th><th>Legível por humanos</th></tr>
+    <tr><td class="mono">Binário</td><td class="mono">2</td><td>funcionamento interno do hardware</td><td>muito baixo</td></tr>
+    <tr><td class="mono">Octal</td><td class="mono">8</td><td>permissões Unix (<code>chmod 755</code>)</td><td>baixo</td></tr>
+    <tr><td class="mono">Decimal</td><td class="mono">10</td><td>uso humano quotidiano</td><td>alto</td></tr>
+    <tr><td class="mono">Hexadecimal</td><td class="mono">16</td><td>endereços de memória, cores, hashes</td><td>médio</td></tr>
+    <tr><td class="mono">Base64</td><td class="mono">64</td><td>transportar ficheiros binários em texto</td><td>baixo</td></tr>
+    <tr><td class="mono">Morse</td><td class="mono">—</td><td>transmissão por som/luz, rádio</td><td>médio (com treino)</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- ================= EXERCÍCIOS ================= -->
+<section id="exercicios">
+  <span class="eyebrow">08 · Testa-te</span>
+  <h2>Exercícios progressivos</h2>
+  <div id="exList"></div>
+</section>
+
+<footer>codigo-binario.html · gerado para consulta offline</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- utilidades ---------- */
+function toBin(n, len){ let s = (n>>>0).toString(2); if(len) s = s.padStart(len,'0'); return s; }
+function toHex(n, len){ let s = (n>>>0).toString(16).toUpperCase(); if(len) s = s.padStart(len,'0'); return s; }
+function textToUtf8Bytes(str){
+  const bytes = [];
+  const enc = new TextEncoder();
+  enc.encode(str).forEach(b=>bytes.push(b));
+  return bytes;
+}
+
+/* ---------- header bit strip animation (subtle, static content ok) ---------- */
+
+/* ---------- BYTE BUILDER ---------- */
+const byteRow = document.getElementById('byteRow');
+const bitLabels = document.getElementById('bitLabels');
+const bits = [0,0,0,0,0,0,0,0]; // index 0 = MSB (128)
+const weights = [128,64,32,16,8,4,2,1];
+
+weights.forEach((w)=>{
+  const lab = document.createElement('span');
+  lab.textContent = w;
+  bitLabels.appendChild(lab);
+});
+
+function renderByte(){
+  byteRow.innerHTML = '';
+  bits.forEach((v, i)=>{
+    const b = document.createElement('button');
+    b.className = 'bit-btn' + (v ? ' on' : '');
+    b.textContent = v;
+    b.setAttribute('aria-label', 'bit posição ' + weights[i]);
+    b.addEventListener('click', ()=>{
+      bits[i] = bits[i] ? 0 : 1;
+      renderByte();
+    });
+    byteRow.appendChild(b);
+  });
+  const active = [];
+  let total = 0;
+  bits.forEach((v,i)=>{ if(v){ active.push(weights[i]); total += weights[i]; } });
+  document.getElementById('byteDecimal').textContent = total;
+  document.getElementById('sumSteps').innerHTML = active.length
+    ? active.map(w=>'<b>'+w+'</b>').join(' + ') + ' = ' + total
+    : 'nenhum bit ativo = 0';
+}
+document.getElementById('btnRandomByte').addEventListener('click', ()=>{
+  for(let i=0;i<8;i++) bits[i] = Math.random()<0.5 ? 1:0;
+  renderByte();
+});
+document.getElementById('btnClearByte').addEventListener('click', ()=>{
+  for(let i=0;i<8;i++) bits[i]=0;
+  renderByte();
+});
+renderByte();
+
+/* ---------- NUMBER CONVERTER (dec/bin/hex synced) ---------- */
+const numDec = document.getElementById('numDec');
+const numBin = document.getElementById('numBin');
+const numHex = document.getElementById('numHex');
+const numSteps = document.getElementById('numSteps');
+
+function updateFromDecimal(){
+  let v = parseInt(numDec.value, 10);
+  if(isNaN(v) || v<0) v = 0;
+  if(v>1114111) v = 1114111;
+  numBin.value = toBin(v);
+  numHex.value = toHex(v);
+  explainSteps(v);
+}
+function explainSteps(v){
+  const bin = toBin(v);
+  let parts = [];
+  for(let i=0;i<bin.length;i++){
+    if(bin[i]==='1'){
+      const power = bin.length-1-i;
+      parts.push('2<sup>'+power+'</sup>');
+    }
+  }
+  numSteps.innerHTML = '<span class="dim">'+v+' em binário → </span>' + bin +
+    (parts.length ? '<br><span class="dim">soma de potências de 2: </span>' + parts.join(' + ') : '');
+}
+numDec.addEventListener('input', updateFromDecimal);
+numBin.addEventListener('input', ()=>{
+  const clean = numBin.value.replace(/[^01]/g,'');
+  const v = clean.length ? parseInt(clean,2) : 0;
+  numDec.value = v;
+  numHex.value = toHex(v);
+  explainSteps(v);
+});
+numHex.addEventListener('input', ()=>{
+  const clean = numHex.value.replace(/[^0-9a-fA-F]/g,'');
+  const v = clean.length ? parseInt(clean,16) : 0;
+  numDec.value = v;
+  numBin.value = toBin(v);
+  explainSteps(v);
+});
+updateFromDecimal();
+
+/* ---------- TEXT / ASCII / UTF-8 ---------- */
+const txtInput = document.getElementById('txtInput');
+const charTable = document.getElementById('charTable');
+const txtBinaryOut = document.getElementById('txtBinaryOut');
+
+function renderText(){
+  const str = txtInput.value;
+  charTable.innerHTML = '';
+  let binChunks = [];
+  for (const ch of str){
+    const bytes = textToUtf8Bytes(ch);
+    const cell = document.createElement('div');
+    cell.className = 'char-cell';
+    const chSpan = document.createElement('div');
+    chSpan.className = 'ch';
+    chSpan.textContent = ch === ' ' ? '␣' : ch;
+    const binSpan = document.createElement('div');
+    binSpan.className = 'bin';
+    binSpan.textContent = bytes.map(b=>toBin(b,8)).join(' ');
+    const hexSpan = document.createElement('div');
+    hexSpan.className = 'bin';
+    hexSpan.textContent = '0x' + bytes.map(b=>toHex(b,2)).join('');
+    cell.appendChild(chSpan);
+    cell.appendChild(binSpan);
+    cell.appendChild(hexSpan);
+    charTable.appendChild(cell);
+    binChunks.push(bytes.map(b=>toBin(b,8)).join(' '));
+  }
+  txtBinaryOut.textContent = binChunks.join('  ') || '—';
+}
+txtInput.addEventListener('input', renderText);
+renderText();
+
+/* ---------- MORSE ---------- */
+const MORSE = {
+  A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',
+  K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',
+  U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..',
+  '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....',
+  '6':'-....','7':'--...','8':'---..','9':'----.'
+};
+const morseInput = document.getElementById('morseInput');
+const morseOut = document.getElementById('morseOut');
+const morseBars = document.getElementById('morseBars');
+
+function renderMorse(){
+  const str = morseInput.value.toUpperCase();
+  let outParts = [];
+  morseBars.innerHTML = '';
+  for(const ch of str){
+    if(ch === ' '){
+      outParts.push('/');
+      const g = document.createElement('div');
+      g.className = 'bar gapword';
+      morseBars.appendChild(g);
+      continue;
+    }
+    const code = MORSE[ch];
+    if(!code) continue;
+    outParts.push(code);
+    for(let i=0;i<code.length;i++){
+      const bar = document.createElement('div');
+      bar.className = 'bar ' + (code[i]==='.' ? 'dot' : 'dash');
+      morseBars.appendChild(bar);
+      if(i < code.length-1){
+        const gap = document.createElement('div');
+        gap.className = 'bar gap';
+        morseBars.appendChild(gap);
+      }
+    }
+    const gapAfter = document.createElement('div');
+    gapAfter.className = 'bar gap';
+    morseBars.appendChild(gapAfter);
+  }
+  morseOut.textContent = outParts.join(' ') || '—';
+}
+morseInput.addEventListener('input', renderMorse);
+renderMorse();
+
+/* ---------- BASE64 ---------- */
+const b64Input = document.getElementById('b64Input');
+const b64Out = document.getElementById('b64Out');
+function renderB64(){
+  const str = b64Input.value;
+  let encoded = '—';
+  try{
+    encoded = btoa(unescape(encodeURIComponent(str)));
+  }catch(e){ encoded = '(erro ao codificar)'; }
+  b64Out.innerHTML = '<span class="dim">"'+ (str||'') +'" →</span><br>' + encoded;
+}
+b64Input.addEventListener('input', renderB64);
+renderB64();
+
+/* ---------- STACK DEMO (levels of language) ---------- */
+const stackData = [
+  {
+    lvl: 'Código máquina — nível 0',
+    code: '10110000 01100001',
+    desc: 'Bits interpretados diretamente pelo processador. Neste exemplo (x86), este padrão corresponde a "coloca o valor 97 no registo AL". Ilegível sem manual do processador em mãos.'
+  },
+  {
+    lvl: 'Assembly — nível 1',
+    code: 'MOV AL, 97',
+    desc: 'Mnemónicas que representam 1-para-1 as instruções máquina. Um "assembler" traduz isto diretamente para os bits acima. Ainda exige pensar como o processador.'
+  },
+  {
+    lvl: 'Linguagem de alto nível — nível 2',
+    code: 'letra = chr(97)  # "a"',
+    desc: 'Linguagens como Python, C ou JavaScript. Um compilador ou interpretador trata da tradução para assembly/máquina. Foco na lógica do problema, não no hardware.'
+  },
+  {
+    lvl: 'Linguagem natural — nível 3',
+    code: '"Guarda a letra \'a\' numa variável chamada letra."',
+    desc: 'A intenção humana original. Cada nível abaixo é uma tradução progressivamente mais rígida e menos ambígua desta frase.'
+  }
+];
+const stackDemo = document.getElementById('stackDemo');
+stackData.forEach(item=>{
+  const div = document.createElement('div');
+  div.className = 'compare-card';
+  div.innerHTML = '<div class="lvl">'+item.lvl+'</div><code>'+item.code.replace(/</g,'&lt;')+'</code><p>'+item.desc+'</p>';
+  stackDemo.appendChild(div);
+});
+
+/* ---------- EXERCISES ---------- */
+const exercises = [
+  {
+    q: 'O byte 00000101 corresponde a que número decimal?',
+    opts: ['3','5','7','10'],
+    correct: 1,
+    explain: 'Bits ativos nas posições 4 (valor 4) e 1 (valor 1): 4 + 1 = <b>5</b>. As outras opções somam combinações de potências de 2 que não correspondem a este padrão exato.'
+  },
+  {
+    q: 'Quantos valores diferentes cabem num único byte (8 bits)?',
+    opts: ['8','16','128','256'],
+    correct: 3,
+    explain: 'Com 8 bits, cada um podendo ser 0 ou 1, há 2<sup>8</sup> = <b>256</b> combinações possíveis (de 00000000 a 11111111, ou seja, 0 a 255 em decimal).'
+  },
+  {
+    q: 'Porque é que o Unicode foi criado, se o ASCII já existia?',
+    opts: [
+      'Para tornar o texto mais rápido de transmitir',
+      'Para representar caracteres de outras escritas além do alfabeto inglês, como ç, 字 ou emojis',
+      'Para substituir o hexadecimal',
+      'Porque o ASCII deixou de funcionar em computadores modernos'
+    ],
+    correct: 1,
+    explain: 'O ASCII, com apenas 128 posições (7 bits), cobre bem o inglês mas não acentos, outros alfabetos ou símbolos. O Unicode resolve isso atribuindo um número a praticamente qualquer caráter de qualquer escrita — não tem relação com velocidade de transmissão nem substitui o hexadecimal, que continua a ser apenas uma notação para números.'
+  },
+  {
+    q: 'Em hexadecimal, o número binário 11110000 escreve-se como:',
+    opts: ['E0','F0','FF','A0'],
+    correct: 1,
+    explain: '11110000 divide-se em dois blocos de 4 bits: 1111 = F, e 0000 = 0. Cada dígito hexadecimal representa exatamente um nibble (4 bits), por isso o resultado é <b>F0</b> — sem precisar de passar por decimal.'
+  },
+  {
+    q: 'Qual destas afirmações descreve melhor a relação entre uma linguagem de alto nível (como Python) e o código máquina?',
+    opts: [
+      'São a mesma coisa, só muda a aparência visual',
+      'A linguagem de alto nível é executada diretamente pelo processador, sem tradução',
+      'Um compilador ou interpretador traduz a linguagem de alto nível em instruções que o processador entende',
+      'O código máquina é mais recente e substituiu as linguagens de alto nível'
+    ],
+    correct: 2,
+    explain: 'Processadores só "entendem" código máquina (bits). Linguagens de alto nível existem para que humanos pensem em termos mais próximos do problema; um compilador (traduz tudo antes de correr) ou um interpretador (traduz enquanto corre) faz a ponte até ao nível mais baixo.'
+  }
+];
+
+const exList = document.getElementById('exList');
+exercises.forEach((ex, qi)=>{
+  const wrap = document.createElement('div');
+  wrap.className = 'exercise';
+  const qn = document.createElement('div');
+  qn.className = 'qn';
+  qn.textContent = 'PERGUNTA ' + (qi+1) + ' de ' + exercises.length;
+  const qtext = document.createElement('div');
+  qtext.style.fontWeight = '600';
+  qtext.textContent = ex.q;
+  const optRow = document.createElement('div');
+  optRow.className = 'opt-row';
+  const explain = document.createElement('div');
+  explain.className = 'explain';
+  explain.innerHTML = ex.explain;
+
+  ex.opts.forEach((optText, oi)=>{
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.textContent = optText;
+    b.addEventListener('click', ()=>{
+      if (wrap.dataset.answered) return;
+      wrap.dataset.answered = '1';
+      Array.from(optRow.children).forEach((c,ci)=>{
+        if(ci === ex.correct) c.classList.add('correct');
+        else if(ci === oi) c.classList.add('wrong');
+      });
+      explain.classList.add('show');
+    });
+    optRow.appendChild(b);
+  });
+
+  wrap.appendChild(qn);
+  wrap.appendChild(qtext);
+  wrap.appendChild(optRow);
+  wrap.appendChild(explain);
+  exList.appendChild(wrap);
+});
+
+})();
+</script>
