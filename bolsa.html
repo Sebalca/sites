@@ -22,7 +22,7 @@ header.hero{padding:48px 16px 20px;max-width:1180px;margin:auto}
 h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(2rem,6vw,3.2rem);line-height:1.1;margin:.3em 0 .4em}
 .lead{color:var(--muted);font-size:1.08rem;max-width:680px}
 .layout{max-width:1180px;margin:auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:24px;padding:0 16px}
-nav.toc{position:sticky;top:16px;align-self:start;max-height:calc(100vh - 32px);overflow-y:auto;padding:14px 0}
+nav.toc{position:sticky;top:64px;align-self:start;max-height:calc(100vh - 80px);overflow-y:auto;padding:14px 0}
 nav.toc .ttl{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 8px 12px}
 nav.toc ol{list-style:none;margin:0;padding:0;counter-reset:t}
 nav.toc li{counter-increment:t}
@@ -32,6 +32,18 @@ nav.toc a:hover{background:var(--card)}
 nav.toc a.act{border-left-color:var(--acc);background:var(--card);color:var(--acc);font-weight:600}
 nav.toc a.act:before{color:var(--acc)}
 #tocbtn{display:none}
+.tabs{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs .in{max-width:1180px;margin:auto;padding:0 16px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs .in::-webkit-scrollbar{display:none}
+.tabs button{font:inherit;font-weight:600;font-size:.95rem;padding:14px 16px 12px;border:0;border-bottom:3px solid transparent;background:none;color:var(--muted);cursor:pointer;white-space:nowrap}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{color:var(--acc);border-bottom-color:var(--acc)}
+.panel{display:none}.panel.on{display:block}
+.chart svg{display:block;width:100%;height:auto}
+.chart text{fill:var(--muted);font-size:11px;font-family:inherit}
+.chart .lab{fill:var(--ink);font-size:12px}
+.tablewrap table:has(th:nth-child(4)){min-width:640px}
+@media (max-width:560px){.tablewrap table:has(th:nth-child(3)){min-width:520px}}
 @media (max-width:860px){
   .layout{display:block}
   nav.toc{position:fixed;inset:auto 12px 76px 12px;top:auto;max-height:70vh;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.25);z-index:30;display:none;padding:12px 6px}
@@ -39,7 +51,7 @@ nav.toc a.act:before{color:var(--acc)}
   #tocbtn{display:flex;align-items:center;gap:8px;position:fixed;right:16px;bottom:16px;z-index:31;font:inherit;font-weight:700;font-size:.92rem;padding:12px 18px;border-radius:999px;border:0;background:var(--acc);color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer}
 }
 main{min-width:0;padding:0 0 60px}
-section{padding-top:36px;scroll-margin-top:16px}
+section{padding-top:36px;scroll-margin-top:60px}
 h2{font-family:Georgia,"Times New Roman",serif;font-size:1.75rem;margin:0 0 .3em;line-height:1.2}
 h2 .n{color:var(--acc);font-size:1rem;font-family:inherit;display:block;letter-spacing:.1em}
 h3{font-size:1.08rem;margin:1.2em 0 .3em}
@@ -115,7 +127,8 @@ footer{max-width:1180px;margin:auto;padding:24px 16px 40px;color:var(--muted);fo
 .phases div:nth-child(4){border-top-color:var(--gold)}.phases div:nth-child(5){border-top-color:var(--acc2)}
 .phases b{display:block;font-size:.92rem;margin-bottom:3px}
 .phases b:before{content:counter(ph)". ";color:var(--muted)}
-@media (max-width:760px){.phases{grid-template-columns:1fr}}
+.phases.p4{grid-template-columns:repeat(4,1fr)}
+@media (max-width:760px){.phases,.phases.p4{grid-template-columns:1fr}}
 .err{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:10px 0}
 .err .ix{grid-row:span 3;font-family:Georgia,serif;font-size:1.6rem;font-weight:700;color:var(--acc2);line-height:1}
 .err h3{margin:0;font-size:1.02rem}
@@ -129,33 +142,23 @@ footer{max-width:1180px;margin:auto;padding:24px 16px 40px;color:var(--muted);fo
 <header class="hero">
   <div class="kicker">Guia · Mercados financeiros</div>
   <h1>A Bolsa: da taberna de Bruges aos algoritmos</h1>
-  <p class="lead">Como surgiu, como funciona, quem participa, os grandes marcos e crises, e os conceitos essenciais para perceber o mercado de ações.</p>
+  <p class="lead">Como surgiu, como funciona, os grandes marcos e crises, como se pagam impostos em Portugal e o que a história mostra sobre o comportamento do mercado.</p>
 </header>
 
+<div class="tabs" role="tablist"><div class="in">
+  <button class="on" data-tab="guia" role="tab">Guia da bolsa</button>
+  <button data-tab="fiscal" role="tab">Fiscalidade</button>
+  <button data-tab="analise" role="tab">Análise geral</button>
+</div></div>
 <div class="layout">
 <nav class="toc" id="toc" aria-label="Tópicos">
   <div class="ttl">Tópicos</div>
-  <ol>
-    <li><a href="#oque">O que é a bolsa</a></li>
-    <li><a href="#origens">Como surgiu</a></li>
-    <li><a href="#funciona">Como funciona hoje</a></li>
-    <li><a href="#ordens">Tipos de ordens</a></li>
-    <li><a href="#ativos">O que se negocia</a></li>
-    <li><a href="#indices">Os grandes índices</a></li>
-    <li><a href="#marcos">Marcos históricos</a></li>
-    <li><a href="#bolhas">As bolhas</a></li>
-    <li><a href="#portugal">A bolsa em Portugal</a></li>
-    <li><a href="#valor">Avaliar uma ação</a></li>
-    <li><a href="#risco">Risco, retorno e ciclos</a></li>
-    <li><a href="#calc">Juros compostos</a></li>
-    <li><a href="#erros">Erros comuns</a></li>
-    <li><a href="#licoes">Lições de 400 anos</a></li>
-    <li><a href="#glossario">Glossário</a></li>
-  </ol>
+  <ol id="tocl"></ol>
 </nav>
 <button id="tocbtn" aria-controls="toc" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Tópicos</button>
 
 <main>
+<div class="panel on" id="p-guia">
 
 <section id="oque">
   <h2>O que é a bolsa?</h2>
@@ -202,15 +205,15 @@ footer{max-width:1180px;margin:auto;padding:24px 16px 40px;color:var(--muted);fo
   <p>Do lado esquerdo estão os compradores (preço que estão dispostos a pagar — <em>bid</em>); do lado direito os vendedores (preço que pedem — <em>ask</em>). Há negócio quando os preços se cruzam.</p>
   <div class="book">
     <div class="side buy"><h3 style="color:var(--acc)">Compra (bid)</h3>
-      <div class="row" style="--w:60%"><span>1 200</span><b>10,02 €</b></div>
-      <div class="row" style="--w:85%"><span>3 400</span><span>10,01 €</span></div>
+      <div class="row" style="--w:60%"><span>1 200</span><b>10,02 €</b></div>
+      <div class="row" style="--w:85%"><span>3 400</span><span>10,01 €</span></div>
       <div class="row" style="--w:45%"><span>900</span><span>10,00 €</span></div>
-      <div class="row" style="--w:100%"><span>5 000</span><span>9,99 €</span></div>
+      <div class="row" style="--w:100%"><span>5 000</span><span>9,99 €</span></div>
     </div>
     <div class="side sell"><h3 style="color:var(--acc2);text-align:right">Venda (ask)</h3>
       <div class="row" style="--w:50%"><b>10,04 €</b><span>800</span></div>
-      <div class="row" style="--w:70%"><span>10,05 €</span><span>2 100</span></div>
-      <div class="row" style="--w:90%"><span>10,06 €</span><span>4 000</span></div>
+      <div class="row" style="--w:70%"><span>10,05 €</span><span>2 100</span></div>
+      <div class="row" style="--w:90%"><span>10,06 €</span><span>4 000</span></div>
       <div class="row" style="--w:35%"><span>10,08 €</span><span>600</span></div>
     </div>
   </div>
@@ -387,8 +390,8 @@ footer{max-width:1180px;margin:auto;padding:24px 16px 40px;color:var(--muted);fo
     <tr><td><b>FTSE 100</b></td><td>Reino Unido</td><td>1984</td><td>100 maiores da Bolsa de Londres.</td></tr>
     <tr><td><b>CAC 40 / DAX</b></td><td>França / Alemanha</td><td>1987 / 1988</td><td>O DAX é um índice de retorno total (inclui dividendos).</td></tr>
     <tr><td><b>Euro Stoxx 50</b></td><td>Zona euro</td><td>1998</td><td>50 maiores empresas da zona euro.</td></tr>
-    <tr><td><b>MSCI World</b></td><td>Desenvolvidos</td><td>1969</td><td>Cerca de 1 500 empresas de 23 países desenvolvidos. Base de muitos ETF globais.</td></tr>
-    <tr><td><b>PSI</b></td><td>Portugal</td><td>1992</td><td>Nasceu como PSI-20 (base 3 000 pontos); passou a PSI em 2021, com número variável de empresas.</td></tr>
+    <tr><td><b>MSCI World</b></td><td>Desenvolvidos</td><td>1969</td><td>Cerca de 1 500 empresas de 23 países desenvolvidos. Base de muitos ETF globais.</td></tr>
+    <tr><td><b>PSI</b></td><td>Portugal</td><td>1992</td><td>Nasceu como PSI-20 (base 3 000 pontos); passou a PSI em 2021, com número variável de empresas.</td></tr>
   </table></div>
 </section>
 
@@ -422,7 +425,7 @@ footer{max-width:1180px;margin:auto;padding:24px 16px 40px;color:var(--muted);fo
     <div class="ev inov" data-c="inov"><span class="yr">1976</span><h3>Primeiro fundo de índice para particulares</h3><p>John Bogle (Vanguard) lança um fundo que replica o S&amp;P 500. Começa a revolução do investimento passivo e de baixo custo.</p></div>
     <div class="ev inov" data-c="inov"><span class="yr">1986</span><h3>"Big Bang" de Londres</h3><p>Desregulação: fim de comissões fixas, entrada de bancos estrangeiros, negociação eletrónica.</p></div>
     <div class="ev crise" data-c="crise"><span class="yr">1987</span><h3>Segunda-feira Negra</h3><p>19 de outubro: o Dow cai 22,6% num só dia, a maior queda diária da história. Culpa parcial do "portfolio insurance" automatizado. Levou à criação dos circuit breakers. Em Portugal, rebentou a euforia bolsista que se seguiu às privatizações iniciais.</p></div>
-    <div class="ev crise" data-c="crise"><span class="yr">1989–90</span><h3>Bolha japonesa</h3><p>O Nikkei atinge cerca de 38 900 pontos em dezembro de 1989 e entra em décadas de declínio. Só voltou a esse nível em 2024 — 34 anos depois.</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">1989–90</span><h3>Bolha japonesa</h3><p>O Nikkei atinge cerca de 38 900 pontos em dezembro de 1989 e entra em décadas de declínio. Só voltou a esse nível em 2024 — 34 anos depois.</p></div>
     <div class="ev pt" data-c="pt"><span class="yr">1991–93</span><h3>CMVM e PSI-20</h3><p>Cria-se a Comissão do Mercado de Valores Mobiliários (1991) e o índice PSI-20 (base no final de 1992). Vaga de privatizações: EDP, PT, Galp, BCP passam a ser detidas por milhares de pequenos acionistas.</p></div>
     <div class="ev inov" data-c="inov"><span class="yr">1993</span><h3>Primeiro ETF americano</h3><p>Lançamento do SPDR S&amp;P 500 (SPY), hoje um dos títulos mais negociados do mundo.</p></div>
     <div class="ev crise" data-c="crise"><span class="yr">1997–98</span><h3>Crise asiática, Rússia e LTCM</h3><p>Desvalorizações em cadeia na Ásia, incumprimento russo e quase colapso do hedge fund LTCM, gerido por prémios Nobel, resgatado por um consórcio de bancos.</p></div>
@@ -430,7 +433,7 @@ footer{max-width:1180px;margin:auto;padding:24px 16px 40px;color:var(--muted);fo
     <div class="ev pt" data-c="pt"><span class="yr">2000–02</span><h3>Euronext Lisbon</h3><p>Lisboa e Porto fundem-se em 2000 (BVLP) e em 2002 a bolsa portuguesa integra a Euronext, juntamente com Paris, Amesterdão e Bruxelas.</p></div>
     <div class="ev inov" data-c="inov"><span class="yr">2007</span><h3>MiFID na Europa</h3><p>A diretiva europeia abre a concorrência entre bolsas e plataformas alternativas e reforça a proteção do investidor. Revista em 2018 (MiFID II).</p></div>
     <div class="ev crise" data-c="crise"><span class="yr">2008</span><h3>Crise financeira global</h3><p>Colapso do subprime e falência do Lehman Brothers (15 set.). O S&amp;P 500 caiu cerca de 57% entre o pico de 2007 e março de 2009. Resgates bancários e juros zero.</p></div>
-    <div class="ev crise" data-c="crise"><span class="yr">2010</span><h3>Flash Crash</h3><p>A 6 de maio, o Dow afunda quase 1 000 pontos em minutos e recupera logo a seguir. Expôs os riscos da negociação algorítmica de alta frequência.</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">2010</span><h3>Flash Crash</h3><p>A 6 de maio, o Dow afunda quase 1 000 pontos em minutos e recupera logo a seguir. Expôs os riscos da negociação algorítmica de alta frequência.</p></div>
     <div class="ev crise" data-c="crise"><span class="yr">2010–12</span><h3>Crise da dívida soberana</h3><p>Grécia, Irlanda e Portugal pedem resgate. Juros da dívida portuguesa disparam; o PSI-20 sofre fortemente até ao "whatever it takes" de Mario Draghi (2012).</p></div>
     <div class="ev pt" data-c="pt"><span class="yr">2014</span><h3>Queda do BES</h3><p>O Banco Espírito Santo, uma das maiores cotadas, colapsa em agosto e é alvo de medida de resolução. Os acionistas perdem praticamente tudo.</p></div>
     <div class="ev crise" data-c="crise"><span class="yr">2020</span><h3>Crash da COVID-19</h3><p>O S&amp;P 500 cai cerca de 34% em pouco mais de um mês — o bear market mais rápido da história — e recupera o máximo em cerca de cinco meses, graças a estímulos maciços.</p></div>
@@ -470,7 +473,7 @@ footer{max-width:1180px;margin:auto;padding:24px 16px 40px;color:var(--muted);fo
     <tr><th>Bolha</th><th>O que aconteceu</th><th>Queda aproximada</th></tr>
     <tr><td><b>Tulipomania</b><br>Holanda, 1634–37</td><td>Contratos sobre bolbos raros (sobretudo "quebrados", de cores raiadas, causadas afinal por um vírus) negociados em tabernas. Alguns bolbos valeram tanto quanto uma casa em Amesterdão. Colapsou em fevereiro de 1637.</td><td>Preços caíram mais de 90% em semanas; impacto económico limitado.</td></tr>
     <tr><td><b>Mississippi</b><br>França, 1719–20</td><td>John Law fundiu um banco emissor de papel-moeda com uma companhia colonial. Imprimia-se moeda para comprar ações e vice-versa. Nasceu a palavra "milionário".</td><td>Cerca de −90%; desconfiança no papel-moeda em França durante décadas.</td></tr>
-    <tr><td><b>Mares do Sul</b><br>Inglaterra, 1720</td><td>A South Sea Company trocou dívida pública por ações e subornou políticos. A ação passou de ~£128 para ~£1 000 em poucos meses. O Bubble Act proibiu sociedades anónimas sem autorização durante um século.</td><td>Cerca de −85% até ao fim do ano.</td></tr>
+    <tr><td><b>Mares do Sul</b><br>Inglaterra, 1720</td><td>A South Sea Company trocou dívida pública por ações e subornou políticos. A ação passou de ~£128 para ~£1 000 em poucos meses. O Bubble Act proibiu sociedades anónimas sem autorização durante um século.</td><td>Cerca de −85% até ao fim do ano.</td></tr>
     <tr><td><b>Railway Mania</b><br>Reino Unido, 1840s</td><td>Centenas de projetos de caminhos-de-ferro aprovados; muitos nunca construídos. Ao contrário de outras bolhas, deixou uma rede ferroviária real.</td><td>Ações ferroviárias perderam cerca de dois terços.</td></tr>
     <tr><td><b>Anos Loucos</b><br>EUA, 1924–29</td><td>Rádio, automóvel, eletricidade. Compra a crédito generalizada e "investment trusts" alavancados sobre outros trusts.</td><td>Dow −89% até 1932.</td></tr>
     <tr><td><b>Japão</b><br>1985–89</td><td>Juros baixos e crédito imobiliário. Dizia-se que o terreno do Palácio Imperial de Tóquio valia mais do que toda a Califórnia.</td><td>Nikkei −80% até 2003; imobiliário caiu durante 15 anos.</td></tr>
@@ -507,17 +510,9 @@ footer{max-width:1180px;margin:auto;padding:24px 16px 40px;color:var(--muted);fo
     <div class="card"><h3>Onde se negocia</h3><p>Na <strong>Euronext Lisbon</strong>, parte do grupo Euronext, que reúne bolsas de Paris, Amesterdão, Bruxelas, Lisboa, Dublin, Oslo e Milão.</p></div>
     <div class="card"><h3>Quem supervisiona</h3><p>A <strong>CMVM</strong> regula os mercados e intermediários. O Banco de Portugal supervisiona os bancos.</p></div>
     <div class="card"><h3>Mercado pequeno</h3><p>Poucas dezenas de empresas cotadas; o PSI está muito concentrado em energia, banca, retalho e papel. Daí que muitos portugueses invistam em mercados internacionais.</p></div>
-    <div class="card"><h3>Proteção do investidor</h3><p>O Sistema de Indemnização aos Investidores cobre até 25 000 € por investidor em caso de falha do intermediário (não cobre perdas de mercado).</p></div>
+    <div class="card"><h3>Proteção do investidor</h3><p>O Sistema de Indemnização aos Investidores cobre até 25 000 € por investidor em caso de falha do intermediário (não cobre perdas de mercado).</p></div>
   </div>
-  <h3>Fiscalidade (regra geral para residentes)</h3>
-  <div class="tablewrap"><table>
-    <tr><th>Rendimento</th><th>Tributação</th></tr>
-    <tr><td>Mais-valias de ações</td><td>Taxa autónoma de 28% sobre o saldo anual (ganhos menos perdas), declarado no IRS (Anexo G ou J se a corretora for estrangeira). Opção de englobamento possível.</td></tr>
-    <tr><td>Dividendos</td><td>Retenção de 28% (liberatória em Portugal). No englobamento, só 50% do dividendo de empresas da UE é tributado.</td></tr>
-    <tr><td>Títulos detidos menos de 365 dias</td><td>Desde 2023, englobamento obrigatório do saldo se o rendimento coletável total (incluindo esse saldo) atingir o último escalão de IRS.</td></tr>
-    <tr><td>Paraísos fiscais</td><td>Taxa agravada de 35%.</td></tr>
-  </table></div>
-  <p class="muted">As regras fiscais mudam; confirme sempre com o Portal das Finanças ou um contabilista.</p>
+  <div class="note"><strong>Impostos:</strong> as regras de tributação de mais-valias e dividendos, e como declarar no IRS, estão explicadas em detalhe no separador <a href="#f-visao" data-go="fiscal">Fiscalidade</a>.</div>
 </section>
 
 <section id="valor">
@@ -634,6 +629,349 @@ footer{max-width:1180px;margin:auto;padding:24px 16px 40px;color:var(--muted);fo
   <dl id="gl"></dl>
 </section>
 
+</div>
+
+<div class="panel" id="p-fiscal">
+<section id="f-visao">
+  <h2>Fiscalidade: visão geral</h2>
+  <p>Para um residente fiscal em Portugal, investir em bolsa gera dois tipos de rendimento, tratados de forma diferente no IRS:</p>
+  <div class="grid">
+    <div class="card"><span class="tag">Categoria G</span><h3>Mais-valias</h3><p>O ganho (ou perda) quando <strong>vende</strong> ações, ETF, obrigações, derivados ou criptoativos. Só existe imposto quando vende: enquanto mantiver o título, a valorização não é tributada.</p></div>
+    <div class="card"><span class="tag">Categoria E</span><h3>Rendimentos de capitais</h3><p>Dividendos, juros de obrigações e distribuições de ETF. São tributados <strong>quando são pagos</strong>, mesmo que não venda nada.</p></div>
+    <div class="card"><span class="tag">Regra-base</span><h3>Taxa de 28%</h3><p>As duas categorias têm, em regra, uma taxa especial de 28%, separada dos escalões do IRS. Pode, em alternativa, optar por <strong>englobar</strong> estes rendimentos com o salário e pagar à taxa dos escalões.</p></div>
+  </div>
+  <div class="note"><strong>Resumo prático:</strong> uma vez por ano, na declaração de IRS (Modelo 3, entregue entre 1 de abril e 30 de junho), declara todas as vendas e rendimentos do ano anterior. Se tiver imposto a pagar, paga até 31 de agosto. Se usar uma corretora estrangeira, é <em>sempre</em> o investidor que tem de declarar tudo.</div>
+</section>
+
+<section id="f-taxas">
+  <h2>Taxas e regras em 2026</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Situação</th><th>Tributação</th><th>Notas</th></tr>
+    <tr><td><b>Mais-valias de ações, ETF, obrigações, derivados</b></td><td>28% sobre o saldo anual</td><td>Ganhos menos perdas do mesmo ano. Englobamento opcional.</td></tr>
+    <tr><td><b>Títulos detidos menos de 365 dias</b></td><td>Englobamento <strong>obrigatório</strong> se o rendimento coletável total, incluindo esse saldo, for igual ou superior ao limite do último escalão (86 634 € em 2026)</td><td>Na prática, quem está no último escalão paga até 48% (mais taxa de solidariedade) em ganhos de curto prazo.</td></tr>
+    <tr><td><b>Dividendos e juros</b></td><td>28%</td><td>Em entidades portuguesas a retenção é liberatória: não precisa de declarar, salvo se quiser englobar.</td></tr>
+    <tr><td><b>Dividendos de empresas da UE/EEE, se englobados</b></td><td>Só 50% do valor é tributado</td><td>Pode compensar para quem tem rendimentos baixos.</td></tr>
+    <tr><td><b>Criptoativos detidos menos de 365 dias</b></td><td>28%</td><td>Regime em vigor desde 2023.</td></tr>
+    <tr><td><b>Criptoativos detidos 365 dias ou mais</b></td><td>Isentos</td><td>Fora de atividade profissional. Devem ser declarados mesmo assim.</td></tr>
+    <tr><td><b>Entidades em paraísos fiscais</b></td><td>35%</td><td>Países da lista de regimes fiscais claramente mais favoráveis.</td></tr>
+  </table></div>
+
+  <h3>Escalões de IRS 2026</h3>
+  <p>Relevantes para decidir se compensa englobar. São aplicados de forma progressiva sobre o rendimento coletável.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Rendimento coletável</th><th>Taxa marginal</th></tr>
+    <tr><td>Até 8 342 €</td><td>12,5%</td></tr>
+    <tr><td>8 342 € – 12 587 €</td><td>15,7%</td></tr>
+    <tr><td>12 587 € – 17 838 €</td><td>21,2%</td></tr>
+    <tr><td>17 838 € – 23 089 €</td><td>24,1%</td></tr>
+    <tr><td>23 089 € – 29 397 €</td><td>31,1%</td></tr>
+    <tr><td>29 397 € – 43 090 €</td><td>34,9%</td></tr>
+    <tr><td>43 090 € – 46 566 €</td><td>43,1%</td></tr>
+    <tr><td>46 566 € – 86 634 €</td><td>44,6%</td></tr>
+    <tr><td>Acima de 86 634 €</td><td>48%</td></tr>
+  </table></div>
+  <p class="muted">A taxa adicional de solidariedade (2,5% entre 80 000 € e 250 000 €, 5% acima) aplica-se aos rendimentos englobados. Até ao 4.º escalão (24,1%) a taxa marginal fica abaixo dos 28%, por isso o englobamento pode compensar para rendimentos mais baixos.</p>
+</section>
+
+<section id="f-calculo">
+  <h2>Como se calcula a mais-valia</h2>
+  <div class="deep">
+    <h3>A fórmula</h3>
+    <p><strong>Mais-valia = valor de venda − valor de aquisição − despesas</strong></p>
+    <ul>
+      <li><b>Despesas dedutíveis:</b> comissões de compra e de venda e outros encargos diretamente ligados à operação. Custos de custódia anuais e subscrições de plataformas não contam.</li>
+      <li><b>Regra FIFO:</b> se comprou o mesmo título várias vezes, considera-se que vende primeiro as unidades compradas há mais tempo. Não pode escolher o lote mais conveniente.</li>
+      <li><b>Moeda estrangeira:</b> o valor de compra é convertido ao câmbio da data de compra e o de venda ao câmbio da data de venda. A variação cambial faz parte do ganho ou perda.</li>
+      <li><b>Saldo anual:</b> somam-se todos os ganhos e perdas do ano. Só o saldo positivo é tributado.</li>
+    </ul>
+    <h4>Exemplo com FIFO e câmbio</h4>
+    <div class="tablewrap" style="margin:8px 0"><table>
+      <tr><th>Operação</th><th>Detalhe</th><th>Em euros</th></tr>
+      <tr><td>Compra 1 (março 2024)</td><td>10 ações a 100 $ · câmbio 1,10 · comissão 2 €</td><td>909,09 + 2 = 911,09 €</td></tr>
+      <tr><td>Compra 2 (junho 2025)</td><td>10 ações a 150 $ · câmbio 1,15 · comissão 2 €</td><td>1 304,35 + 2 = 1 306,35 €</td></tr>
+      <tr><td>Venda (maio 2026)</td><td>10 ações a 180 $ · câmbio 1,12 · comissão 2 €</td><td>1 607,14 − 2 = 1 605,14 €</td></tr>
+      <tr><td><b>Mais-valia</b></td><td>FIFO: vende as da compra 1</td><td><b>1 605,14 − 911,09 = 694,05 €</b></td></tr>
+      <tr><td><b>Imposto a 28%</b></td><td>Detidas mais de 365 dias</td><td><b>194,33 €</b></td></tr>
+    </table></div>
+    <p class="muted">Se tivesse podido escolher o lote da compra 2, o ganho seria só 298,79 €. O FIFO não o permite.</p>
+  </div>
+</section>
+
+<section id="f-simulador">
+  <h2>Simulador: taxa de 28% ou englobamento?</h2>
+  <div class="card calc">
+    <label for="fR">Rendimento coletável sem investimentos (€)<span class="val" id="fRv"></span></label>
+    <input type="number" id="fR" value="20000" step="100" min="0" inputmode="decimal">
+    <label for="fG">Saldo de mais-valias do ano (€)<span class="val" id="fGv"></span></label>
+    <input type="number" id="fG" value="3000" step="50" inputmode="decimal">
+    <label style="display:flex;gap:8px;align-items:center;margin-top:12px;color:var(--ink)"><input type="checkbox" id="fS"> Títulos detidos menos de 365 dias</label>
+    <div class="grid" style="margin-top:14px">
+      <div class="card" style="box-shadow:none"><div class="muted">Taxa autónoma (28%)</div><div class="big" id="fA"></div></div>
+      <div class="card" style="box-shadow:none"><div class="muted">Englobamento (estimativa)</div><div class="big" id="fB"></div><div class="muted" id="fBr" style="font-size:.85rem"></div></div>
+    </div>
+    <p id="fOut" style="font-weight:600"></p>
+    <p class="muted" style="font-size:.8rem">Estimativa simplificada para um sujeito passivo: escalões de 2026 e taxa adicional de solidariedade, sem deduções à coleta nem tributação conjunta. Use o simulador do Portal das Finanças antes de submeter a declaração.</p>
+  </div>
+</section>
+
+<section id="f-dividendos">
+  <h2>Dividendos e retenções no estrangeiro</h2>
+  <div class="deep">
+    <h3>Dividendos portugueses</h3>
+    <p>A empresa retém 28% e entrega ao Estado. Recebe o líquido e não precisa de fazer mais nada — a não ser que opte por englobar.</p>
+    <h3>Dividendos estrangeiros</h3>
+    <p>Aqui pode haver <strong>dupla tributação</strong>: o país da empresa retém imposto e Portugal também tributa.</p>
+    <ul>
+      <li><b>EUA:</b> retêm 30% por defeito. Preenchendo o formulário <strong>W-8BEN</strong> na corretora, a retenção desce para 15% ao abrigo da convenção entre Portugal e os EUA.</li>
+      <li><b>Outros países:</b> a retenção varia (por exemplo, França, Suíça ou Alemanha retêm mais do que a convenção prevê; o excesso só se recupera com pedidos de reembolso ao país de origem, muitas vezes morosos).</li>
+      <li><b>Em Portugal:</b> declara o dividendo bruto no Anexo J e o imposto pago no estrangeiro. Portugal aplica 28% e abate o imposto estrangeiro como <em>crédito por dupla tributação</em>, até ao limite da convenção.</li>
+    </ul>
+    <h4>Exemplo: 100 $ de dividendo de uma empresa americana (com W-8BEN)</h4>
+    <ul><li>EUA retêm 15 $.</li><li>Portugal: 28% de 100 $ = 28 $, menos crédito de 15 $ = 13 $ a pagar.</li><li>Total de imposto: 28 $ — o mesmo que um dividendo português.</li></ul>
+  </div>
+  <div class="deep">
+    <h3>ETF de acumulação vs. distribuição</h3>
+    <div class="pc">
+      <div class="pro"><b>Acumulação (Acc)</b><ul><li>Os dividendos são reinvestidos dentro do fundo</li><li>Não há imposto em Portugal até vender</li><li>O imposto é diferido e os juros compostos trabalham sobre o valor bruto</li></ul></div>
+      <div class="con"><b>Distribuição (Dist)</b><ul><li>Paga dividendos periódicos</li><li>Cada distribuição é tributada a 28% no ano em que é paga</li><li>Útil para quem quer rendimento regular</li></ul></div>
+    </div>
+    <p>A maioria dos ETF vendidos na Europa é domiciliada na Irlanda. Dentro do fundo, os dividendos americanos sofrem 15% de retenção; esse custo já está refletido no desempenho do ETF e não se recupera em Portugal.</p>
+  </div>
+</section>
+
+<section id="f-declarar">
+  <h2>Como declarar, passo a passo</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Passo</th><th>O que fazer</th></tr>
+    <tr><td><b>1. Reunir documentos</b></td><td>Peça à corretora o relatório fiscal anual (ou extrato de operações e de dividendos). Guarde as notas de execução de cada compra e venda.</td></tr>
+    <tr><td><b>2. Identificar o anexo</b></td><td><strong>Anexo G, quadro 9</strong> — mais-valias obtidas através de corretora portuguesa.<br><strong>Anexo J, quadro 9.2A</strong> — mais-valias obtidas através de corretora estrangeira.<br><strong>Anexo J, quadro 8A</strong> — dividendos e juros de fonte estrangeira (código E10 se já houve retenção portuguesa, E11 se não houve).<br><strong>Anexo E</strong> — dividendos portugueses, só se englobar.</td></tr>
+    <tr><td><b>3. Preencher cada venda</b></td><td>Código do país, datas e valores de aquisição e de realização, despesas. Agrupe por título e data quando a declaração o permitir.</td></tr>
+    <tr><td><b>4. Contas no estrangeiro</b></td><td>Se tem conta numa corretora ou banco fora de Portugal, indique-a no <strong>Anexo J, quadro 11</strong> (IBAN ou número de conta), mesmo que não tenha tido rendimentos.</td></tr>
+    <tr><td><b>5. Decidir o englobamento</b></td><td>Faça a simulação no Portal das Finanças com e sem englobamento. A opção aplica-se a todos os rendimentos da mesma categoria e do agregado.</td></tr>
+    <tr><td><b>6. Entregar e pagar</b></td><td>Entrega de 1 de abril a 30 de junho. Pagamento, se houver, até 31 de agosto.</td></tr>
+  </table></div>
+  <div class="grid">
+    <div class="card"><span class="tag">Corretora portuguesa</span><h3>Mais simples</h3><p>Comunica as operações à AT e retém imposto sobre dividendos. Algumas operações aparecem já pré-preenchidas, mas deve sempre confirmar.</p></div>
+    <div class="card"><span class="tag r">Corretora estrangeira</span><h3>Tudo por sua conta</h3><p>Não retém imposto português nem comunica à AT. Tem de converter valores para euros, preencher o Anexo J e declarar a conta. A troca automática de informação entre países (CRS) faz chegar os dados às Finanças na mesma.</p></div>
+  </div>
+</section>
+
+<section id="f-perdas">
+  <h2>Perdas e otimização legal</h2>
+  <div class="deep">
+    <h3>O que fazer com as perdas</h3>
+    <ul>
+      <li>As perdas abatem aos ganhos <strong>do mesmo ano</strong> automaticamente.</li>
+      <li>Se o saldo do ano for negativo, só pode reportá-lo para os <strong>5 anos seguintes</strong> se optar pelo englobamento nesse ano.</li>
+      <li>Por isso, num ano de perdas, entregue sempre a declaração com as vendas e com a opção de englobamento.</li>
+    </ul>
+    <h3>Boas práticas legais</h3>
+    <ul>
+      <li><b>Preferir ETF de acumulação</b> para o longo prazo, adiando o imposto.</li>
+      <li><b>Manter mais de 365 dias</b> se estiver perto do último escalão, para evitar o englobamento obrigatório.</li>
+      <li><b>Compensar ganhos com perdas</b> no mesmo ano: vender posições em perda antes de 31 de dezembro reduz o imposto sobre os ganhos realizados.</li>
+      <li><b>Preencher o W-8BEN</b> em todas as corretoras com ações americanas.</li>
+      <li><b>Avaliar o englobamento</b> em anos de rendimento baixo (estudantes, reformados, anos sabáticos).</li>
+      <li><b>Guardar tudo durante pelo menos 4 anos</b>, o prazo normal em que a AT pode corrigir a declaração.</li>
+    </ul>
+  </div>
+  <h3>Erros fiscais frequentes</h3>
+  <div class="err"><span class="ix">01</span><h3>Não declarar porque teve perdas</h3><p>Perde o direito de reportar a perda e arrisca coima por omissão.</p><p class="fix">Declarar sempre todas as vendas, com ganho ou perda.</p></div>
+  <div class="err"><span class="ix">02</span><h3>Esquecer a conta estrangeira</h3><p>A omissão da conta no quadro 11 do Anexo J dá coima, mesmo sem rendimentos.</p><p class="fix">Indicar todas as contas de corretoras e bancos fora de Portugal.</p></div>
+  <div class="err"><span class="ix">03</span><h3>Usar o câmbio errado</h3><p>Converter tudo ao câmbio do dia da venda distorce o ganho.</p><p class="fix">Converter compra e venda, cada uma ao câmbio da sua data.</p></div>
+  <div class="err"><span class="ix">04</span><h3>Declarar o dividendo líquido</h3><p>No Anexo J declara-se o valor bruto e o imposto retido no estrangeiro em separado.</p><p class="fix">Usar os valores brutos do relatório da corretora.</p></div>
+  <p class="muted">Este conteúdo resume as regras gerais e não substitui aconselhamento fiscal. Confirme sempre no Portal das Finanças ou com um contabilista certificado.</p>
+</section>
+</div>
+
+<div class="panel" id="p-analise">
+<section id="a-bolhas">
+  <h2>Bolhas: do início à recuperação</h2>
+  <p>Para cada grande bolha: quando começou a subida, quando atingiu o pico, quanto caiu e quanto tempo levou a voltar ao máximo. Repare que, em quase todos os casos, a queda devolveu o preço ao <strong>ponto onde a euforia tinha começado</strong>.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Bolha</th><th>Início da subida</th><th>Pico</th><th>Fundo</th><th>Queda</th><th>Voltou ao pico</th></tr>
+    <tr><td><b>Mares do Sul</b></td><td>início de 1720 (~£128)</td><td>jun. 1720 (~£1 000)</td><td>dez. 1720 (~£150)</td><td>−85%</td><td>Nunca</td></tr>
+    <tr><td><b>Dow Jones 1929</b></td><td>1924 (~100 pts)</td><td>3 set. 1929 (381)</td><td>8 jul. 1932 (41)</td><td>−89%</td><td>nov. 1954 — 25 anos</td></tr>
+    <tr><td><b>Ouro</b></td><td>1976 (~$105)</td><td>jan. 1980 ($850)</td><td>1999 (~$253)</td><td>−70%</td><td>jan. 2008 — 28 anos</td></tr>
+    <tr><td><b>Nikkei 225</b></td><td>1985 (~13 000)</td><td>29 dez. 1989 (38 916)</td><td>mar. 2009 (7 055)</td><td>−82%</td><td>fev. 2024 — 34 anos</td></tr>
+    <tr><td><b>Nasdaq dot-com</b></td><td>1995 (~1 000)</td><td>10 mar. 2000 (5 048)</td><td>9 out. 2002 (1 114)</td><td>−78%</td><td>abr. 2015 — 15 anos</td></tr>
+    <tr><td><b>PSI-20</b></td><td>meados dos anos 90</td><td>mar. 2000 (~14 800)</td><td>2012 e 2020 (abaixo de 4 500)</td><td>−75%</td><td>Ainda não, 26 anos depois</td></tr>
+    <tr><td><b>Imobiliário EUA</b></td><td>2000</td><td>2006</td><td>2012</td><td>−27%</td><td>2016 — cerca de 10 anos</td></tr>
+    <tr><td><b>S&amp;P 500 (2007)</b></td><td>2003 (~800)</td><td>9 out. 2007 (1 565)</td><td>9 mar. 2009 (677)</td><td>−57%</td><td>mar. 2013 — 5,5 anos</td></tr>
+    <tr><td><b>Bitcoin</b></td><td>2020 (~$7 000)</td><td>nov. 2021 (~$69 000)</td><td>nov. 2022 (~$15 500)</td><td>−77%</td><td>mar. 2024 — 2,3 anos</td></tr>
+  </table></div>
+  <h3>Anos até voltar ao máximo</h3>
+  <div class="card"><div id="chRec"></div><p class="muted" style="font-size:.8rem;margin:6px 0 0">Valores nominais, sem dividendos. Com dividendos reinvestidos os prazos encurtam (o Dow de 1929 recupera por volta de 1945); ajustados à inflação, alargam.</p></div>
+  <div class="note"><strong>O que estes casos mostram:</strong> as bolhas de índices amplos acabam por recuperar, mas o prazo pode ser de uma geração. As bolhas em ativos únicos (uma empresa, uma moeda, um bolbo) podem nunca recuperar. Quem comprou no pico precisou de paciência extrema; quem investiu de forma regular durante a queda recuperou muito antes.</div>
+</section>
+
+<section id="a-acoes">
+  <h2>Ações: crescimento e quedas</h2>
+  <p>No longo prazo, a bolsa americana rendeu cerca de 10% ao ano (cerca de 7% acima da inflação) desde 1926. Mas esse caminho foi tudo menos suave.</p>
+  <div class="grid">
+    <div class="card"><div class="big">~3×/ano</div><p>Quedas de 5% ou mais no S&amp;P 500. São ruído normal.</p></div>
+    <div class="card"><div class="big">~1×/ano</div><p>Correções de 10% ou mais, em média.</p></div>
+    <div class="card"><div class="big">~1 em 6 anos</div><p>Bear markets (−20% ou mais), em média, desde 1929.</p></div>
+    <div class="card"><div class="big">−14%</div><p>Queda máxima média <em>dentro</em> de cada ano desde 1980 — e, mesmo assim, cerca de 3 em cada 4 anos acabaram positivos.</p></div>
+  </div>
+  <h3>Grandes quedas do S&amp;P 500</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Período</th><th>Causa</th><th>Queda</th><th>Recuperação do máximo</th></tr>
+    <tr><td>1929–32</td><td>Crash e Grande Depressão</td><td>−86%</td><td>1954</td></tr>
+    <tr><td>1937–42</td><td>Recaída da Depressão, guerra</td><td>−60%</td><td>1946</td></tr>
+    <tr><td>1973–74</td><td>Choque petrolífero, inflação, Watergate</td><td>−48%</td><td>1980</td></tr>
+    <tr><td>1987</td><td>Segunda-feira Negra</td><td>−34%</td><td>1989</td></tr>
+    <tr><td>2000–02</td><td>Dot-com, 11 de Setembro, escândalos</td><td>−49%</td><td>2007</td></tr>
+    <tr><td>2007–09</td><td>Crise financeira global</td><td>−57%</td><td>2013</td></tr>
+    <tr><td>2020</td><td>COVID-19</td><td>−34% em 33 dias</td><td>agosto 2020 — 5 meses</td></tr>
+    <tr><td>2022</td><td>Inflação e subida de juros</td><td>−25%</td><td>janeiro 2024</td></tr>
+    <tr><td>2025</td><td>Tarifas comerciais dos EUA</td><td>−19% (quase bear)</td><td>junho 2025 — 4 meses</td></tr>
+  </table></div>
+  <h3>Probabilidade histórica de perder dinheiro, conforme o tempo investido</h3>
+  <div class="card"><div id="chLoss"></div><p class="muted" style="font-size:.8rem;margin:6px 0 0">S&amp;P 500 com dividendos, valores nominais, períodos desde 1926 (aproximado). O passado não garante o futuro, e outros mercados — como o Japão ou Portugal — tiveram períodos longos muito piores.</p></div>
+  <h3>O que faz as ações crescer no longo prazo</h3>
+  <p>O retorno de uma ação decompõe-se em três partes: <strong>crescimento dos lucros</strong> + <strong>dividendos</strong> ± <strong>variação do múltiplo</strong> (quanto o mercado está disposto a pagar por cada euro de lucro). No curto prazo, domina o múltiplo — que depende de juros e sentimento. No longo prazo, dominam lucros e dividendos.</p>
+</section>
+
+<section id="a-sazonal">
+  <h2>Tendências de calendário</h2>
+  <p>Há padrões estatísticos conhecidos sobre quando a bolsa costuma subir ou descer. São médias de muitas décadas, com enorme variação de ano para ano, e tendem a enfraquecer depois de conhecidos. Servem para perceber o mercado, não como estratégia de negociação.</p>
+  <h3>Retorno médio por mês (S&amp;P 500, desde 1950, aproximado)</h3>
+  <div class="card"><div id="chMonth"></div></div>
+  <div class="tablewrap"><table>
+    <tr><th>Padrão</th><th>O que diz</th><th>Explicação provável</th></tr>
+    <tr><td><b>Setembro fraco</b></td><td>O único mês com média negativa consistente no S&amp;P 500 desde 1950.</td><td>Regresso de férias, reajuste de carteiras, fecho de ano fiscal de muitos fundos.</td></tr>
+    <tr><td><b>"Sell in May and go away"</b></td><td>De novembro a abril o mercado rendeu, em média, bastante mais do que de maio a outubro.</td><td>Menor atividade no verão; fluxos de investimento no início do ano.</td></tr>
+    <tr><td><b>Outubro: crashes e fundos</b></td><td>Fama de mês negro (1929, 1987, 2008), mas também foi o mês em que muitos bear markets terminaram (1957, 1962, 1974, 1990, 2002, 2022).</td><td>Coincidência histórica e fim do período fraco.</td></tr>
+    <tr><td><b>Rali do Pai Natal</b></td><td>Os últimos 5 dias úteis do ano e os 2 primeiros de janeiro foram positivos em cerca de três quartos dos anos.</td><td>Otimismo sazonal, bónus, pouca liquidez, ausência de vendedores institucionais.</td></tr>
+    <tr><td><b>Efeito janeiro</b></td><td>Pequenas empresas subiam mais em janeiro.</td><td>Vendas para compensar perdas fiscais em dezembro e recompras em janeiro. Muito mais fraco hoje.</td></tr>
+    <tr><td><b>Viragem do mês</b></td><td>O último dia útil e os 3 primeiros dias do mês concentram uma fatia desproporcionada dos ganhos.</td><td>Entrada de salários, contribuições automáticas e reformas em fundos.</td></tr>
+    <tr><td><b>Véspera de feriado</b></td><td>Dias antes de feriados tendem a ser positivos.</td><td>Otimismo e baixa liquidez.</td></tr>
+    <tr><td><b>Efeito segunda-feira</b></td><td>Historicamente as segundas eram mais fracas.</td><td>Más notícias divulgadas ao fim de semana. Praticamente desapareceu.</td></tr>
+    <tr><td><b>Ciclo presidencial EUA</b></td><td>O 3.º ano do mandato foi, em média, o melhor; o 2.º (eleições intercalares) o mais fraco até ao outono.</td><td>Estímulos antes das eleições, incerteza política no 2.º ano.</td></tr>
+  </table></div>
+  <h3>Datas que costumam trazer volatilidade</h3>
+  <div class="grid">
+    <div class="card"><h3>Decisões de juros</h3><p>Reuniões da Fed (8 por ano) e do BCE. Os mercados movem-se mais com a conferência de imprensa do que com a decisão, já esperada.</p></div>
+    <div class="card"><h3>Dados de inflação e emprego</h3><p>CPI americano (meados do mês) e relatório de emprego (primeira sexta-feira do mês).</p></div>
+    <div class="card"><h3>Época de resultados</h3><p>Quatro vezes por ano, nas semanas seguintes ao fim de cada trimestre. Ações individuais podem variar 10–20% num dia.</p></div>
+    <div class="card"><h3>"Quadruple witching"</h3><p>Terceira sexta-feira de março, junho, setembro e dezembro: vencimento simultâneo de futuros e opções, com volumes muito elevados.</p></div>
+  </div>
+</section>
+
+<section id="a-eventos">
+  <h2>Como os acontecimentos movem o mercado</h2>
+  <p>O preço de uma ação é, em teoria, o valor presente dos lucros futuros esperados. Um acontecimento só move o mercado se alterar uma destas três coisas:</p>
+  <div class="grid">
+    <div class="card"><span class="tag">1</span><h3>Lucros esperados</h3><p>Uma guerra que corta fornecimentos, uma vacina que reabre a economia, um produto que vende mais do que o previsto.</p></div>
+    <div class="card"><span class="tag">2</span><h3>Taxa de juro</h3><p>Juros mais altos tornam os lucros futuros menos valiosos hoje. Por isso uma subida inesperada de juros derruba sobretudo as empresas de crescimento.</p></div>
+    <div class="card"><span class="tag">3</span><h3>Prémio de risco</h3><p>A incerteza faz os investidores exigirem mais retorno para manter ações: os preços descem mesmo sem mudança nos lucros.</p></div>
+  </div>
+  <div class="deep">
+    <h3>A regra mais importante: o mercado reage à surpresa, não à notícia</h3>
+    <ul>
+      <li><b>O que já é esperado está no preço.</b> Uma empresa pode anunciar lucros recorde e cair, se o mercado esperava ainda mais.</li>
+      <li><b>"Compra no rumor, vende na notícia".</b> A antecipação faz subir o preço antes do evento; quando ele acontece, quem comprou realiza lucros.</li>
+      <li><b>A reação é muito rápida.</b> Nos mercados líquidos, a informação pública é incorporada em segundos ou minutos.</li>
+      <li><b>Mas pode exagerar.</b> No curto prazo há sobre-reação (pânico ou euforia) que muitas vezes se corrige em dias ou semanas.</li>
+      <li><b>Choques geopolíticos tendem a ser passageiros.</b> Em média, as quedas provocadas por guerras, atentados e crises políticas recuperaram em semanas ou poucos meses — exceto quando o evento muda a economia (embargo petrolífero de 1973, pandemia de 2020).</li>
+      <li><b>O mesmo evento tem vencedores e perdedores.</b> Uma vacina faz cair a Zoom e subir as companhias aéreas; um iPhone faz subir a Apple e cair a BlackBerry.</li>
+    </ul>
+  </div>
+  <h3>Casos reais</h3>
+  <div class="filters" id="evf">
+    <button class="on" data-f="all">Todos</button>
+    <button data-f="geo">Geopolítica e desastres</button>
+    <button data-f="eco">Economia e juros</button>
+    <button data-f="emp">Empresas</button>
+  </div>
+  <div class="tablewrap"><table id="evt">
+    <tr><th>Data</th><th>Acontecimento</th><th>Reação imediata</th><th>O que aconteceu depois</th></tr>
+    <tr data-c="geo"><td>28 jan. 1986</td><td>Explosão do Challenger</td><td>Em minutos, as ações da Morton Thiokol (fabricante dos propulsores) caíram cerca de 12%; os outros fornecedores da NASA só 2–3%.</td><td>Meses depois, a comissão de inquérito confirmou que a culpa era dos propulsores da Thiokol. O mercado "sabia" no próprio dia.</td></tr>
+    <tr data-c="eco"><td>19 out. 1987</td><td>Segunda-feira Negra</td><td>Dow −22,6% num dia, sem notícia clara.</td><td>Recuperou o máximo em 1989. Mostrou o perigo das vendas automáticas.</td></tr>
+    <tr data-c="geo"><td>11 set. 2001</td><td>Atentados nos EUA</td><td>Bolsa fechada até 17 de setembro; Dow −7,1% na reabertura e −14% nessa semana.</td><td>Recuperou o nível anterior aos ataques em cerca de dois meses. Companhias aéreas e seguradoras sofreram durante muito mais tempo.</td></tr>
+    <tr data-c="eco"><td>15 set. 2008</td><td>Falência do Lehman Brothers</td><td>Dow −4,4%.</td><td>Foi o início da fase mais dura: o mercado só tocou no fundo seis meses depois.</td></tr>
+    <tr data-c="geo"><td>11 mar. 2011</td><td>Sismo, tsunami e Fukushima</td><td>Nikkei −6% e depois −10,6% em 15 de março.</td><td>Recuperou parcialmente em semanas; o setor nuclear mundial e a TEPCO nunca recuperaram.</td></tr>
+    <tr data-c="geo"><td>24 jun. 2016</td><td>Resultado do Brexit</td><td>Libra −8% face ao dólar; FTSE 100 −3%; bolsas europeias cerca de −7%.</td><td>O FTSE 100 recuperou em poucos dias, porque a libra fraca valorizou os lucros das multinacionais britânicas cotadas.</td></tr>
+    <tr data-c="geo"><td>9 nov. 2016</td><td>Eleição de Donald Trump</td><td>Futuros do Dow caíram cerca de 800 pontos durante a noite.</td><td>No próprio dia o Dow fechou em alta: o mercado passou de recear incerteza a antecipar cortes de impostos.</td></tr>
+    <tr data-c="eco"><td>16 mar. 2020</td><td>Pandemia, confinamentos</td><td>Dow −12,9%, a maior queda desde 1987.</td><td>Estímulos maciços: fundo a 23 de março e máximo recuperado em agosto.</td></tr>
+    <tr data-c="emp"><td>9 nov. 2020</td><td>Pfizer anuncia vacina com 90% de eficácia</td><td>Pfizer +8%; empresas de viagens e cruzeiros +20% ou mais; Zoom −17%.</td><td>Grande rotação de ações "de casa" para ações "da reabertura".</td></tr>
+    <tr data-c="geo"><td>24 fev. 2022</td><td>Invasão da Ucrânia</td><td>Bolsa russa −33%; petróleo acima de 100 $; S&amp;P 500 abriu −2,6%…</td><td>…e fechou +1,5% no mesmo dia. O impacto duradouro veio pela energia e pela inflação.</td></tr>
+    <tr data-c="emp"><td>3 fev. 2022</td><td>Meta: primeira queda de utilizadores</td><td>−26%, cerca de 230 mil milhões $ perdidos num dia.</td><td>Chegou a cair cerca de 77% face ao máximo; depois multiplicou com o plano de cortes de custos e a IA.</td></tr>
+    <tr data-c="emp"><td>25 mai. 2023</td><td>Nvidia prevê vendas muito acima do esperado</td><td>+24% num dia.</td><td>Início da vaga da IA: tornou-se a empresa mais valiosa do mundo.</td></tr>
+    <tr data-c="emp"><td>27 jan. 2025</td><td>DeepSeek (modelo de IA chinês barato)</td><td>Nvidia −17%, cerca de 590 mil milhões $ — a maior perda de valor de uma empresa num só dia.</td><td>Recuperou nos meses seguintes.</td></tr>
+    <tr data-c="eco"><td>2–9 abr. 2025</td><td>Tarifas do "Liberation Day"</td><td>S&amp;P 500 −4,8% e −6% em dois dias.</td><td>A 9 de abril, a pausa nas tarifas deu +9,5%, um dos melhores dias desde 2008.</td></tr>
+  </table></div>
+</section>
+
+<section id="a-spacex">
+  <h2>Lançamentos da SpaceX vs. mercado</h2>
+  <p>Até junho de 2026, a SpaceX era privada: um lançamento bem ou mal sucedido não tinha preço em bolsa. Isso mudou a <strong>12 de junho de 2026</strong>, com a entrada no Nasdaq (ticker <strong>SPCX</strong>), na maior IPO de sempre. Pela primeira vez é possível comparar diretamente lançamentos e cotação.</p>
+  <h3>Cronologia desde a IPO</h3>
+  <div class="tl">
+    <div class="ev inov"><span class="yr">12 jun.</span><h3>IPO a 135 $</h3><p>Fecha o primeiro dia a 161 $ (+19%), avaliação perto de 2,1 biliões de dólares. Nas semanas seguintes chega a cerca de 211 $.</p></div>
+    <div class="ev crise"><span class="yr">1 jul.</span><h3>−6% apesar de recomendação positiva de analista</h3><p>O entusiasmo pós-IPO começa a dissipar-se; avaliação muito exigente.</p></div>
+    <div class="ev crise"><span class="yr">16 jul.</span><h3>Voo 13 do Starship abortado em T−0</h3><p>A ação cai no próprio dia: é o primeiro "evento de lançamento" com cotação.</p></div>
+    <div class="ev crise"><span class="yr">23 jul.</span><h3>Nova tentativa adiada pelo tempo</h3><p>SPCX perto de 116 $, abaixo do preço de IPO. Investidores de retalho apostavam que um voo bem sucedido levaria a ação a 150 $.</p></div>
+    <div class="ev inov"><span class="yr">24 jul.</span><h3>Voo 13 realizado</h3><p>A nave libertou 20 satélites Starlink V3 e amarou intacta; o propulsor Super Heavy perdeu-se na aterragem. No final de julho a ação estava cerca de 50% abaixo do máximo pós-IPO — o voo não inverteu a tendência.</p></div>
+    <div class="ev inov"><span class="yr">16 set.</span><h3>Data do primeiro voo orbital anunciada</h3><p>SPCX sobe cerca de 5% — a expectativa move mais do que o acontecimento.</p></div>
+    <div class="ev inov"><span class="yr">28 set.</span><h3>Voo 14: o Starship chega à órbita</h3><p>Marco histórico com 26 satélites colocados em órbita. A ação subia apenas 0,75% na manhã do lançamento (149,80 $); no dia seguinte as notícias divergiam entre ligeira subida e ligeira queda.</p></div>
+  </div>
+  <div class="deep">
+    <h3>O que este caso ensina</h3>
+    <ul>
+      <li><b>Sucesso esperado já está no preço.</b> O voo orbital era um marco técnico enorme, mas o mercado já assumia que ia acontecer. Reação: quase nula.</li>
+      <li><b>Falhas e atrasos pesam mais do que sucessos.</b> O aborto de 16 de julho fez cair a ação; o sucesso de 28 de setembro quase não a moveu. É a assimetria típica de expectativas altas.</li>
+      <li><b>O anúncio move mais do que o evento.</b> A marcação da data (+5%) teve mais efeito que o próprio voo — "compra no rumor, vende na notícia".</li>
+      <li><b>Outros fatores dominam.</b> Avaliação, fim dos períodos de bloqueio de venda dos acionistas pré-IPO (180 dias, por volta de dezembro de 2026), juros e sentimento sobre empresas de Elon Musk explicam muito mais a cotação do que qualquer lançamento.</li>
+      <li><b>A volatilidade sobe antes e cai depois.</b> As opções ficam caras antes de cada voo e perdem valor logo a seguir, qualquer que seja o resultado.</li>
+    </ul>
+  </div>
+  <div class="note"><strong>Precedente histórico:</strong> o caso do Challenger (1986) é o estudo clássico de como o mercado reage a acidentes espaciais. Em menos de uma hora, a bolsa penalizou a empresa certa, meses antes da investigação oficial. Com a SPCX cotada, um acidente grave do Starship terá provavelmente um impacto muito maior do que um sucesso.</div>
+</section>
+
+<section id="a-produtos">
+  <h2>Eventos de produtos e apresentações</h2>
+  <p>Apresentações de novos produtos são dos eventos mais previsíveis do calendário — e, por isso, dos que mais vezes desiludem a bolsa. A data é conhecida, a expectativa sobe semanas antes e, no dia, o produto tem de superar o que o mercado já imaginou.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Evento</th><th>Reação</th><th>Porquê</th></tr>
+    <tr><td><b>Apple — iPhone</b><br>9 jan. 2007</td><td>Apple +8%; BlackBerry e Palm em queda</td><td>Surpresa genuína: ninguém esperava um produto tão diferente.</td></tr>
+    <tr><td><b>Tesla — Cybertruck</b><br>21 nov. 2019</td><td>−6% no dia seguinte</td><td>Os vidros "inquebráveis" partiram em palco. Um ano depois a ação valia várias vezes mais — a reação do dia não previu nada.</td></tr>
+    <tr><td><b>Tesla — Battery Day</b><br>22 set. 2020</td><td>−10% no dia seguinte</td><td>O mercado esperava uma bateria revolucionária imediata; recebeu um plano a 3 anos.</td></tr>
+    <tr><td><b>Alphabet — Bard</b><br>8 fev. 2023</td><td>−7,7%, cerca de 100 mil milhões $</td><td>Um erro factual na demonstração do assistente de IA.</td></tr>
+    <tr><td><b>Apple — Vision Pro</b><br>5 jun. 2023</td><td>Máximo histórico durante o evento, fecho em queda (−0,8%)</td><td>Preço de 3 499 $ e lançamento só no ano seguinte.</td></tr>
+    <tr><td><b>Tesla — "We, Robot" (Cybercab)</b><br>10 out. 2024</td><td>Tesla −8,8%; Uber e Lyft cerca de +10%</td><td>Pouco detalhe sobre datas e licenças. Os concorrentes subiram porque a ameaça pareceu mais distante.</td></tr>
+  </table></div>
+  <div class="deep">
+    <h3>Padrão típico de um evento de produto</h3>
+    <div class="phases p4">
+      <div><b>Anúncio da data</b>A ação tende a subir com a especulação.</div>
+      <div><b>Semanas antes</b>Rumores, teasers e opções cada vez mais caras.</div>
+      <div style="border-top-color:var(--gold)"><b>O evento</b>Comparação entre o que é mostrado e o que se imaginava.</div>
+      <div style="border-top-color:var(--acc2)"><b>Dia seguinte</b>Frequentemente "vende na notícia", salvo surpresa real (datas, preços, encomendas).</div>
+    </div>
+    <p>O que costuma mover a ação não é o espetáculo, mas os números concretos: <strong>preço, data de produção, volume esperado e margens</strong>.</p>
+  </div>
+
+  <h3>Caso atual: Tesla Roadster, 15 de outubro de 2026</h3>
+  <div class="deep">
+    <ul>
+      <li><b>Quando:</b> quinta-feira, 15 de outubro, às 19h55 (hora do Texas) — em Portugal, 01h55 de sexta-feira, 16. Será em direto, ao ar livre, depois de ter sido adiado de 1 de outubro por causa do mau tempo.</li>
+      <li><b>O que se espera:</b> mais uma demonstração do que um lançamento comercial. Os teasers apontam para propulsores de gás frio da SpaceX, aceleração de 0 a 60 mph (cerca de 96 km/h) em menos de 1 segundo, segundo Elon Musk, e uma breve "levitação".</li>
+      <li><b>Histórico:</b> o Roadster foi apresentado em 2017 com produção prometida para 2020. Desde então houve pelo menos seis adiamentos de produção (agora apontada para 2027–2028) e sete datas para esta apresentação.</li>
+      <li><b>Contexto da ação:</b> a Tesla estava cerca de 20% abaixo do início do ano em meados de setembro. Um rumor sobre a demonstração, em agosto, fez a ação subir cerca de 3% de manhã, ganho que desapareceu até ao fecho.</li>
+      <li><b>Peso no negócio:</b> mesmo com sucesso, o Roadster será um carro de nicho sem impacto relevante nos lucros dos próximos trimestres. Entregas, margens e resultados pesam muito mais.</li>
+    </ul>
+    <h4>O que observar na sexta-feira, 16</h4>
+    <ul>
+      <li>Se a Tesla anunciar <strong>preço, data de produção e entregas aos clientes com reserva desde 2017</strong>, a reação tende a ser mais positiva.</li>
+      <li>Se for só espetáculo sem datas, o histórico (Cybertruck, Battery Day, We, Robot) sugere risco de "vende na notícia".</li>
+      <li>Compare a variação da Tesla com a do Nasdaq nesse dia, para separar o efeito do evento do movimento geral do mercado.</li>
+    </ul>
+    <p class="muted" style="margin-bottom:0">Isto não é uma previsão: são os padrões observados em eventos anteriores. Verifique o resultado depois do evento.</p>
+  </div>
+</section>
+</div>
 </main>
 </div>
 
@@ -680,15 +1018,79 @@ ids.forEach(i=>i.addEventListener('input',calc));
 document.getElementById('rchips').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;ids[2].value=b.dataset.r;calc();});
 calc();
 
-// Vertical TOC: highlight + mobile toggle
-const toc=document.getElementById('toc'),tb=document.getElementById('tocbtn');
-const links=[...toc.querySelectorAll('a')];
+// Tabs + vertical TOC
+const toc=document.getElementById('toc'),tb=document.getElementById('tocbtn'),tocl=document.getElementById('tocl');
+let secs=[],links=[];
+function buildToc(tab){
+  const panel=document.getElementById('p-'+tab);
+  secs=[...panel.querySelectorAll(':scope > section')];
+  tocl.innerHTML=secs.map(x=>`<li><a href="#${x.id}">${x.querySelector('h2').textContent}</a></li>`).join('');
+  links=[...tocl.querySelectorAll('a')];
+  links.forEach(a=>a.addEventListener('click',()=>{toc.classList.remove('open');tb.setAttribute('aria-expanded',false);}));
+  spy();
+}
+function setTab(tab,scrollTop=true){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+tab));
+  buildToc(tab);
+  try{localStorage.setItem('bolsaTab',tab)}catch(e){}
+  if(scrollTop)window.scrollTo({top:0});
+}
+document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setTab(b.dataset.tab);});
+document.querySelectorAll('[data-go]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();setTab(a.dataset.go);}));
 tb.addEventListener('click',()=>{const o=toc.classList.toggle('open');tb.setAttribute('aria-expanded',o);});
-links.forEach(a=>a.addEventListener('click',()=>{toc.classList.remove('open');tb.setAttribute('aria-expanded',false);}));
-const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
-function spy(){let cur=secs[0];for(const sct of secs){if(sct.getBoundingClientRect().top<140)cur=sct;}
+function spy(){if(!secs.length)return;let cur=secs[0];for(const sct of secs){if(sct.getBoundingClientRect().top<160)cur=sct;}
   links.forEach(a=>a.classList.toggle('act',a.getAttribute('href')==='#'+cur.id));}
-addEventListener('scroll',spy,{passive:true});spy();
+addEventListener('scroll',spy,{passive:true});
+let start='guia';try{const t=localStorage.getItem('bolsaTab');if(t&&document.getElementById('p-'+t))start=t;}catch(e){}
+setTab(start,false);
+
+// Fiscal simulator (2026 brackets, single taxpayer, simplified)
+const BR=[[8342,.125],[12587,.157],[17838,.212],[23089,.241],[29397,.311],[43090,.349],[46566,.431],[86634,.446],[Infinity,.48]];
+function irs(x){let t=0,lo=0;for(const[hi,r]of BR){if(x>lo)t+=(Math.min(x,hi)-lo)*r;lo=hi;}
+  if(x>80000)t+=(Math.min(x,250000)-80000)*.025;if(x>250000)t+=(x-250000)*.05;return t;}
+const eur2=n=>n.toLocaleString('pt-PT',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+function fcalc(){
+  const R=Math.max(0,parseFloat(document.getElementById('fR').value)||0),G=parseFloat(document.getElementById('fG').value)||0,sh=document.getElementById('fS').checked;
+  document.getElementById('fRv').textContent=eur2(R);document.getElementById('fGv').textContent=eur2(G);
+  const out=document.getElementById('fOut');
+  if(G<=0){document.getElementById('fA').textContent=eur2(0);document.getElementById('fB').textContent=eur2(0);document.getElementById('fBr').textContent='';
+    out.textContent=G<0?'Saldo negativo: sem imposto. Opte pelo englobamento para poder reportar a perda nos 5 anos seguintes.':'Sem mais-valias, sem imposto.';return;}
+  const a=G*.28,b=irs(R+G)-irs(R);
+  document.getElementById('fA').textContent=eur2(a);document.getElementById('fB').textContent=eur2(b);
+  document.getElementById('fBr').textContent='Taxa efetiva sobre o ganho: '+(b/G*100).toLocaleString('pt-PT',{maximumFractionDigits:1})+'%';
+  if(sh&&R+G>=86634){out.innerHTML='<span style="color:var(--acc2)">Englobamento obrigatório:</span> títulos detidos menos de 365 dias e rendimento total no último escalão.';}
+  else out.innerHTML=b<a?'<span style="color:var(--acc)">Compensa englobar</span> — poupa cerca de '+eur2(a-b)+'.':'<span style="color:var(--acc)">Compensa a taxa de 28%</span> — o englobamento custaria mais '+eur2(b-a)+'.';
+}
+['fR','fG','fS'].forEach(i=>document.getElementById(i).addEventListener('input',fcalc));fcalc();
+
+// Event table filter
+document.getElementById('evf').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('#evf button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('#evt tr[data-c]').forEach(r=>r.style.display=(b.dataset.f==='all'||r.dataset.c===b.dataset.f)?'':'none');});
+
+// Charts (SVG, theme-aware via CSS vars)
+function hbar(el,data,unit,fmt){
+  const rowH=30,lw=150,W=620,mx=Math.max(...data.map(d=>d[1]||0));
+  let h=data.map((d,i)=>{const y=i*rowH;const v=d[1];
+    const w=v==null?0:(W-lw-60)*v/mx;
+    return `<text class="lab" x="${lw-8}" y="${y+19}" text-anchor="end">${d[0]}</text>`+
+      (v==null?`<text x="${lw}" y="${y+19}" style="fill:var(--acc2);font-weight:700">${d[2]}</text>`:
+      `<rect x="${lw}" y="${y+6}" width="${w}" height="18" rx="4" fill="${d[3]||'var(--acc)'}"/><text x="${lw+w+6}" y="${y+19}">${fmt(v)}</text>`);}).join('');
+  el.className='chart';el.innerHTML=`<svg viewBox="0 0 ${W} ${data.length*rowH+4}" role="img">${h}</svg>`;
+}
+hbar(document.getElementById('chRec'),[
+ ['Bitcoin 2021',2.3],['S&P 500 2007',5.5],['Imobiliário EUA',10],['Nasdaq 2000',15.1],['Dow Jones 1929',25.2,'','var(--gold)'],['Ouro 1980',28,'','var(--gold)'],['Nikkei 1989',34.2,'','var(--acc2)'],['PSI-20 2000',null,'ainda não recuperou'],['Mares do Sul 1720',null,'nunca recuperou']
+],'',v=>v.toLocaleString('pt-PT')+' anos');
+hbar(document.getElementById('chLoss'),[['1 dia',47],['1 ano',26],['5 anos',12],['10 anos',5],['20 anos',0.0001]],'',v=>v<1?'0%':'~'+v+'%');
+(function(){const m=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'],v=[1.0,-0.1,1.1,1.5,0.2,0.0,1.2,-0.1,-0.7,0.9,1.7,1.4];
+  const W=620,H=215,z=125,sc=60,bw=W/12;
+  let h=`<line x1="0" x2="${W}" y1="${z}" y2="${z}" stroke="var(--line)"/>`;
+  v.forEach((x,i)=>{const bh=Math.abs(x)*sc,y=x>=0?z-bh:z;
+    h+=`<rect x="${i*bw+8}" y="${y}" width="${bw-16}" height="${Math.max(bh,1.5)}" rx="3" fill="${x<0?'var(--acc2)':'var(--acc)'}"/>`+
+    `<text x="${i*bw+bw/2}" y="${x>=0?y-5:y+bh+13}" text-anchor="middle">${(x>0?'+':'')+x.toLocaleString('pt-PT',{minimumFractionDigits:1})}%</text>`+
+    `<text class="lab" x="${i*bw+bw/2}" y="${H-8}" text-anchor="middle">${m[i]}</text>`;});
+  const el=document.getElementById('chMonth');el.className='chart';el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img">${h}</svg>`;})();
 
 // Glossary
 const G=[
