@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guia do Site Perfeito</title>
+<style>
+:root{
+  --bg:#f6f5f2;--card:#ffffff;--ink:#1d1d1f;--muted:#6b6b70;--line:#e4e2dc;
+  --acc:#2f5bd3;--acc2:#e8eefc;--ok:#1f8a4c;--okb:#e5f4ec;--warn:#b5520f;--warnb:#fbeee3;--bad:#b42318;--badb:#fde8e6;
+  --r:14px;--sh:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121315;--card:#1b1c1f;--ink:#ececee;--muted:#9a9aa2;--line:#2c2d31;
+  --acc:#7d9cff;--acc2:#20283f;--ok:#4cc483;--okb:#16291f;--warn:#f0a35e;--warnb:#2e2216;--bad:#ff7b72;--badb:#311a19;
+  --sh:0 1px 2px rgba(0,0,0,.3);
+}}
+:root[data-theme="dark"]{
+  --bg:#121315;--card:#1b1c1f;--ink:#ececee;--muted:#9a9aa2;--line:#2c2d31;
+  --acc:#7d9cff;--acc2:#20283f;--ok:#4cc483;--okb:#16291f;--warn:#f0a35e;--warnb:#2e2216;--bad:#ff7b72;--badb:#311a19;
+  --sh:0 1px 2px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:28px 16px 8px;max-width:1000px;margin:0 auto}
+h1{font-size:clamp(1.6rem,4vw,2.3rem);margin:0 0 6px;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:0}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+#theme{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;font:inherit;font-size:.85rem;white-space:nowrap}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs{max-width:1000px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:8px 16px;scrollbar-width:none}
+.tabs button{flex:0 0 auto;border:0;background:transparent;color:var(--muted);font:inherit;font-size:.92rem;padding:8px 14px;border-radius:999px;cursor:pointer}
+.tabs button.on{background:var(--acc);color:#fff}
+main{max-width:1000px;margin:0 auto;padding:16px 16px 60px}
+section{display:none}section.on{display:block;animation:f .25s}
+@keyframes f{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+h2{font-size:1.35rem;margin:8px 0 6px}
+h3{font-size:1.05rem;margin:0 0 6px}
+.lead{color:var(--muted);margin:0 0 18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--sh)}
+.card p{margin:4px 0;color:var(--muted);font-size:.93rem}
+.ico{font-size:1.4rem;line-height:1;margin-bottom:8px}
+.tag{display:inline-block;font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:999px;margin:6px 4px 0 0}
+.t-ok{background:var(--okb);color:var(--ok)}.t-w{background:var(--warnb);color:var(--warn)}.t-b{background:var(--badb);color:var(--bad)}.t-a{background:var(--acc2);color:var(--acc)}
+.quote{border-left:3px solid var(--acc);padding:10px 14px;background:var(--card);border-radius:0 var(--r) var(--r) 0;margin:0 0 18px}
+.acc-item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.acc-h{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none}
+.num{flex:0 0 32px;height:32px;border-radius:50%;background:var(--acc2);color:var(--acc);display:grid;place-items:center;font-weight:700;font-size:.9rem}
+.acc-h .ttl{flex:1}.acc-h .ttl b{display:block}.acc-h .ttl span{color:var(--muted);font-size:.85rem}
+.chev{transition:transform .2s;color:var(--muted)}
+.acc-item.open .chev{transform:rotate(90deg)}
+.acc-b{display:none;padding:0 16px 16px 60px}
+.acc-item.open .acc-b{display:block}
+.acc-b ul{margin:6px 0;padding-left:18px}.acc-b li{margin:3px 0}
+.out{font-size:.85rem;background:var(--acc2);color:var(--acc);padding:8px 10px;border-radius:10px;margin-top:8px}
+.meter{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin:8px 0}
+.meter i{display:block;height:100%;background:var(--acc);width:0;transition:width .3s}
+.score{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.score .big{font-size:2.2rem;font-weight:800}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.chk:last-child{border:0}
+.chk input{margin-top:4px;width:18px;height:18px;accent-color:var(--acc);flex:0 0 auto}
+.chk small{color:var(--muted);display:block}
+.cat{margin-bottom:14px}
+.cat-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.pct{font-size:.85rem;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em}
+.tw{overflow-x:auto}
+pre{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;overflow-x:auto;font-size:.84rem;line-height:1.45;margin:0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.row2{grid-template-columns:1fr}.acc-b{padding-left:16px}}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:7px 12px;font:inherit;font-size:.85rem;cursor:pointer}
+.mt{margin-top:22px}
+.pill-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.pill-row button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:.83rem;cursor:pointer}
+.pill-row button.on{border-color:var(--acc);color:var(--acc);background:var(--acc2)}
+.verdict{padding:10px 12px;border-radius:10px;font-size:.92rem;margin-top:8px}
+footer{color:var(--muted);font-size:.8rem;text-align:center;padding:20px}
+</style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <div>
+      <h1>O Site Perfeito</h1>
+      <p class="sub">O que as pessoas sentem, o que é preciso fazer, e como organizar o trabalho.</p>
+    </div>
+    <button id="theme" aria-label="Mudar tema">◐ Tema</button>
+  </div>
+</header>
+<nav><div class="tabs" id="tabs"></div></nav>
+<main id="main"></main>
+<footer>Guia de referência · checklists guardadas neste dispositivo</footer>
+
+<script>
+/* ============ DADOS ============ */
+const PILARES = [
+ {i:"⚡",t:"Rapidez",d:"Abre quase instantaneamente, mesmo em 4G. Cada segundo de espera custa visitantes.",tags:[["Crítico","b"]],m:"LCP < 2,5 s · INP < 200 ms · CLS < 0,1"},
+ {i:"🧭",t:"Clareza",d:"Em 5 segundos percebe-se o que é, para quem é e o que fazer a seguir. Uma ação principal por ecrã.",tags:[["Crítico","b"]],m:"Teste dos 5 segundos"},
+ {i:"📱",t:"Funciona no telemóvel",d:"A maioria das visitas é mobile. Botões grandes, texto legível sem zoom, nada a sair do ecrã.",tags:[["Crítico","b"]],m:"Alvos de toque ≥ 44 px · texto ≥ 16 px"},
+ {i:"🤝",t:"Confiança",d:"Aspeto cuidado, contactos visíveis, HTTPS, política de privacidade, sem erros ortográficos nem links partidos.",tags:[["Alto","w"]],m:"Primeira impressão em ~50 ms"},
+ {i:"✨",t:"Fricção zero",d:"Poucos cliques, formulários curtos, login simples, mensagens de erro úteis, nada perde o que o utilizador escreveu.",tags:[["Alto","w"]],m:"Nº de passos até ao objetivo"},
+ {i:"🎨",t:"Design consistente",d:"Mesmas cores, tipografia, espaçamentos e componentes em todo o lado. Hierarquia visual clara.",tags:[["Alto","w"]],m:"Design system / tokens"},
+ {i:"🔒",t:"Segurança e privacidade",d:"Dados protegidos, nada exposto, RGPD cumprido, cookies honestos. O utilizador nunca deve sentir-se vigiado.",tags:[["Crítico","b"]],m:"RLS ativo · zero segredos no frontend"},
+ {i:"♿",t:"Acessibilidade",d:"Contraste suficiente, navegável por teclado, textos alternativos, funciona com leitores de ecrã.",tags:[["Médio","a"]],m:"WCAG 2.2 AA · contraste ≥ 4,5:1"},
+ {i:"🧱",t:"Fiabilidade",d:"Está sempre no ar, não dá erros, os dados nunca desaparecem, funciona em todos os browsers.",tags:[["Crítico","b"]],m:"Uptime ≥ 99,9 % · backups testados"},
+ {i:"📝",t:"Conteúdo útil",d:"Responde à dúvida de quem chega. Texto curto, escaneável, atualizado, sem palha.",tags:[["Alto","w"]],m:"Taxa de rejeição · tempo na página"},
+ {i:"🔎",t:"Encontrável (SEO)",d:"Títulos e descrições corretos, URLs limpos, sitemap, dados estruturados, partilha bonita nas redes.",tags:[["Médio","a"]],m:"Indexação · cliques no Search Console"},
+ {i:"💛",t:"Detalhes que encantam",d:"Microanimações subtis, estados vazios simpáticos, modo escuro, lembra-se das preferências.",tags:[["Bónus","ok"]],m:"\"Isto foi pensado\""}
+];
+
+const PREOC = [
+ ["Lentidão","Página demora a abrir, imagens pesadas, scripts a bloquear.","O utilizador sai antes de ver o conteúdo.","b"],
+ ["Confusão","Não se percebe o que fazer, menus com demasiadas opções.","Abandono sem converter.","b"],
+ ["Perda de dados","Formulário apaga-se, progresso não fica guardado, sessão expira.","Frustração máxima — raramente voltam.","b"],
+ ["Falta de confiança","Aspeto amador, sem contactos, pede dados cedo demais.","Não se registam nem pagam.","b"],
+ ["Intrusão","Pop-ups, anúncios agressivos, banners de cookies enormes, notificações.","Sensação de ser explorado.","w"],
+ ["Mobile partido","Elementos cortados, botões minúsculos, scroll horizontal.","Mais de metade dos visitantes afetados.","b"],
+ ["Erros e bugs","Botões que não respondem, mensagens técnicas, páginas 404.","Perda de credibilidade.","w"],
+ ["Privacidade","Partilha de dados sem saber, rastreio excessivo, emails não pedidos.","Risco legal (RGPD) e reputacional.","b"],
+ ["Login penoso","Passwords complexas, registos longos, sem recuperação fácil.","Barreira de entrada.","w"],
+ ["Inconsistência","Cada página parece um site diferente.","Parece descuidado e pouco fiável.","a"]
+];
+
+const PASSOS = [
+ {t:"Descoberta",s:"Porquê e para quem",d:["Definir o problema em 1 frase.","Quem é o utilizador típico (persona) e o que quer fazer.","Ver 3–5 concorrentes: o que fazem bem e mal.","Definir o objetivo mensurável (ex.: 100 registos/mês)."],o:"Documento de 1 página: problema, público, objetivo, métrica de sucesso."},
+ {t:"Âmbito e MVP",s:"O mínimo que entrega valor",d:["Listar todas as funcionalidades imaginadas.","Classificar: Tem de ter / Devia ter / Pode ter / Não agora (MoSCoW).","O MVP é só o \"Tem de ter\".","Escrever user stories: \"Como X, quero Y, para Z\"."],o:"Backlog priorizado e definição clara do MVP."},
+ {t:"Arquitetura de informação",s:"Estrutura antes do aspeto",d:["Mapa do site: que páginas existem e como se ligam.","Fluxos principais (registo, ação principal, pagamento).","Modelo de dados: que entidades, que campos, quem é dono de quê."],o:"Sitemap, fluxos e esquema de dados em rascunho."},
+ {t:"Design UX/UI",s:"Do esboço ao protótipo",d:["Wireframes em baixa fidelidade (papel, Figma).","Design system: cores, tipografia, espaçamentos, componentes.","Mockups de alta fidelidade, mobile primeiro.","Protótipo clicável e teste com 3–5 pessoas reais."],o:"Protótipo validado + tokens de design."},
+ {t:"Arquitetura técnica",s:"Decidir a stack e a segurança",d:["Escolher tecnologias e alojamento.","Desenhar tabelas, relações e políticas RLS.","Definir autenticação, ambientes (dev/staging/prod) e gestão de segredos.","Decidir estrutura de pastas e convenções de código."],o:"Repositório criado, migrations iniciais, README técnico."},
+ {t:"Desenvolvimento",s:"Construir em ciclos curtos",d:["Trabalhar em iterações de 1–2 semanas.","Uma branch por funcionalidade, Pull Request para juntar.","Começar pelo fluxo principal ponta-a-ponta, só depois os extras.","Commits pequenos com mensagens claras."],o:"Funcionalidades a funcionar em staging."},
+ {t:"Testes e QA",s:"Partir antes que o utilizador parta",d:["Testar em vários browsers e telemóveis reais.","Lighthouse: performance, acessibilidade, SEO.","Testar segurança: um utilizador consegue ver dados de outro?","Casos limite: sem rede, campos vazios, textos enormes, duplo clique."],o:"Lista de bugs fechada, relatório Lighthouse ≥ 90."},
+ {t:"Lançamento",s:"Pôr no ar com rede de segurança",d:["Checklist de lançamento completa.","Domínio, SSL, redirecionamentos, favicon, metadados de partilha.","Analytics e monitorização de erros ativos.","Backup feito e plano de rollback."],o:"Site em produção e monitorizado."},
+ {t:"Medir e aprender",s:"Os dados dizem a verdade",d:["Acompanhar a métrica de sucesso definida no passo 1.","Ver onde as pessoas desistem (funil).","Recolher feedback direto.","Rever erros e performance semanalmente."],o:"Lista de melhorias priorizada pelos dados."},
+ {t:"Manutenção e evolução",s:"Um site nunca está terminado",d:["Atualizar dependências e rever segurança.","Testar restauro de backups.","Iterar: voltar ao passo 2 com o que se aprendeu.","Remover o que ninguém usa."],o:"Ciclo contínuo de melhoria."}
+];
+
+const CHECK = {
+ "Performance":[
+  ["Imagens comprimidas e em WebP/AVIF","Com width/height definidos e loading=\"lazy\" abaixo da dobra"],
+  ["Abre em menos de 2,5 s em 4G","Medido no PageSpeed Insights"],
+  ["CSS/JS mínimos e sem bloqueio","defer nos scripts, sem bibliotecas desnecessárias"],
+  ["Cache e CDN ativos","Cloudflare a servir ficheiros estáticos"],
+  ["Sem saltos de layout (CLS)","Espaço reservado para imagens, fontes e anúncios"]],
+ "Usabilidade":[
+  ["Objetivo claro em 5 segundos","Título e ação principal visíveis sem scroll"],
+  ["Navegação simples","≤ 7 itens no menu, sempre se sabe onde se está"],
+  ["Formulários curtos e tolerantes","Validação em tempo real, nunca apaga o que foi escrito"],
+  ["Estados de carregamento, vazio e erro","Nenhum ecrã fica em branco sem explicação"],
+  ["Feedback a cada ação","Botões mudam de estado, confirmações visíveis"]],
+ "Mobile":[
+  ["Layout responsivo sem scroll horizontal","Testado a 360 px de largura"],
+  ["Botões com ≥ 44 px","Fáceis de tocar com o polegar"],
+  ["Texto ≥ 16 px","Evita zoom automático nos inputs do iOS"],
+  ["Teclado certo para cada campo","type=\"email\", inputmode=\"numeric\", etc."]],
+ "Segurança":[
+  ["RLS ativo em todas as tabelas","Sem exceções, mesmo nas \"temporárias\""],
+  ["Nenhuma service key no frontend nem no GitHub","Só a anon/publishable key no cliente"],
+  ["HTTPS forçado e headers de segurança","HSTS, CSP, X-Frame-Options"],
+  ["Inputs validados no servidor","Constraints na BD, não só no JavaScript"],
+  ["Testado: utilizador A não vê dados do B","Com duas contas reais"]],
+ "Confiança e legal":[
+  ["Política de privacidade e termos","RGPD: o que se recolhe, porquê, como apagar"],
+  ["Contacto visível","Email ou formulário fácil de encontrar"],
+  ["Banner de cookies honesto","Recusar tão fácil como aceitar"],
+  ["Sem erros ortográficos nem links partidos","Revisão final antes de lançar"]],
+ "SEO e partilha":[
+  ["<title> e meta description únicos por página","50–60 e 120–160 caracteres"],
+  ["Open Graph e favicon","Imagem de partilha 1200×630"],
+  ["sitemap.xml e robots.txt","Submetidos no Google Search Console"],
+  ["HTML semântico","Um só h1, headings em ordem, links com texto descritivo"]],
+ "Acessibilidade":[
+  ["Contraste ≥ 4,5:1","Texto legível em claro e escuro"],
+  ["Navegável só com teclado","Foco visível em todos os elementos"],
+  ["alt em imagens e labels nos campos","Leitores de ecrã conseguem usar"],
+  ["Não depende só da cor","Ícones ou texto acompanham estados"]],
+ "Operação":[
+  ["Analytics instalado","Respeitando privacidade (ex.: Cloudflare Web Analytics)"],
+  ["Monitorização de erros","Sabe-se quando algo parte antes do utilizador avisar"],
+  ["Backups automáticos e restauro testado","Um backup não testado não é um backup"],
+  ["README com como correr, fazer deploy e reverter","O \"eu do futuro\" agradece"]]
+};
+
+const ERROS = [
+ ["Começar pelo design bonito","Começar pelo problema e pelo fluxo principal. O bonito vem depois de funcionar."],
+ ["Construir tudo antes de mostrar","Lançar um MVP pequeno e iterar com feedback real."],
+ ["RLS \"depois\"","Ativar RLS na criação de cada tabela. Depois nunca chega."],
+ ["Alterar a BD à mão em produção","Usar migrations versionadas no Git."],
+ ["Copiar código entre sites","Extrair para uma biblioteca/pacote partilhado com versão."],
+ ["Testar só no próprio computador","Testar em telemóveis reais, rede lenta e browsers diferentes."],
+ ["Sem staging","Ter sempre um ambiente de teste antes de produção."],
+ ["Ignorar o \"e se falhar?\"","Desenhar estados de erro, offline e vazio desde o início."],
+ ["Funcionalidades que ninguém pediu","Cada funcionalidade tem de ligar a uma métrica ou pedido real."],
+ ["Sem documentação","Um README por repositório e decisões importantes registadas (ADR)."]
+];
+
+/* ============ TABS ============ */
+const TABS = [
+ ["perfeito","1 · Site perfeito"],
+ ["preocupacoes","2 · Preocupações"],
+ ["passos","3 · Passos"],
+ ["organizacao","4 · Organização"],
+ ["checklist","5 · Checklist"],
+ ["plataforma","6 · Multi-site"],
+ ["erros","7 · Erros comuns"]
+];
+
+const $ = s=>document.querySelector(s);
+const store = {
+  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+
+function render(){
+ $("#tabs").innerHTML = TABS.map(([id,l],i)=>`<button data-t="${id}" class="${i?'':'on'}">${l}</button>`).join("");
+ let h="";
+
+ /* 1 */
+ h+=`<section id="perfeito" class="on">
+ <h2>O que faz alguém dizer "este site é perfeito"?</h2>
+ <p class="lead">Ninguém diz "perfeito" por causa de uma funcionalidade. Diz porque <b>não pensou no site</b> — conseguiu o que queria, depressa, sem dúvidas e sem irritações. A perfeição percebida é a ausência de fricção somada a uns poucos detalhes que surpreendem.</p>
+ <div class="quote"><b>A fórmula prática:</b> Rápido + Claro + Confiável + Sem fricção = "funciona". Junte detalhes cuidados = "é perfeito".</div>
+ <div class="pill-row" id="pfilter">
+  <button class="on" data-f="all">Todos</button><button data-f="Crítico">Críticos</button><button data-f="Alto">Altos</button><button data-f="Médio">Médios</button><button data-f="Bónus">Bónus</button>
+ </div>
+ <div class="grid" id="pilares"></div>
+ <h3 class="mt">A pirâmide da experiência</h3>
+ <p class="lead">Cada nível só tem valor se o de baixo estiver resolvido. Um site lindo que não abre no telemóvel não é perfeito.</p>
+ <div class="card" id="piramide"></div>
+ </section>`;
+
+ /* 2 */
+ h+=`<section id="preocupacoes">
+ <h2>As maiores preocupações</h2>
+ <p class="lead">Do lado do utilizador, as queixas são quase sempre as mesmas. Do lado de quem constrói, as preocupações são as que evitam essas queixas.</p>
+ <div class="card tw"><table><thead><tr><th>Problema</th><th>Como se manifesta</th><th>Consequência</th></tr></thead><tbody>
+ ${PREOC.map(p=>`<tr><td><b>${p[0]}</b><br><span class="tag t-${p[3]}">${{b:"Grave",w:"Sério",a:"Moderado"}[p[3]]}</span></td><td>${p[1]}</td><td>${p[2]}</td></tr>`).join("")}
+ </tbody></table></div>
+ <h3 class="mt">O que preocupa quem constrói</h3>
+ <div class="grid">
+  <div class="card"><div class="ico">🛡️</div><h3>Segurança dos dados</h3><p>Fugas de dados, acessos indevidos, chaves expostas. É o erro com consequências mais caras e irreversíveis.</p></div>
+  <div class="card"><div class="ico">📈</div><h3>Escalabilidade</h3><p>Aguenta 10× mais utilizadores? A base de dados tem índices? Os custos crescem de forma controlada?</p></div>
+  <div class="card"><div class="ico">🔧</div><h3>Manutenção</h3><p>Daqui a 6 meses ainda se percebe o código? Mudar uma coisa parte outras três?</p></div>
+  <div class="card"><div class="ico">💶</div><h3>Custo</h3><p>Planos gratuitos têm limites. Saber onde estão antes de os atingir.</p></div>
+  <div class="card"><div class="ico">⚖️</div><h3>Legal</h3><p>RGPD, cookies, termos de utilização, direitos de imagem e conteúdo de terceiros.</p></div>
+  <div class="card"><div class="ico">⏱️</div><h3>Tempo</h3><p>O maior inimigo é o âmbito que cresce. Lançar pequeno vence planear grande.</p></div>
+ </div>
+ </section>`;
+
+ /* 3 */
+ h+=`<section id="passos">
+ <h2>Os passos para desenvolver um site ou app</h2>
+ <p class="lead">Dez fases. Não são estritamente sequenciais — os passos 6 a 9 repetem-se em ciclo — mas saltar os primeiros é a principal causa de projetos que nunca terminam.</p>
+ <div class="score"><span class="pct" id="passoPct">0 de ${PASSOS.length} fases revistas</span></div>
+ <div class="meter"><i id="passoBar"></i></div>
+ <div id="passosList" class="mt"></div>
+ <h3 class="mt">Distribuição típica do esforço</h3>
+ <div class="card" id="esforco"></div>
+ </section>`;
+
+ /* 4 */
+ h+=`<section id="organizacao">
+ <h2>Como deve ser a organização</h2>
+ <p class="lead">Organização serve para três coisas: saber o que fazer a seguir, nunca perder trabalho, e conseguir voltar atrás quando algo corre mal.</p>
+ <div class="grid">
+  <div class="card"><div class="ico">📋</div><h3>Gestão de tarefas</h3><p>GitHub Issues + Projects (quadro Kanban): <b>Backlog → A fazer → Em curso → Revisão → Feito</b>. Cada tarefa pequena o suficiente para fechar em 1 dia.</p></div>
+  <div class="card"><div class="ico">🌿</div><h3>Branches</h3><p><code>main</code> = produção, sempre estável. <code>feat/nome</code> para funcionalidades, <code>fix/nome</code> para correções. Merge via Pull Request.</p></div>
+  <div class="card"><div class="ico">🧪</div><h3>Ambientes</h3><p><b>Local</b> (desenvolver) → <b>Staging/Preview</b> (testar com dados falsos) → <b>Produção</b> (utilizadores reais). Nunca testar em produção.</p></div>
+  <div class="card"><div class="ico">✍️</div><h3>Commits</h3><p>Convencionais: <code>feat:</code>, <code>fix:</code>, <code>docs:</code>, <code>refactor:</code>, <code>chore:</code>. Pequenos, frequentes, uma mudança cada.</p></div>
+  <div class="card"><div class="ico">🗃️</div><h3>Base de dados</h3><p>Todas as alterações como migrations SQL versionadas no Git. A BD de produção nunca é editada à mão.</p></div>
+  <div class="card"><div class="ico">📚</div><h3>Documentação</h3><p>README (como correr e publicar), CHANGELOG (o que mudou), e registo de decisões (porque se escolheu X).</p></div>
+ </div>
+ <h3 class="mt">Estrutura de pastas recomendada (site estático)</h3>
+ <div class="row2">
+ <pre><code>meu-site/
+├── index.html
+├── pages/
+│   ├── perfil.html
+│   └── definicoes.html
+├── assets/
+│   ├── css/
+│   │   ├── tokens.css     ← cores, fontes
+│   │   └── main.css
+│   ├── js/
+│   │   ├── config.js      ← URL + anon key
+│   │   ├── auth.js
+│   │   ├── api.js         ← chamadas Supabase
+│   │   └── ui.js
+│   └── img/
+├── supabase/
+│   └── migrations/
+├── .github/workflows/
+├── .gitignore
+├── README.md
+└── CHANGELOG.md</code></pre>
+ <div class="card">
+  <h3>Regras de ouro</h3>
+  <p>• Separar <b>dados</b> (api.js), <b>lógica</b> e <b>apresentação</b> (ui.js).</p>
+  <p>• Configuração num só ficheiro — mudar de ambiente é mudar um sítio.</p>
+  <p>• <code>.gitignore</code> inclui <code>.env</code>, chaves e ficheiros locais.</p>
+  <p>• Nomes em inglês ou português, mas sempre o mesmo idioma.</p>
+  <p>• Uma ideia por ficheiro; ficheiros com mais de ~400 linhas pedem divisão.</p>
+  <p>• Deploy automático: push para <code>main</code> → Cloudflare Pages publica.</p>
+  <p>• Cada PR gera um URL de preview para testar antes do merge.</p>
+ </div>
+ </div>
+ <h3 class="mt">Ritmo de trabalho (mesmo a solo)</h3>
+ <div class="tw card"><table><thead><tr><th>Quando</th><th>O quê</th></tr></thead><tbody>
+  <tr><td><b>Início da semana</b></td><td>Escolher 3–5 tarefas do backlog. Só essas.</td></tr>
+  <tr><td><b>Diariamente</b></td><td>Fechar pelo menos uma tarefa. Commit e push no fim do dia.</td></tr>
+  <tr><td><b>Fim da semana</b></td><td>Publicar em produção o que está testado. Atualizar CHANGELOG.</td></tr>
+  <tr><td><b>Mensalmente</b></td><td>Rever métricas, atualizar dependências, testar restauro de backup, Supabase Advisors.</td></tr>
+  <tr><td><b>Trimestralmente</b></td><td>Revisão de segurança, limpeza de funcionalidades não usadas, repriorizar o roadmap.</td></tr>
+ </tbody></table></div>
+ </section>`;
+
+ /* 5 */
+ h+=`<section id="checklist">
+ <h2>Checklist "site perfeito"</h2>
+ <p class="lead">Marque o que o seu site já cumpre. O progresso fica guardado neste dispositivo.</p>
+ <div class="card">
+  <div class="score"><span class="big" id="score">0%</span><span class="pct" id="scoreTxt"></span></div>
+  <div class="meter"><i id="scoreBar"></i></div>
+  <div id="verdict" class="verdict"></div>
+  <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="reset">Limpar tudo</button><button class="btn" id="expand">Mostrar só o que falta</button></div>
+ </div>
+ <div class="grid mt" id="checkGrid"></div>
+ </section>`;
+
+ /* 6 */
+ h+=`<section id="plataforma">
+ <h2>Aplicado a uma plataforma multi-site</h2>
+ <p class="lead">Vários sites independentes, uma só infraestrutura (GitHub + Supabase + Cloudflare). O segredo é partilhar o que é comum e isolar o que é específico.</p>
+ <div class="grid">
+  <div class="card"><div class="ico">🧬</div><h3>Template base</h3><p>Um repositório-modelo (GitHub template) com auth, tokens de design, header de conta e config. Cada site novo nasce daí em minutos.</p></div>
+  <div class="card"><div class="ico">📦</div><h3>Biblioteca partilhada</h3><p><code>platform-core.js</code> versionado e servido por CDN: login, perfil, avatar, gestão de sessão. Corrigir uma vez, corrige em todos.</p></div>
+  <div class="card"><div class="ico">🔑</div><h3>Sessão entre domínios</h3><p>Subdomínios do mesmo domínio (<code>*.dominio.pt</code>) facilitam SSO via cookie partilhado; domínios diferentes exigem redirecionamento para um site de login central.</p></div>
+  <div class="card"><div class="ico">🏷️</div><h3>Identidade do site</h3><p>Tabela <code>sites</code> com <code>site_id</code>; dados específicos ligados a <code>(user_id, site_id)</code> ou em schema próprio por site.</p></div>
+  <div class="card"><div class="ico">🧱</div><h3>Isolamento</h3><p>RLS garante "só os meus dados". Para "só deste site", combinar RLS com schemas separados ou Edge Functions que validam o site.</p></div>
+  <div class="card"><div class="ico">🗺️</div><h3>Hub central</h3><p>Uma página que liga todos os sites e a conta. O utilizador sente que é uma plataforma, não sites soltos.</p></div>
+ </div>
+ <h3 class="mt">Modelo de dados de referência</h3>
+ <pre><code>-- Global: um perfil por utilizador
+create table public.profiles (
+  id uuid primary key references auth.users on delete cascade,
+  display_name text, avatar_url text,
+  created_at timestamptz default now()
+);
+alter table public.profiles enable row level security;
+create policy "ver e editar o próprio perfil" on public.profiles
+  for all using (auth.uid() = id) with check (auth.uid() = id);
+
+-- Catálogo de sites
+create table public.sites (
+  id text primary key,          -- 'achievements', 'habitacao', ...
+  name text not null, domain text
+);
+
+-- Dados específicos genéricos (configurações, progresso simples)
+create table public.user_site_data (
+  user_id uuid references auth.users on delete cascade,
+  site_id text references public.sites,
+  key text, value jsonb,
+  updated_at timestamptz default now(),
+  primary key (user_id, site_id, key)
+);
+alter table public.user_site_data enable row level security;
+create policy "só os meus dados" on public.user_site_data
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Funcionalidades complexas: schema próprio por site
+create schema achievements;   -- tabelas específicas, também com RLS</code></pre>
+ <h3 class="mt">Quando usar cada abordagem</h3>
+ <div class="tw card"><table><thead><tr><th>Situação</th><th>Abordagem</th></tr></thead><tbody>
+  <tr><td>Preferências, progresso simples, flags</td><td><code>user_site_data</code> com <code>site_id</code> + jsonb</td></tr>
+  <tr><td>Dados com relações, filtros, pesquisa</td><td>Tabelas próprias (idealmente num schema do site)</td></tr>
+  <tr><td>Dados partilhados entre utilizadores</td><td>Tabela própria + políticas de partilha explícitas</td></tr>
+  <tr><td>Operações privilegiadas (admin, pagamentos, emails)</td><td>Edge Function com service key guardada como secret</td></tr>
+  <tr><td>Ficheiros (avatars, uploads)</td><td>Storage com bucket por site e pasta <code>{user_id}/</code></td></tr>
+ </tbody></table></div>
+ <h3 class="mt">Onde vive cada segredo</h3>
+ <div class="tw card"><table><thead><tr><th>Credencial</th><th>Pode estar no frontend?</th><th>Onde guardar</th></tr></thead><tbody>
+  <tr><td>Supabase URL</td><td><span class="tag t-ok">Sim</span></td><td>config.js</td></tr>
+  <tr><td>Anon / publishable key</td><td><span class="tag t-ok">Sim</span> (protegida por RLS)</td><td>config.js</td></tr>
+  <tr><td>Service role / secret key</td><td><span class="tag t-b">Nunca</span></td><td>Secrets das Edge Functions / Workers</td></tr>
+  <tr><td>Password da BD</td><td><span class="tag t-b">Nunca</span></td><td>Gestor de passwords</td></tr>
+  <tr><td>Chaves de APIs pagas</td><td><span class="tag t-b">Nunca</span></td><td>Secrets de Worker/Edge Function</td></tr>
+  <tr><td>Tokens de deploy</td><td><span class="tag t-b">Nunca</span></td><td>GitHub Actions Secrets</td></tr>
+ </tbody></table></div>
+ </section>`;
+
+ /* 7 */
+ h+=`<section id="erros">
+ <h2>Erros comuns e como evitá-los</h2>
+ <p class="lead">Quase todos os projetos que falham, falham pelas mesmas razões. Clique para ver a alternativa.</p>
+ <div id="errosList"></div>
+ <h3 class="mt">Princípios para guardar</h3>
+ <div class="grid">
+  <div class="card"><h3>Feito &gt; perfeito</h3><p>Um site no ar com 3 funcionalidades bate um site planeado com 30.</p></div>
+  <div class="card"><h3>Mobile primeiro</h3><p>Desenhar para o ecrã pequeno e expandir é mais fácil do que o contrário.</p></div>
+  <div class="card"><h3>Segurança por defeito</h3><p>Tudo fechado; abrir só o necessário, explicitamente.</p></div>
+  <div class="card"><h3>Medir, não adivinhar</h3><p>Decisões com base em dados de uso, não em opinião.</p></div>
+  <div class="card"><h3>Consistência</h3><p>Os mesmos padrões em todos os sites fazem a plataforma parecer uma só.</p></div>
+  <div class="card"><h3>Simplicidade</h3><p>Cada linha de código é algo a manter. A melhor funcionalidade é às vezes a que não se faz.</p></div>
+ </div>
+ </section>`;
+
+ $("#main").innerHTML = h;
+}
+
+render();
+
+/* ============ INTERAÇÃO ============ */
+// tabs
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
+ document.querySelectorAll("main section").forEach(s=>s.classList.toggle("on",s.id===b.dataset.t));
+ store.set("tab",b.dataset.t); window.scrollTo({top:0,behavior:"smooth"});
+});
+const lastTab = store.get("tab",null);
+if(lastTab){const b=document.querySelector(`#tabs button[data-t="${lastTab}"]`); if(b) b.click();}
+
+// pilares + filtro
+function drawPilares(f){
+ $("#pilares").innerHTML = PILARES.filter(p=>f==="all"||p.tags[0][0]===f).map(p=>`
+ <div class="card"><div class="ico">${p.i}</div><h3>${p.t}</h3><p>${p.d}</p>
+ <span class="tag t-${p.tags[0][1]==='ok'?'ok':p.tags[0][1]}">${p.tags[0][0]}</span><span class="tag t-a">${p.m}</span></div>`).join("");
+}
+drawPilares("all");
+document.querySelectorAll("#pfilter button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll("#pfilter button").forEach(x=>x.classList.toggle("on",x===b)); drawPilares(b.dataset.f);
+});
+
+// pirâmide
+const NIV=[["Encantar","Detalhes, personalização, surpresa",40],["Agradável","Design consistente, conteúdo útil",58],["Fácil","Clareza, fricção zero, mobile",76],["Fiável","Rápido, sempre no ar, sem bugs",88],["Seguro","Dados protegidos, confiança",100]];
+$("#piramide").innerHTML = NIV.map((n,i)=>`<div style="margin:0 auto 6px;width:${n[2]}%;background:color-mix(in srgb,var(--acc) ${30+i*15}%,var(--card));color:${i>1?'#fff':'var(--ink)'};border-radius:10px;padding:8px 10px;text-align:center;font-size:.88rem"><b>${n[0]}</b> · ${n[1]}</div>`).join("");
+
+// passos
+const seen = store.get("passos",[]);
+$("#passosList").innerHTML = PASSOS.map((p,i)=>`
+<div class="acc-item" data-i="${i}">
+ <div class="acc-h"><div class="num">${seen.includes(i)?'✓':i+1}</div><div class="ttl"><b>${p.t}</b><span>${p.s}</span></div><span class="chev">›</span></div>
+ <div class="acc-b"><ul>${p.d.map(x=>`<li>${x}</li>`).join("")}</ul><div class="out"><b>Resultado:</b> ${p.o}</div></div>
+</div>`).join("");
+function updPassos(){
+ $("#passoPct").textContent=`${seen.length} de ${PASSOS.length} fases revistas`;
+ $("#passoBar").style.width=(seen.length/PASSOS.length*100)+"%";
+}
+document.querySelectorAll("#passosList .acc-item").forEach(el=>{
+ el.querySelector(".acc-h").onclick=()=>{
+  el.classList.toggle("open");
+  const i=+el.dataset.i;
+  if(!seen.includes(i)){seen.push(i);store.set("passos",seen);el.querySelector(".num").textContent="✓";updPassos();}
+ };
+});
+updPassos();
+
+// esforço
+const EF=[["Descoberta + âmbito",10],["Arquitetura + design",20],["Desenvolvimento",40],["Testes e QA",15],["Lançamento",5],["Medir + ajustar",10]];
+$("#esforco").innerHTML = EF.map(e=>`<div style="display:flex;align-items:center;gap:10px;margin:6px 0"><span style="flex:0 0 160px;font-size:.88rem">${e[0]}</span><div class="meter" style="flex:1;margin:0"><i style="width:${e[1]*2.5}%"></i></div><span class="pct" style="flex:0 0 36px;text-align:right">${e[1]}%</span></div>`).join("")+`<p style="margin-top:10px">A manutenção depois do lançamento costuma custar, ao longo da vida do site, tanto ou mais do que a construção inicial.</p>`;
+
+// checklist
+let checks = store.get("checks",{}); let onlyMissing=false;
+function drawChecks(){
+ $("#checkGrid").innerHTML = Object.entries(CHECK).map(([cat,items])=>{
+  const done=items.filter((_,i)=>checks[cat+i]).length;
+  return `<div class="card cat"><div class="cat-h"><h3>${cat}</h3><span class="pct">${done}/${items.length}</span></div>
+  <div class="meter"><i style="width:${done/items.length*100}%"></i></div>
+  ${items.map((it,i)=>(onlyMissing&&checks[cat+i])?"":`<label class="chk"><input type="checkbox" data-k="${cat+i}" ${checks[cat+i]?"checked":""}><span>${it[0].replace(/</g,"&lt;")}<small>${it[1]}</small></span></label>`).join("")}</div>`;
+ }).join("");
+ document.querySelectorAll("#checkGrid input").forEach(c=>c.onchange=()=>{checks[c.dataset.k]=c.checked;store.set("checks",checks);drawChecks();});
+ const total=Object.values(CHECK).reduce((a,b)=>a+b.length,0), done=Object.values(checks).filter(Boolean).length, pct=Math.round(done/total*100);
+ $("#score").textContent=pct+"%"; $("#scoreTxt").textContent=`${done} de ${total} critérios`; $("#scoreBar").style.width=pct+"%";
+ const v=$("#verdict"); const secOK=CHECK["Segurança"].every((_,i)=>checks["Segurança"+i]);
+ let txt,cls;
+ if(!secOK && done>0){txt="⚠️ A segurança ainda não está completa. Resolver isso antes de qualquer outra coisa.";cls="t-b";}
+ else if(pct<40){txt="Ainda no início. Foque-se em performance, usabilidade e segurança.";cls="t-w";}
+ else if(pct<75){txt="Bom caminho. O site funciona; agora é polir e cobrir o que falta.";cls="t-a";}
+ else if(pct<100){txt="Muito sólido. Os detalhes restantes são o que separa o bom do excelente.";cls="t-ok";}
+ else {txt="🎉 Todos os critérios cumpridos. Agora é medir, ouvir os utilizadores e iterar.";cls="t-ok";}
+ v.className="verdict "+cls; v.textContent=txt;
+}
+drawChecks();
+$("#reset").onclick=()=>{if(confirm("Limpar todas as marcações?")){checks={};store.set("checks",checks);drawChecks();}};
+$("#expand").onclick=e=>{onlyMissing=!onlyMissing;e.target.textContent=onlyMissing?"Mostrar tudo":"Mostrar só o que falta";drawChecks();};
+
+// erros
+$("#errosList").innerHTML = ERROS.map(e=>`
+<div class="acc-item"><div class="acc-h"><div class="num" style="background:var(--badb);color:var(--bad)">✕</div><div class="ttl"><b>${e[0]}</b></div><span class="chev">›</span></div>
+<div class="acc-b"><div class="out" style="background:var(--okb);color:var(--ok)"><b>Em vez disso:</b> ${e[1]}</div></div></div>`).join("");
+document.querySelectorAll("#errosList .acc-item").forEach(el=>el.querySelector(".acc-h").onclick=()=>el.classList.toggle("open"));
+
+// tema
+const root=document.documentElement;
+const th=store.get("theme",null); if(th) root.dataset.theme=th;
+$("#theme").onclick=()=>{
+ const dark = root.dataset.theme ? root.dataset.theme==="dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+ root.dataset.theme = dark?"light":"dark"; store.set("theme",root.dataset.theme);
+};
+</script>
+</body>
+</html>
