@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Bolsa — Guia Completo</title>
+<style>
+:root{
+  --bg:#f6f4ef;--card:#ffffff;--ink:#1c1f24;--muted:#5d6470;--line:#e3dfd6;
+  --acc:#0f6e4f;--acc2:#b8432f;--gold:#b88a1e;--soft:#eaf3ef;--softr:#f8ebe8;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#121417;--card:#1b1e23;--ink:#e9e7e2;--muted:#9aa1ab;--line:#2c3037;
+  --acc:#3ccf98;--acc2:#ff8a74;--gold:#e0b44a;--soft:#17302a;--softr:#3a2420;--shadow:none}
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header.hero{padding:48px 16px 28px;max-width:960px;margin:auto}
+.kicker{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);font-weight:700}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(2rem,6vw,3.2rem);line-height:1.1;margin:.3em 0 .4em}
+.lead{color:var(--muted);font-size:1.08rem;max-width:680px}
+nav{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;max-width:960px;margin:auto;scrollbar-width:none}
+nav .wrap::-webkit-scrollbar{display:none}
+nav a{flex:none;text-decoration:none;color:var(--ink);font-size:.86rem;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card);white-space:nowrap}
+nav a:hover{border-color:var(--acc);color:var(--acc)}
+main{max-width:960px;margin:auto;padding:0 16px 60px}
+section{padding-top:36px;scroll-margin-top:56px}
+h2{font-family:Georgia,"Times New Roman",serif;font-size:1.75rem;margin:0 0 .3em;line-height:1.2}
+h2 .n{color:var(--acc);font-size:1rem;font-family:inherit;display:block;letter-spacing:.1em}
+h3{font-size:1.08rem;margin:1.2em 0 .3em}
+p{margin:.5em 0 .8em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin:14px 0}
+.grid .card h3{margin-top:0}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--soft);color:var(--acc);margin-bottom:6px}
+.tag.r{background:var(--softr);color:var(--acc2)}
+.note{border-left:4px solid var(--gold);background:var(--card);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;color:var(--ink)}
+.muted{color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 10px;margin:14px 0}
+/* Timeline */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.filters button{font:inherit;font-size:.85rem;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.filters button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.tl{position:relative;margin:10px 0 0;padding-left:22px}
+.tl:before{content:"";position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:var(--line)}
+.ev{position:relative;margin:0 0 14px}
+.ev:before{content:"";position:absolute;left:-21px;top:18px;width:12px;height:12px;border-radius:50%;background:var(--acc);border:2px solid var(--bg)}
+.ev.crise:before{background:var(--acc2)}
+.ev.pt:before{background:var(--gold)}
+.ev .yr{font-weight:800;color:var(--acc);font-variant-numeric:tabular-nums}
+.ev.crise .yr{color:var(--acc2)}
+.ev.pt .yr{color:var(--gold)}
+.ev h3{margin:.1em 0 .2em;font-size:1rem}
+.ev p{margin:0;font-size:.94rem;color:var(--muted)}
+/* order book */
+.book{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.book .side{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-variant-numeric:tabular-nums;font-size:.9rem}
+.book .row{display:flex;justify-content:space-between;padding:3px 6px;border-radius:4px}
+.buy .row{background:linear-gradient(90deg,var(--soft) var(--w),transparent var(--w))}
+.sell .row{background:linear-gradient(270deg,var(--softr) var(--w),transparent var(--w))}
+.book h3{margin:0 0 6px;font-size:.9rem}
+/* calculator */
+.calc label{display:block;font-size:.85rem;color:var(--muted);margin-top:10px}
+.calc input[type=range]{width:100%;accent-color:var(--acc)}
+.calc .val{float:right;color:var(--ink);font-weight:700}
+.big{font-size:1.8rem;font-weight:800;color:var(--acc);font-variant-numeric:tabular-nums}
+.bars{display:flex;align-items:flex-end;gap:2px;height:140px;margin-top:12px}
+.bars div{flex:1;border-radius:3px 3px 0 0;position:relative;min-width:2px}
+.bars .a{background:var(--line)}
+.legend{display:flex;gap:14px;font-size:.8rem;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+/* glossary */
+#gq{width:100%;font:inherit;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);margin:10px 0}
+dl{margin:0}
+.gi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px}
+.gi dt{font-weight:700}
+.gi dd{margin:2px 0 0;color:var(--muted);font-size:.93rem}
+/* quiz */
+.q{margin-bottom:14px}
+.q .opts{display:grid;gap:6px;margin-top:6px}
+.q button{font:inherit;text-align:left;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.q button.ok{background:var(--soft);border-color:var(--acc)}
+.q button.no{background:var(--softr);border-color:var(--acc2)}
+.q .ex{font-size:.88rem;color:var(--muted);margin-top:6px;display:none}
+footer{max-width:960px;margin:auto;padding:24px 16px 40px;color:var(--muted);font-size:.82rem;border-top:1px solid var(--line)}
+.bull{display:flex;gap:12px;align-items:center}
+.bull svg{flex:none}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="kicker">Guia · Mercados financeiros</div>
+  <h1>A Bolsa: da taberna de Bruges aos algoritmos</h1>
+  <p class="lead">Como surgiu, como funciona, quem participa, os grandes marcos e crises, e os conceitos essenciais para perceber o mercado de ações.</p>
+</header>
+
+<nav><div class="wrap">
+  <a href="#oque">O que é</a>
+  <a href="#origens">Origens</a>
+  <a href="#funciona">Como funciona</a>
+  <a href="#ordens">Ordens</a>
+  <a href="#ativos">Ativos</a>
+  <a href="#indices">Índices</a>
+  <a href="#marcos">Marcos históricos</a>
+  <a href="#portugal">Portugal</a>
+  <a href="#valor">Avaliar ações</a>
+  <a href="#risco">Risco & retorno</a>
+  <a href="#calc">Juros compostos</a>
+  <a href="#licoes">Lições</a>
+  <a href="#glossario">Glossário</a>
+  <a href="#quiz">Quiz</a>
+</div></nav>
+
+<main>
+
+<!-- 1 -->
+<section id="oque">
+  <h2><span class="n">01</span>O que é a bolsa?</h2>
+  <p>Uma bolsa de valores é um <strong>mercado organizado e regulado</strong> onde se compram e vendem instrumentos financeiros — sobretudo ações (frações do capital de uma empresa), mas também obrigações, fundos (ETF), certificados e derivados.</p>
+  <p>Cumpre duas funções fundamentais:</p>
+  <div class="grid">
+    <div class="card"><span class="tag">Mercado primário</span><h3>Financiar empresas</h3><p>A empresa emite novas ações (IPO ou aumento de capital) e recebe o dinheiro dos investidores para crescer, investir ou pagar dívida.</p></div>
+    <div class="card"><span class="tag">Mercado secundário</span><h3>Dar liquidez</h3><p>Os investidores trocam entre si títulos já existentes. A empresa não recebe dinheiro, mas a possibilidade de vender facilmente torna o investimento mais atrativo.</p></div>
+    <div class="card"><span class="tag">Função extra</span><h3>Formar preços</h3><p>Milhões de ordens agregam informação e expectativas, produzindo um preço público e contínuo para cada empresa.</p></div>
+  </div>
+  <div class="note"><strong>Ideia-chave:</strong> quem compra uma ação torna-se sócio. Ganha com a valorização e com os dividendos, mas também partilha o risco — no limite, pode perder tudo o que investiu (nunca mais do que isso, no caso de ações sem alavancagem).</div>
+</section>
+
+<!-- 2 -->
+<section id="origens">
+  <h2><span class="n">02</span>Como surgiu</h2>
+  <p>A bolsa não foi inventada de uma vez. É o resultado de séculos de evolução do crédito, do comércio e da ideia de dividir o risco de um negócio entre muitos sócios.</p>
+  <div class="grid">
+    <div class="card"><span class="tag">Antiguidade</span><h3>Roma</h3><p>As <em>societates publicanorum</em> cobravam impostos e executavam obras públicas. Tinham partes (<em>partes</em>) que mudavam de mãos perto do Fórum — um embrião de mercado de participações.</p></div>
+    <div class="card"><span class="tag">Séc. XII–XIV</span><h3>Itália</h3><p>Veneza, Génova e Florença emitiam dívida pública transacionável. Os banqueiros italianos desenvolveram letras de câmbio e contabilidade de partidas dobradas.</p></div>
+    <div class="card"><span class="tag">Séc. XIII–XV</span><h3>Bruges e a palavra "bolsa"</h3><p>Os mercadores reuniam-se em frente à hospedaria da família <strong>Van der Beurze</strong>, cujo brasão tinha três bolsas. Daí vêm <em>bourse</em>, <em>Börse</em>, <em>borsa</em> e "bolsa".</p></div>
+    <div class="card"><span class="tag">1531</span><h3>Antuérpia</h3><p>Constrói-se o primeiro edifício dedicado ao comércio de letras, mercadorias e dívida. Torna-se o centro financeiro da Europa do séc. XVI.</p></div>
+    <div class="card"><span class="tag">1602</span><h3>Amesterdão e a VOC</h3><p>A Companhia Holandesa das Índias Orientais é a primeira empresa a emitir ações para o público em geral, negociáveis livremente. Nasce a primeira bolsa de ações moderna, com vendas a descoberto e opções já no séc. XVII.</p></div>
+    <div class="card"><span class="tag">Séc. XVII–XVIII</span><h3>Londres e os cafés</h3><p>Os corretores, expulsos da Royal Exchange pelo mau comportamento, reuniam-se em cafés como o <em>Jonathan's</em>, onde em 1698 se publicavam listas de preços. Em 1773 o espaço passa a chamar-se "Stock Exchange".</p></div>
+    <div class="card"><span class="tag">1792</span><h3>Nova Iorque</h3><p>24 corretores assinam o <strong>Buttonwood Agreement</strong> debaixo de um plátano em Wall Street. Em 1817 formalizam-se como bolsa; o nome NYSE surge em 1863.</p></div>
+  </div>
+  <div class="note"><strong>Porquê ações?</strong> Expedições marítimas às Índias eram caríssimas e arriscadas. Dividir o capital em muitas partes permitia financiar viagens que nenhum mercador conseguiria pagar sozinho — e diversificar: um naufrágio já não arruinava ninguém por completo.</div>
+</section>
+
+<!-- 3 -->
+<section id="funciona">
+  <h2><span class="n">03</span>Como funciona hoje</h2>
+  <p>A gritaria no "pit" foi substituída por servidores. Hoje quase todo o mercado é eletrónico e o preço forma-se num <strong>livro de ordens</strong>.</p>
+
+  <h3>Quem participa</h3>
+  <div class="grid">
+    <div class="card"><h3>Empresas cotadas</h3><p>Emitem ações e cumprem regras de transparência: contas trimestrais, comunicação de factos relevantes.</p></div>
+    <div class="card"><h3>Investidores</h3><p>Particulares (retalho) e institucionais: fundos de pensões, seguradoras, fundos de investimento, hedge funds, bancos.</p></div>
+    <div class="card"><h3>Intermediários</h3><p>Corretoras e bancos recebem as ordens dos clientes e encaminham-nas para o mercado. O particular não acede diretamente à bolsa.</p></div>
+    <div class="card"><h3>Criadores de mercado</h3><p>Colocam permanentemente ofertas de compra e venda, garantindo liquidez e ganhando o spread.</p></div>
+    <div class="card"><h3>Infraestrutura</h3><p>Bolsa (ex.: Euronext), câmara de compensação (garante as transações) e depositária central (regista quem é dono de quê; em Portugal, a Interbolsa).</p></div>
+    <div class="card"><h3>Reguladores</h3><p>Em Portugal a <strong>CMVM</strong>; na UE a ESMA; nos EUA a SEC. Supervisionam informação, abuso de mercado e intermediários.</p></div>
+  </div>
+
+  <h3>O livro de ordens</h3>
+  <p>Do lado esquerdo estão os compradores (preço que estão dispostos a pagar — <em>bid</em>); do lado direito os vendedores (preço que pedem — <em>ask</em>). Há negócio quando os preços se cruzam.</p>
+  <div class="book">
+    <div class="side buy"><h3 style="color:var(--acc)">Compra (bid)</h3>
+      <div class="row" style="--w:60%"><span>1 200</span><b>10,02 €</b></div>
+      <div class="row" style="--w:85%"><span>3 400</span><span>10,01 €</span></div>
+      <div class="row" style="--w:45%"><span>900</span><span>10,00 €</span></div>
+      <div class="row" style="--w:100%"><span>5 000</span><span>9,99 €</span></div>
+    </div>
+    <div class="side sell"><h3 style="color:var(--acc2);text-align:right">Venda (ask)</h3>
+      <div class="row" style="--w:50%"><b>10,04 €</b><span>800</span></div>
+      <div class="row" style="--w:70%"><span>10,05 €</span><span>2 100</span></div>
+      <div class="row" style="--w:90%"><span>10,06 €</span><span>4 000</span></div>
+      <div class="row" style="--w:35%"><span>10,08 €</span><span>600</span></div>
+    </div>
+  </div>
+  <p class="muted">Neste exemplo, o melhor comprador paga 10,02 € e o melhor vendedor pede 10,04 €. A diferença (0,02 €) é o <strong>spread</strong>. Uma ordem "ao mercado" de compra executa a 10,04 €.</p>
+
+  <h3>O ciclo de uma transação</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Etapa</th><th>O que acontece</th></tr>
+    <tr><td><b>1. Ordem</b></td><td>O investidor dá a ordem à corretora (app, site, telefone).</td></tr>
+    <tr><td><b>2. Encaminhamento</b></td><td>A corretora envia-a para a bolsa ou outra plataforma de negociação.</td></tr>
+    <tr><td><b>3. Execução</b></td><td>O motor da bolsa cruza a ordem com a melhor contraparte (prioridade preço, depois tempo).</td></tr>
+    <tr><td><b>4. Compensação</b></td><td>A câmara de compensação coloca-se entre comprador e vendedor e garante o negócio.</td></tr>
+    <tr><td><b>5. Liquidação</b></td><td>Os títulos e o dinheiro trocam de mãos. Na Europa em T+2 (dois dias úteis), com passagem a T+1 prevista para outubro de 2027; nos EUA já em T+1 desde 2024.</td></tr>
+  </table></div>
+
+  <h3>Sessão de negociação</h3>
+  <p>Na Euronext (incluindo Lisboa), o dia típico tem um <strong>leilão de abertura</strong> (pré-abertura a partir das 7h15 em Lisboa, abertura às 8h00), <strong>negociação contínua</strong> até às 16h30, e um <strong>leilão de fecho</strong> que define o preço de fecho. Há ainda mecanismos de interrupção (circuit breakers) quando um título varia demasiado num curto espaço de tempo.</p>
+</section>
+
+<!-- 4 -->
+<section id="ordens">
+  <h2><span class="n">04</span>Tipos de ordens</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Ordem</th><th>Como funciona</th><th>Risco / vantagem</th></tr>
+    <tr><td><b>Ao mercado</b></td><td>Executa já, ao melhor preço disponível.</td><td>Rápida, mas o preço final pode surpreender em títulos pouco líquidos.</td></tr>
+    <tr><td><b>Limitada</b></td><td>Só executa ao preço indicado ou melhor.</td><td>Controla o preço, mas pode não ser executada.</td></tr>
+    <tr><td><b>Stop (stop-loss)</b></td><td>Transforma-se em ordem de mercado quando o preço atinge um nível.</td><td>Limita perdas; em quedas bruscas pode executar bem abaixo do stop.</td></tr>
+    <tr><td><b>Stop limitada</b></td><td>Ao atingir o stop, vira ordem limitada.</td><td>Evita preços maus, mas pode ficar por executar.</td></tr>
+    <tr><td><b>Venda a descoberto</b></td><td>Vende ações emprestadas, para recomprar mais barato depois.</td><td>Ganha com quedas; perda teoricamente ilimitada.</td></tr>
+  </table></div>
+</section>
+
+<!-- 5 -->
+<section id="ativos">
+  <h2><span class="n">05</span>O que se negocia</h2>
+  <div class="grid">
+    <div class="card"><span class="tag">Capital</span><h3>Ações</h3><p>Propriedade de parte da empresa. Direito a dividendos e voto. Maior potencial de retorno e maior volatilidade.</p></div>
+    <div class="card"><span class="tag">Dívida</span><h3>Obrigações</h3><p>Empréstimo a uma empresa ou Estado, com juro (cupão) e reembolso na maturidade. Preço cai quando as taxas de juro sobem.</p></div>
+    <div class="card"><span class="tag">Fundos</span><h3>ETF</h3><p>Fundos cotados que replicam um índice (ex.: S&P 500, MSCI World). Diversificação imediata com custos baixos. O primeiro grande ETF, o SPY, surgiu em 1993.</p></div>
+    <div class="card"><span class="tag r">Derivados</span><h3>Futuros e opções</h3><p>Contratos cujo valor depende de outro ativo. Servem para cobertura de risco ou especulação; usam alavancagem.</p></div>
+    <div class="card"><span class="tag r">Alavancados</span><h3>CFD, turbos, warrants</h3><p>Produtos complexos. Segundo os avisos obrigatórios das corretoras, a maioria das contas de retalho perde dinheiro com CFD.</p></div>
+    <div class="card"><span class="tag">Outros</span><h3>REIT, ADR, certificados</h3><p>Imobiliário cotado, ações estrangeiras em formato local, produtos estruturados.</p></div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section id="indices">
+  <h2><span class="n">06</span>Os grandes índices</h2>
+  <p>Um índice resume a evolução de um conjunto de ações. Serve de termómetro do mercado e de base para ETF.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Índice</th><th>Mercado</th><th>Criado</th><th>Notas</th></tr>
+    <tr><td><b>Dow Jones (DJIA)</b></td><td>EUA</td><td>1896</td><td>30 empresas, ponderado pelo preço. Começou com 12 (criado por Charles Dow).</td></tr>
+    <tr><td><b>S&amp;P 500</b></td><td>EUA</td><td>1957</td><td>500 grandes empresas, ponderado pela capitalização. A referência mundial.</td></tr>
+    <tr><td><b>Nasdaq Composite</b></td><td>EUA</td><td>1971</td><td>Forte peso de tecnologia. O Nasdaq-100 reúne as 100 maiores não financeiras.</td></tr>
+    <tr><td><b>Nikkei 225</b></td><td>Japão</td><td>1950</td><td>Ponderado pelo preço. Pico de 1989 só foi ultrapassado em 2024.</td></tr>
+    <tr><td><b>FTSE 100</b></td><td>Reino Unido</td><td>1984</td><td>100 maiores da Bolsa de Londres.</td></tr>
+    <tr><td><b>CAC 40 / DAX</b></td><td>França / Alemanha</td><td>1987 / 1988</td><td>O DAX é um índice de retorno total (inclui dividendos).</td></tr>
+    <tr><td><b>Euro Stoxx 50</b></td><td>Zona euro</td><td>1998</td><td>50 maiores empresas da zona euro.</td></tr>
+    <tr><td><b>MSCI World</b></td><td>Desenvolvidos</td><td>1969</td><td>Cerca de 1 500 empresas de 23 países desenvolvidos. Base de muitos ETF globais.</td></tr>
+    <tr><td><b>PSI</b></td><td>Portugal</td><td>1992</td><td>Nasceu como PSI-20 (base 3 000 pontos); passou a PSI em 2021, com número variável de empresas.</td></tr>
+  </table></div>
+</section>
+
+<!-- 7 -->
+<section id="marcos">
+  <h2><span class="n">07</span>Marcos históricos</h2>
+  <p>Euforias, pânicos e reformas. Toque nos filtros para ver só crises, inovações ou Portugal.</p>
+  <div class="filters" id="filters">
+    <button class="on" data-f="all">Todos</button>
+    <button data-f="crise">Crises & bolhas</button>
+    <button data-f="inov">Inovação & regulação</button>
+    <button data-f="pt">Portugal</button>
+  </div>
+  <div class="tl" id="tl">
+    <div class="ev inov" data-c="inov"><span class="yr">1602</span><h3>VOC: a primeira ação pública</h3><p>A Companhia Holandesa das Índias Orientais vende ações a qualquer interessado. Amesterdão torna-se o primeiro mercado de ações contínuo.</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">1637</span><h3>Tulipomania</h3><p>Contratos sobre bolbos de tulipa atingem preços absurdos na Holanda e colapsam em fevereiro. Tornou-se o símbolo clássico de bolha, embora historiadores modernos considerem o impacto económico exagerado.</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">1720</span><h3>Bolhas dos Mares do Sul e do Mississippi</h3><p>Em Londres e Paris, ações de companhias com monopólios coloniais disparam e afundam. Isaac Newton perdeu uma fortuna e terá dito que conseguia calcular os movimentos dos astros, mas não a loucura das pessoas.</p></div>
+    <div class="ev pt" data-c="pt"><span class="yr">1769</span><h3>Nasce a Bolsa de Lisboa</h3><p>Sob o Marquês de Pombal, cria-se na Praça do Comércio um espaço de reunião de homens de negócio — a origem da bolsa portuguesa.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">1792</span><h3>Buttonwood Agreement</h3><p>24 corretores fixam comissões e regras em Wall Street. Origem da NYSE.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">1801</span><h3>London Stock Exchange formaliza-se</h3><p>Primeira bolsa regulada com membros e regras, no edifício de Capel Court.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">1867</span><h3>Ticker tape</h3><p>O telégrafo de cotações leva os preços em tempo quase real a escritórios de todo o país.</p></div>
+    <div class="ev pt" data-c="pt"><span class="yr">1891</span><h3>Bolsa do Porto</h3><p>É criada a Bolsa do Porto, que funcionaria em paralelo com Lisboa durante mais de um século.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">1896</span><h3>Dow Jones Industrial Average</h3><p>Charles Dow cria um índice com 12 empresas industriais. Começa a era dos índices.</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">1907</span><h3>Pânico de 1907</h3><p>Corrida aos bancos em Nova Iorque, travada por J. P. Morgan. Leva à criação da Reserva Federal (1913).</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">1929</span><h3>O Grande Crash</h3><p>Quinta-feira Negra (24 out.) e Terça-feira Negra (29 out.). Muita compra a crédito (margem de 90%). O Dow perdeu cerca de 89% até 1932 e só recuperou o máximo em 1954. Seguiu-se a Grande Depressão.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">1933–34</span><h3>Nasce a SEC</h3><p>Securities Act e Securities Exchange Act: prospetos obrigatórios, proibição de manipulação, regulador federal. Modelo para reguladores de todo o mundo.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">1934</span><h3>Graham & Dodd — "Security Analysis"</h3><p>Funda o investimento em valor (value investing), base da filosofia de Warren Buffett.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">1952</span><h3>Teoria Moderna do Portefólio</h3><p>Harry Markowitz demonstra matematicamente o benefício da diversificação.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">1971</span><h3>Nasdaq e fim de Bretton Woods</h3><p>Primeira bolsa totalmente eletrónica. No mesmo ano os EUA suspendem a convertibilidade do dólar em ouro: câmbios passam a flutuar.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">1973</span><h3>Opções modernas</h3><p>Abre a CBOE e é publicado o modelo Black-Scholes de avaliação de opções.</p></div>
+    <div class="ev pt" data-c="pt"><span class="yr">1974–77</span><h3>Bolsas encerradas</h3><p>Após o 25 de Abril, as bolsas portuguesas fecham. Com as nacionalizações de 1975, muitas empresas cotadas passam para o Estado. Reabrem em 1977.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">1976</span><h3>Primeiro fundo de índice para particulares</h3><p>John Bogle (Vanguard) lança um fundo que replica o S&amp;P 500. Começa a revolução do investimento passivo e de baixo custo.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">1986</span><h3>"Big Bang" de Londres</h3><p>Desregulação: fim de comissões fixas, entrada de bancos estrangeiros, negociação eletrónica.</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">1987</span><h3>Segunda-feira Negra</h3><p>19 de outubro: o Dow cai 22,6% num só dia, a maior queda diária da história. Culpa parcial do "portfolio insurance" automatizado. Levou à criação dos circuit breakers. Em Portugal, rebentou a euforia bolsista que se seguiu às privatizações iniciais.</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">1989–90</span><h3>Bolha japonesa</h3><p>O Nikkei atinge cerca de 38 900 pontos em dezembro de 1989 e entra em décadas de declínio. Só voltou a esse nível em 2024 — 34 anos depois.</p></div>
+    <div class="ev pt" data-c="pt"><span class="yr">1991–93</span><h3>CMVM e PSI-20</h3><p>Cria-se a Comissão do Mercado de Valores Mobiliários (1991) e o índice PSI-20 (base no final de 1992). Vaga de privatizações: EDP, PT, Galp, BCP passam a ser detidas por milhares de pequenos acionistas.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">1993</span><h3>Primeiro ETF americano</h3><p>Lançamento do SPDR S&amp;P 500 (SPY), hoje um dos títulos mais negociados do mundo.</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">1997–98</span><h3>Crise asiática, Rússia e LTCM</h3><p>Desvalorizações em cadeia na Ásia, incumprimento russo e quase colapso do hedge fund LTCM, gerido por prémios Nobel, resgatado por um consórcio de bancos.</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">2000–02</span><h3>Bolha das dot-com</h3><p>O Nasdaq atinge o pico em março de 2000 e perde cerca de 78% até 2002. Empresas sem lucros valiam milhares de milhões. Seguem-se os escândalos Enron (2001) e WorldCom (2002) e a lei Sarbanes-Oxley.</p></div>
+    <div class="ev pt" data-c="pt"><span class="yr">2000–02</span><h3>Euronext Lisbon</h3><p>Lisboa e Porto fundem-se em 2000 (BVLP) e em 2002 a bolsa portuguesa integra a Euronext, juntamente com Paris, Amesterdão e Bruxelas.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">2007</span><h3>MiFID na Europa</h3><p>A diretiva europeia abre a concorrência entre bolsas e plataformas alternativas e reforça a proteção do investidor. Revista em 2018 (MiFID II).</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">2008</span><h3>Crise financeira global</h3><p>Colapso do subprime e falência do Lehman Brothers (15 set.). O S&amp;P 500 caiu cerca de 57% entre o pico de 2007 e março de 2009. Resgates bancários e juros zero.</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">2010</span><h3>Flash Crash</h3><p>A 6 de maio, o Dow afunda quase 1 000 pontos em minutos e recupera logo a seguir. Expôs os riscos da negociação algorítmica de alta frequência.</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">2010–12</span><h3>Crise da dívida soberana</h3><p>Grécia, Irlanda e Portugal pedem resgate. Juros da dívida portuguesa disparam; o PSI-20 sofre fortemente até ao "whatever it takes" de Mario Draghi (2012).</p></div>
+    <div class="ev pt" data-c="pt"><span class="yr">2014</span><h3>Queda do BES</h3><p>O Banco Espírito Santo, uma das maiores cotadas, colapsa em agosto e é alvo de medida de resolução. Os acionistas perdem praticamente tudo.</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">2020</span><h3>Crash da COVID-19</h3><p>O S&amp;P 500 cai cerca de 34% em pouco mais de um mês — o bear market mais rápido da história — e recupera o máximo em cerca de cinco meses, graças a estímulos maciços.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">2021</span><h3>GameStop e as "meme stocks"</h3><p>Investidores de retalho, organizados no Reddit, fazem disparar ações muito vendidas a descoberto. Debate sobre corretoras sem comissões e o poder do retalho.</p></div>
+    <div class="ev crise" data-c="crise"><span class="yr">2022</span><h3>Inflação e subida de juros</h3><p>A inflação mais alta em 40 anos leva os bancos centrais a subir juros rapidamente. Ações e obrigações caem ao mesmo tempo — algo raro.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">2023–25</span><h3>Vaga da inteligência artificial</h3><p>Fabricantes de chips e gigantes tecnológicos lideram os ganhos. A Nvidia torna-se a empresa mais valiosa do mundo e ultrapassa os 4 biliões de dólares em 2025. Discute-se a concentração dos índices num punhado de empresas.</p></div>
+    <div class="ev inov" data-c="inov"><span class="yr">2024</span><h3>Liquidação T+1 nos EUA</h3><p>As transações americanas passam a liquidar no dia útil seguinte. A UE prepara a mesma mudança para 2027.</p></div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section id="portugal">
+  <h2><span class="n">08</span>A bolsa em Portugal</h2>
+  <div class="grid">
+    <div class="card"><h3>Onde se negocia</h3><p>Na <strong>Euronext Lisbon</strong>, parte do grupo Euronext, que reúne bolsas de Paris, Amesterdão, Bruxelas, Lisboa, Dublin, Oslo e Milão.</p></div>
+    <div class="card"><h3>Quem supervisiona</h3><p>A <strong>CMVM</strong> regula os mercados e intermediários. O Banco de Portugal supervisiona os bancos.</p></div>
+    <div class="card"><h3>Mercado pequeno</h3><p>Poucas dezenas de empresas cotadas; o PSI está muito concentrado em energia, banca, retalho e papel. Daí que muitos portugueses invistam em mercados internacionais.</p></div>
+    <div class="card"><h3>Proteção do investidor</h3><p>O Sistema de Indemnização aos Investidores cobre até 25 000 € por investidor em caso de falha do intermediário (não cobre perdas de mercado).</p></div>
+  </div>
+  <h3>Fiscalidade (regra geral para residentes)</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Rendimento</th><th>Tributação</th></tr>
+    <tr><td>Mais-valias de ações</td><td>Taxa autónoma de 28% sobre o saldo anual (ganhos menos perdas), declarado no IRS (Anexo G ou J se a corretora for estrangeira). Opção de englobamento possível.</td></tr>
+    <tr><td>Dividendos</td><td>Retenção de 28% (liberatória em Portugal). No englobamento, só 50% do dividendo de empresas da UE é tributado.</td></tr>
+    <tr><td>Títulos detidos menos de 365 dias</td><td>Desde 2023, englobamento obrigatório do saldo se o rendimento coletável total (incluindo esse saldo) atingir o último escalão de IRS.</td></tr>
+    <tr><td>Paraísos fiscais</td><td>Taxa agravada de 35%.</td></tr>
+  </table></div>
+  <p class="muted">As regras fiscais mudam; confirme sempre com o Portal das Finanças ou um contabilista.</p>
+</section>
+
+<!-- 9 -->
+<section id="valor">
+  <h2><span class="n">09</span>Como se avalia uma ação</h2>
+  <p>No longo prazo, o preço de uma ação acompanha os <strong>lucros</strong> e o <strong>dinheiro</strong> que a empresa gera. No curto prazo, é dominado por expectativas, juros e sentimento.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Indicador</th><th>Fórmula</th><th>O que diz</th></tr>
+    <tr><td><b>Capitalização</b></td><td>Preço × n.º de ações</td><td>Quanto o mercado diz que a empresa vale.</td></tr>
+    <tr><td><b>EPS / LPA</b></td><td>Lucro ÷ n.º de ações</td><td>Lucro por ação.</td></tr>
+    <tr><td><b>P/E (PER)</b></td><td>Preço ÷ lucro por ação</td><td>Quantos anos de lucro atual se pagam. Historicamente o S&amp;P 500 rondou 15–16× em média; acima de 25× é considerado caro.</td></tr>
+    <tr><td><b>Dividend yield</b></td><td>Dividendo ÷ preço</td><td>Rendimento anual pago em dinheiro.</td></tr>
+    <tr><td><b>P/B</b></td><td>Preço ÷ valor contabilístico</td><td>Útil para bancos e empresas com muitos ativos.</td></tr>
+    <tr><td><b>EV/EBITDA</b></td><td>(Capitalização + dívida − caixa) ÷ EBITDA</td><td>Compara empresas com níveis de dívida diferentes.</td></tr>
+    <tr><td><b>ROE</b></td><td>Lucro ÷ capitais próprios</td><td>Eficiência com o dinheiro dos acionistas.</td></tr>
+    <tr><td><b>Free cash flow</b></td><td>Fluxo operacional − investimento</td><td>Dinheiro real disponível para dividendos, recompras ou dívida.</td></tr>
+  </table></div>
+  <div class="grid">
+    <div class="card"><span class="tag">Escola</span><h3>Análise fundamental</h3><p>Estuda contas, negócio, gestão e setor para estimar o valor intrínseco (ex.: fluxos de caixa descontados).</p></div>
+    <div class="card"><span class="tag">Escola</span><h3>Análise técnica</h3><p>Estuda gráficos, médias móveis e volume, assumindo que os padrões de preço se repetem. Muito contestada academicamente.</p></div>
+    <div class="card"><span class="tag">Teoria</span><h3>Mercados eficientes</h3><p>Eugene Fama: os preços já refletem a informação disponível, por isso é muito difícil bater o mercado de forma consistente. Base do investimento passivo.</p></div>
+    <div class="card"><span class="tag">Teoria</span><h3>Finanças comportamentais</h3><p>Kahneman, Thaler, Shiller: os investidores são sistematicamente irracionais (medo, euforia, excesso de confiança), o que gera bolhas e pânicos.</p></div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section id="risco">
+  <h2><span class="n">10</span>Risco, retorno e ciclos</h2>
+  <div class="grid">
+    <div class="card bull">
+      <svg width="54" height="54" viewBox="0 0 54 54" aria-hidden="true"><path d="M8 44 L20 30 L28 36 L46 12" fill="none" stroke="var(--acc)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M36 12 H46 V22" fill="none" stroke="var(--acc)" stroke-width="4" stroke-linecap="round"/></svg>
+      <div><h3 style="margin:0">Bull market (touro)</h3><p style="margin:0">Mercado em alta prolongada. O touro ataca de baixo para cima com os cornos.</p></div>
+    </div>
+    <div class="card bull">
+      <svg width="54" height="54" viewBox="0 0 54 54" aria-hidden="true"><path d="M8 10 L20 24 L28 18 L46 42" fill="none" stroke="var(--acc2)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M36 42 H46 V32" fill="none" stroke="var(--acc2)" stroke-width="4" stroke-linecap="round"/></svg>
+      <div><h3 style="margin:0">Bear market (urso)</h3><p style="margin:0">Queda de 20% ou mais face ao máximo. O urso ataca de cima para baixo com as patas.</p></div>
+    </div>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>Conceito</th><th>Explicação</th></tr>
+    <tr><td><b>Correção</b></td><td>Queda de 10% a 20%. Acontece, em média, mais ou menos uma vez por ano ou dois nos mercados americanos.</td></tr>
+    <tr><td><b>Volatilidade</b></td><td>Amplitude das oscilações. O índice VIX ("índice do medo") mede a volatilidade esperada do S&amp;P 500.</td></tr>
+    <tr><td><b>Retorno histórico</b></td><td>O S&amp;P 500 rendeu cerca de 10% ao ano (dividendos incluídos, antes de inflação) desde 1926 — mas com anos de −40% e de +40%.</td></tr>
+    <tr><td><b>Risco específico vs. de mercado</b></td><td>O risco de uma empresa pode eliminar-se diversificando; o risco do mercado como um todo não.</td></tr>
+    <tr><td><b>Horizonte temporal</b></td><td>Quanto mais longo o horizonte, menor a probabilidade histórica de perda num índice diversificado. Dinheiro necessário a curto prazo não deve estar em ações.</td></tr>
+    <tr><td><b>Custos</b></td><td>Comissões, spreads, impostos e TER dos fundos. 1% ao ano a mais em custos pode consumir uma parte grande do capital final ao fim de décadas.</td></tr>
+  </table></div>
+</section>
+
+<!-- 11 -->
+<section id="calc">
+  <h2><span class="n">11</span>Simulador: o poder dos juros compostos</h2>
+  <p>Einstein terá chamado aos juros compostos a oitava maravilha do mundo (a citação é provavelmente apócrifa, mas a matemática é real).</p>
+  <div class="card calc">
+    <label>Investimento inicial <span class="val" id="v0"></span></label>
+    <input type="range" id="i0" min="0" max="50000" step="500" value="5000">
+    <label>Contribuição mensal <span class="val" id="v1"></span></label>
+    <input type="range" id="i1" min="0" max="2000" step="25" value="200">
+    <label>Retorno anual <span class="val" id="v2"></span></label>
+    <input type="range" id="i2" min="0" max="12" step="0.5" value="7">
+    <label>Anos <span class="val" id="v3"></span></label>
+    <input type="range" id="i3" min="1" max="45" step="1" value="25">
+    <div style="margin-top:16px" class="muted">Valor final</div>
+    <div class="big" id="out"></div>
+    <div class="muted" id="out2"></div>
+    <div class="bars" id="bars"></div>
+    <div class="legend"><span><i style="background:var(--line)"></i>Dinheiro investido</span><span><i style="background:var(--acc)"></i>Ganhos</span></div>
+    <p class="muted" style="font-size:.8rem;margin-top:10px">Ilustrativo: retorno constante, sem impostos, custos nem inflação. Os mercados reais oscilam e não garantem retorno.</p>
+  </div>
+</section>
+
+<!-- 12 -->
+<section id="licoes">
+  <h2><span class="n">12</span>Lições de 400 anos de bolsa</h2>
+  <div class="grid">
+    <div class="card"><h3>1. As bolhas repetem-se</h3><p>Tulipas, Mares do Sul, ferrovias, rádio, dot-com, imobiliário. A frase mais cara do mundo: "desta vez é diferente".</p></div>
+    <div class="card"><h3>2. O tempo no mercado vence o timing</h3><p>Uma grande parte dos melhores dias da bolsa acontece logo a seguir aos piores. Quem sai em pânico costuma perdê-los.</p></div>
+    <div class="card"><h3>3. Diversificar</h3><p>Empresas dominantes desaparecem: das 12 do Dow original, nenhuma lá permanece. Um índice amplo sobrevive às empresas individuais.</p></div>
+    <div class="card"><h3>4. Alavancagem amplifica desastres</h3><p>1929, LTCM, 2008: as grandes ruínas tiveram quase sempre dinheiro emprestado por trás.</p></div>
+    <div class="card"><h3>5. Custos importam</h3><p>A maioria dos fundos de gestão ativa fica abaixo do seu índice de referência a 10–15 anos, em grande parte por causa dos custos (relatórios SPIVA).</p></div>
+    <div class="card"><h3>6. O maior risco é o comportamento</h3><p>Comprar na euforia e vender no pânico. Um plano escrito e automático protege o investidor de si próprio.</p></div>
+  </div>
+</section>
+
+<!-- 13 -->
+<section id="glossario">
+  <h2><span class="n">13</span>Glossário</h2>
+  <input id="gq" type="search" placeholder="Pesquisar termo…">
+  <dl id="gl"></dl>
+</section>
+
+<!-- 14 -->
+<section id="quiz">
+  <h2><span class="n">14</span>Teste rápido</h2>
+  <div id="qz"></div>
+  <p id="score" class="muted"></p>
+</section>
+
+</main>
+
+<footer>
+  Conteúdo informativo e educativo. Não constitui aconselhamento financeiro, fiscal ou de investimento. Datas e números históricos arredondados. Outubro de 2026.
+</footer>
+
+<script>
+// Timeline filters
+document.getElementById('filters').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#filters button').forEach(x=>x.classList.toggle('on',x===b));
+  const f=b.dataset.f;
+  document.querySelectorAll('#tl .ev').forEach(ev=>{
+    ev.style.display=(f==='all'||ev.dataset.c===f)?'':'none';
+  });
+});
+
+// Compound calculator
+const eur=n=>n.toLocaleString('pt-PT',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+const ids=['i0','i1','i2','i3'].map(i=>document.getElementById(i));
+function calc(){
+  const P=+ids[0].value,M=+ids[1].value,r=+ids[2].value/100,Y=+ids[3].value;
+  document.getElementById('v0').textContent=eur(P);
+  document.getElementById('v1').textContent=eur(M);
+  document.getElementById('v2').textContent=ids[2].value.replace('.',',')+'%';
+  document.getElementById('v3').textContent=Y+(Y===1?' ano':' anos');
+  const mr=Math.pow(1+r,1/12)-1;
+  let v=P,inv=P;const pts=[];
+  for(let y=1;y<=Y;y++){for(let m=0;m<12;m++){v=v*(1+mr)+M;inv+=M;}pts.push([inv,v]);}
+  document.getElementById('out').textContent=eur(v);
+  document.getElementById('out2').textContent='Investido: '+eur(inv)+' · Ganhos: '+eur(v-inv);
+  const max=Math.max(...pts.map(p=>p[1]),1);
+  document.getElementById('bars').innerHTML=pts.map(([i,t])=>{
+    const h=t/max*100,hi=i/max*100;
+    return `<div style="height:${h}%;background:linear-gradient(to top,var(--line) ${hi/h*100}%,var(--acc) ${hi/h*100}%)"></div>`;
+  }).join('');
+}
+ids.forEach(i=>i.addEventListener('input',calc));calc();
+
+// Glossary
+const G=[
+["Ação","Fração do capital social de uma empresa; dá direito a lucros (dividendos) e, em regra, a voto."],
+["Ask / Oferta de venda","Preço mais baixo a que alguém está disposto a vender."],
+["Bid / Oferta de compra","Preço mais alto que alguém está disposto a pagar."],
+["Spread","Diferença entre o melhor preço de venda e o melhor de compra. Custo implícito de negociar."],
+["IPO","Oferta pública inicial: a primeira vez que uma empresa vende ações ao público e entra em bolsa."],
+["Dividendo","Parte do lucro distribuída aos acionistas, geralmente anual, semestral ou trimestral."],
+["Data ex-dividendo","A partir desta data, quem compra a ação já não recebe o próximo dividendo."],
+["Recompra de ações (buyback)","A empresa compra as próprias ações, reduzindo o número em circulação."],
+["Split (desdobramento)","Divisão de cada ação em várias; o preço baixa na mesma proporção, o valor total mantém-se."],
+["Capitalização bolsista","Preço da ação multiplicado pelo número de ações. Large, mid e small caps."],
+["Free float","Parte das ações que circula livremente em bolsa (fora de acionistas de referência)."],
+["Liquidez","Facilidade de comprar ou vender sem mexer muito no preço."],
+["Volume","Número de ações (ou valor) negociado num período."],
+["Volatilidade","Intensidade das variações de preço. Mede-se habitualmente pelo desvio-padrão dos retornos."],
+["Beta","Sensibilidade de uma ação aos movimentos do mercado. Beta 1,5 oscila em média 50% mais que o índice."],
+["P/E (PER)","Preço sobre lucro por ação. Indica quanto se paga por cada euro de lucro."],
+["ETF","Fundo cotado em bolsa, normalmente replica um índice. Acumulação (reinveste dividendos) ou distribuição."],
+["TER","Total Expense Ratio: custo anual de um fundo em percentagem do valor investido."],
+["Índice","Cabaz de títulos que mede a evolução de um mercado ou setor."],
+["Obrigação","Título de dívida com juro (cupão) e data de reembolso."],
+["Yield","Rendimento em percentagem; nas obrigações, a taxa de retorno implícita ao preço atual."],
+["Derivado","Contrato cujo valor depende de outro ativo: futuros, opções, swaps."],
+["Opção call / put","Direito (não obrigação) de comprar (call) ou vender (put) a um preço fixo até uma data."],
+["Futuro","Obrigação de comprar ou vender um ativo numa data futura a um preço acordado hoje."],
+["Alavancagem","Investir com dinheiro emprestado, amplificando ganhos e perdas."],
+["Margem / margin call","Garantia exigida em operações alavancadas; se o valor cair, a corretora exige reforço ou fecha a posição."],
+["Short selling","Venda a descoberto: vender ações emprestadas para recomprar mais barato."],
+["Short squeeze","Subida rápida que obriga quem está a descoberto a recomprar, acelerando ainda mais a subida."],
+["Blue chip","Ação de uma grande empresa sólida e estabelecida. O termo vem das fichas azuis, as de maior valor no póquer."],
+["Bull / Bear market","Mercado em alta prolongada / queda de 20% ou mais."],
+["Correção","Queda entre 10% e 20% face ao máximo recente."],
+["Circuit breaker","Suspensão automática da negociação após variações extremas."],
+["High-frequency trading","Negociação algorítmica em microssegundos, explorando pequenas diferenças de preço."],
+["Market maker","Entidade que coloca ofertas de compra e venda contínuas para dar liquidez."],
+["Câmara de compensação","Entidade central que se interpõe entre comprador e vendedor e garante a operação."],
+["Liquidação (T+1, T+2)","Entrega efetiva dos títulos e do dinheiro, um ou dois dias úteis após o negócio."],
+["Custódia","Guarda dos títulos do investidor pelo intermediário financeiro."],
+["OPA","Oferta pública de aquisição: proposta de compra das ações de uma empresa a todos os acionistas."],
+["Dollar-cost averaging","Investir um valor fixo periodicamente, independentemente do preço, suavizando o momento de entrada."],
+["Rebalanceamento","Repor periodicamente as percentagens-alvo da carteira (ex.: 80% ações / 20% obrigações)."],
+["Value vs. Growth","Ações baratas face aos fundamentais vs. ações de empresas de crescimento rápido, normalmente mais caras."],
+["CMVM","Comissão do Mercado de Valores Mobiliários, regulador português dos mercados financeiros."],
+["Euronext","Grupo europeu de bolsas que inclui a Euronext Lisbon."]
+];
+const gl=document.getElementById('gl');
+function renderG(q=''){
+  q=q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const n=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  gl.innerHTML=G.filter(([t,d])=>!q||n(t).includes(q)||n(d).includes(q))
+    .sort((a,b)=>a[0].localeCompare(b[0],'pt'))
+    .map(([t,d])=>`<div class="gi"><dt>${t}</dt><dd>${d}</dd></div>`).join('')||'<p class="muted">Sem resultados.</p>';
+}
+document.getElementById('gq').addEventListener('input',e=>renderG(e.target.value));renderG();
+
+// Quiz
+const Q=[
+["De onde vem a palavra «bolsa»?",["De uma hospedaria em Bruges","Da bolsa de couro dos banqueiros florentinos","Do latim «bursa publica»"],0,"A família Van der Beurze, em Bruges, tinha uma hospedaria onde os mercadores se reuniam; o brasão tinha três bolsas."],
+["Qual foi a primeira empresa a emitir ações negociáveis para o público?",["Companhia Britânica das Índias Orientais","Companhia Holandesa das Índias Orientais (VOC)","Banco de Inglaterra"],1,"A VOC, em 1602, em Amesterdão."],
+["Quanto caiu o Dow Jones na Segunda-feira Negra de 1987?",["−9,8%","−15,1%","−22,6%"],2,"Foi a maior queda diária em percentagem da história do índice."],
+["O que é o spread?",["A comissão da corretora","A diferença entre o melhor preço de compra e de venda","O dividendo anual"],1,"É um custo implícito de cada transação."],
+["A partir de que queda se fala de bear market?",["10%","20%","50%"],1,"Entre 10% e 20% fala-se de correção."],
+["Em que ano a bolsa portuguesa integrou a Euronext?",["1992","2002","2014"],1,"Em 2002, após a fusão de Lisboa e Porto em 2000."],
+["O que acontece ao preço das obrigações quando as taxas de juro sobem?",["Sobe","Desce","Não muda"],1,"As obrigações existentes, com cupão mais baixo, tornam-se menos atrativas."]
+];
+let sc=0,done=0;
+document.getElementById('qz').innerHTML=Q.map((q,i)=>`<div class="card q" data-i="${i}"><b>${i+1}. ${q[0]}</b><div class="opts">${q[1].map((o,j)=>`<button data-j="${j}">${o}</button>`).join('')}</div><div class="ex">${q[3]}</div></div>`).join('');
+document.getElementById('qz').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const c=b.closest('.q');if(c.dataset.done)return;c.dataset.done=1;
+  const q=Q[+c.dataset.i],j=+b.dataset.j;
+  c.querySelectorAll('button').forEach((x,k)=>{if(k===q[2])x.classList.add('ok');});
+  if(j!==q[2])b.classList.add('no');else sc++;
+  c.querySelector('.ex').style.display='block';done++;
+  if(done===Q.length)document.getElementById('score').textContent=`Resultado: ${sc}/${Q.length}`;
+});
+</script>
+</body>
+</html>
