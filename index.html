@@ -6,14 +6,17 @@
 <title>Frisk — Os meus sites</title>
 <style>
   :root {
+    color-scheme: light dark;
     --bg: #f4f5f7;
     --card-bg: #ffffff;
     --text: #1a1a1a;
     --muted: #5f6570;
     --accent: #2f6fed;
+    --accent-text: #ffffff;
     --accent2: #a020f0;
     --border: #e3e5e9;
     --shadow: rgba(0,0,0,0.06);
+    --danger: #c62828;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -22,9 +25,11 @@
       --text: #f0f1f3;
       --muted: #9aa0aa;
       --accent: #5b8dff;
+      --accent-text: #0d1220;
       --accent2: #c27bff;
       --border: #2c2f34;
       --shadow: rgba(0,0,0,0.4);
+      --danger: #ff6b6b;
     }
   }
   * { box-sizing: border-box; }
@@ -37,18 +42,40 @@
   }
   header {
     max-width: 1080px;
-    margin: 0 auto 32px;
+    margin: 0 auto 28px;
     text-align: center;
   }
-  header h1 {
-    font-size: 1.8rem;
-    margin: 0 0 8px;
+  header h1 { font-size: 1.8rem; margin: 0 0 8px; }
+  header p { color: var(--muted); margin: 0; font-size: 0.95rem; }
+
+  .toolbar {
+    max-width: 1080px;
+    margin: 0 auto 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
   }
-  header p {
-    color: var(--muted);
-    margin: 0;
-    font-size: 0.95rem;
+  .status { color: var(--muted); font-size: 0.8rem; text-align: center; margin: -12px auto 20px; max-width: 1080px; min-height: 1em; }
+
+  button {
+    font: inherit;
+    cursor: pointer;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 9px 16px;
+    font-size: 0.9rem;
   }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  button.danger { color: var(--danger); }
+  button.danger:hover { border-color: var(--danger); }
+  button.ghost { background: transparent; color: var(--muted); }
+  button:disabled { opacity: .6; cursor: default; }
+
   .columns {
     max-width: 1080px;
     margin: 0 auto;
@@ -58,10 +85,7 @@
     align-items: start;
   }
   @media (max-width: 720px) {
-    .columns {
-      grid-template-columns: 1fr;
-      gap: 36px;
-    }
+    .columns { grid-template-columns: 1fr; gap: 36px; }
   }
   .column-title {
     font-size: 1rem;
@@ -71,11 +95,10 @@
     margin: 0 0 14px 4px;
     color: var(--muted);
   }
-  .grid {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
+  .grid { display: flex; flex-direction: column; gap: 14px; }
+  .empty { color: var(--muted); font-size: 0.9rem; padding: 6px 4px; }
+
+  .card-wrap { position: relative; }
   a.card {
     display: block;
     background: var(--card-bg);
@@ -87,24 +110,56 @@
     box-shadow: 0 1px 3px var(--shadow);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
-  a.card:hover, a.card:focus {
+  a.card:hover, a.card:focus-visible {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px var(--shadow);
   }
-  .card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--accent);
-    margin-bottom: 4px;
-  }
-  .curiosidades .card-title {
-    color: var(--accent2);
-  }
-  .card-desc {
-    font-size: 0.9rem;
+  .card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 4px; padding-right: 36px; }
+  .curiosidades .card-title { color: var(--accent2); }
+  .card-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.4; }
+  .edit {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    line-height: 1;
+    font-size: 1rem;
     color: var(--muted);
-    line-height: 1.4;
   }
+
+  dialog {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 22px;
+    width: min(440px, calc(100vw - 32px));
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  }
+  dialog::backdrop { background: rgba(0,0,0,0.45); }
+  dialog h2 { margin: 0 0 16px; font-size: 1.15rem; }
+  label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin: 0 0 12px; }
+  input, select, textarea {
+    display: block;
+    width: 100%;
+    margin-top: 5px;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 16px; /* evita zoom automático no iPhone */
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  textarea { resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .hint { font-weight: 400; font-size: 0.75rem; margin-top: 4px; }
+  .err { color: var(--danger); font-size: 0.85rem; margin: 0 0 10px; min-height: 1.2em; }
+  .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .actions .spacer { flex: 1; }
+
   footer {
     max-width: 1080px;
     margin: 40px auto 0;
@@ -121,6 +176,9 @@
   <p>Uma conta, vários projetos.</p>
 </header>
 
+<div class="toolbar" id="toolbar"></div>
+<div class="status" id="status" role="status"></div>
+
 <div class="columns">
   <div>
     <div class="column-title">Sites</div>
@@ -132,103 +190,350 @@
   </div>
 </div>
 
-<footer>v1.1</footer>
+<dialog id="itemDlg" aria-labelledby="itemDlgTitle">
+  <form id="itemForm" novalidate>
+    <h2 id="itemDlgTitle">Novo item</h2>
+    <label>Categoria
+      <select id="fCat">
+        <option value="site">Site</option>
+        <option value="curiosidade">Curiosidade</option>
+      </select>
+    </label>
+    <label>Link
+      <input id="fUrl" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://… ou ficheiro.html" required>
+      <span class="hint">Endereço completo (site) ou ficheiro do hub (ex.: quantica.html).</span>
+    </label>
+    <label>Título
+      <input id="fTitulo" type="text" maxlength="80" autocomplete="off" required>
+    </label>
+    <label>Descrição
+      <textarea id="fDesc" rows="3" maxlength="300"></textarea>
+    </label>
+    <p class="err" id="itemErr" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="danger" id="btnDel" hidden>Apagar</button>
+      <span class="spacer"></span>
+      <button type="button" id="btnCancel">Cancelar</button>
+      <button type="submit" class="primary" id="btnSave">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="loginDlg" aria-labelledby="loginDlgTitle">
+  <form id="loginForm">
+    <h2 id="loginDlgTitle">Entrar</h2>
+    <label>Email
+      <input id="lEmail" type="email" autocomplete="username" required>
+    </label>
+    <label>Palavra-passe
+      <input id="lPass" type="password" autocomplete="current-password" required>
+    </label>
+    <p class="err" id="loginErr" role="alert"></p>
+    <div class="actions">
+      <span class="spacer"></span>
+      <button type="button" id="btnLoginCancel">Cancelar</button>
+      <button type="submit" class="primary" id="btnLogin">Entrar</button>
+    </div>
+  </form>
+</dialog>
+
+<footer>v2.0</footer>
 
 <script>
-  // Para adicionar um novo site, basta acrescentar um objeto aqui.
-  const sites = [
-    {
-      title: "Achievements",
-      url: "https://achievements.frisk.pt",
-      description: "Checklist de conquistas de vida por categorias — viagens, leitura, carreira e mais."
-    },
-    {
-      title: "Gestor de Impressão 3D",
-      url: "https://3dprint.frisk.pt",
-      description: "Calculadora de custo real e preço de venda para peças de impressão 3D."
-    },
-    {
-      title: "Parkncharge",
-      url: "https://parkncharge.frisk.pt",
-      description: "Plataforma tipo \"Airbnb de estacionamento\"."
-    },
-    {
-      title: "Promoção Imobiliária",
-      url: "https://promocao-imobiliaria.frisk.pt",
-      description: "Site de promoção imobiliária."
-    },
-    {
-      title: "Finanças Pessoais",
-      url: "https://financas.frisk.pt",
-      description: "Simulador salarial e outras ferramentas de finanças pessoais."
-    },
-    {
-      title: "Habitação & Construção",
-      url: "https://habitacao.frisk.pt",
-      description: "Preços de casas por distrito e freguesia, estatísticas e previsões, e notícias do setor — atualizado semanalmente."
-    }
+(() => {
+  const SB_URL = "https://aehitgqsfcpzuunyzpsh.supabase.co";
+  const SB_KEY = "sb_publishable_UezgSImwgpd_EDfi02YC_w_6sqkD2Qc"; // chave pública; a segurança está nas políticas RLS
+  const URL_RE = /^(https?:\/\/[^\s]+|\/?[A-Za-z0-9_.\/~%?=&#-]+)$/;
+  const LS_SESSION = "hub.session";
+  const LS_CACHE = "hub.itens";
+
+  // Lista de reserva: usada se a base de dados não responder e ainda não houver cópia guardada.
+  const SEED = [
+    { categoria: "site", ordem: 10, titulo: "Achievements", url: "https://achievements.frisk.pt", descricao: "Checklist de conquistas de vida por categorias — viagens, leitura, carreira e mais." },
+    { categoria: "site", ordem: 20, titulo: "Gestor de Impressão 3D", url: "https://3dprint.frisk.pt", descricao: "Calculadora de custo real e preço de venda para peças de impressão 3D." },
+    { categoria: "site", ordem: 30, titulo: "Parkncharge", url: "https://parkncharge.frisk.pt", descricao: "Plataforma tipo \"Airbnb de estacionamento\"." },
+    { categoria: "site", ordem: 40, titulo: "Promoção Imobiliária", url: "https://promocao-imobiliaria.frisk.pt", descricao: "Site de promoção imobiliária." },
+    { categoria: "site", ordem: 50, titulo: "Finanças Pessoais", url: "https://financas.frisk.pt", descricao: "Simulador salarial e outras ferramentas de finanças pessoais." },
+    { categoria: "site", ordem: 60, titulo: "Habitação & Construção", url: "https://habitacao.frisk.pt", descricao: "Preços de casas por distrito e freguesia, estatísticas e previsões, e notícias do setor — atualizado semanalmente." },
+    { categoria: "curiosidade", ordem: 10, titulo: "Quântica", url: "quantica.html", descricao: "Notas e explicações sobre mecânica quântica." },
+    { categoria: "curiosidade", ordem: 20, titulo: "Relatividade", url: "relatividade.html", descricao: "Notas e explicações sobre a teoria da relatividade." },
+    { categoria: "curiosidade", ordem: 30, titulo: "Criptografia", url: "criptografia.html", descricao: "Notas e explicações sobre criptografia." },
+    { categoria: "curiosidade", ordem: 40, titulo: "Eletricidade", url: "eletricidade.html", descricao: "Notas e explicações sobre eletricidade." },
+    { categoria: "curiosidade", ordem: 50, titulo: "Binário", url: "binario.html", descricao: "Notas e explicações sobre o sistema binário." },
+    { categoria: "curiosidade", ordem: 60, titulo: "Internet, Dark Web e Sites", url: "/internet", descricao: "Notas e explicações sobre a internet, a dark web e como funcionam os sites." },
+    { categoria: "curiosidade", ordem: 70, titulo: "Bolsa", url: "bolsa.html", descricao: "Notas e explicações sobre a bolsa e o investimento." },
+    { categoria: "curiosidade", ordem: 80, titulo: "Guia de Sites", url: "guia-site.html", descricao: "Guia sobre como criar e gerir sites." }
   ];
 
-  // Ficheiros HTML soltos no mesmo repositório do hub — links relativos.
-  const curiosidades = [
-    {
-      title: "Quântica",
-      url: "quantica.html",
-      description: "Notas e explicações sobre mecânica quântica."
-    },
-    {
-      title: "Relatividade",
-      url: "relatividade.html",
-      description: "Notas e explicações sobre a teoria da relatividade."
-    },
-    {
-      title: "Criptografia",
-      url: "criptografia.html",
-      description: "Notas e explicações sobre criptografia."
-    },
-    {
-      title: "Eletricidade",
-      url: "eletricidade.html",
-      description: "Notas e explicações sobre eletricidade."
-    },
-    {
-      title: "Binário",
-      url: "binario.html",
-      description: "Notas e explicações sobre o sistema binário."
-    },
-    {
-      title: "Internet, Dark Web e Sites",
-      url: "/internet",
-      description: "Notas e explicações sobre a internet, a dark web e como funcionam os sites."
-    },
-    {
-      title: "Bolsa",
-      url: "bolsa.html",
-      description: "Notas e explicações sobre a bolsa e o investimento."
-    },
-    {
-      title: "Guia de Sites",
-      url: "guia-site.html",
-      description: "Guia sobre como criar e gerir sites."
-    }
-  ];
+  const $ = (id) => document.getElementById(id);
+  const store = {
+    get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+    del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  };
 
-  function renderCards(list, containerId) {
-    const grid = document.getElementById(containerId);
-    list.forEach(item => {
-      const a = document.createElement("a");
-      a.className = "card";
-      a.href = item.url;
-      a.innerHTML = `
-        <div class="card-title">${item.title}</div>
-        <div class="card-desc">${item.description}</div>
-      `;
-      grid.appendChild(a);
-    });
+  let session = store.get(LS_SESSION);
+  let isAdmin = false;
+  let itens = store.get(LS_CACHE) || SEED;
+  let editing = null;
+
+  /* ---------- Supabase (REST + Auth, sem bibliotecas) ---------- */
+  function setSession(d, email) {
+    if (!d) { session = null; store.del(LS_SESSION); return; }
+    session = {
+      access_token: d.access_token,
+      refresh_token: d.refresh_token,
+      expires_at: Math.floor(Date.now() / 1000) + (d.expires_in || 3600),
+      email: email || (d.user && d.user.email) || ""
+    };
+    store.set(LS_SESSION, session);
   }
 
-  renderCards(sites, "siteGrid");
-  renderCards(curiosidades, "curiosidadesGrid");
+  async function refreshSession() {
+    if (!session || !session.refresh_token) return false;
+    try {
+      const r = await fetch(SB_URL + "/auth/v1/token?grant_type=refresh_token", {
+        method: "POST",
+        headers: { apikey: SB_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: session.refresh_token })
+      });
+      if (!r.ok) { setSession(null); isAdmin = false; return false; }
+      setSession(await r.json(), session.email);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  async function api(path, opts = {}, retry = true) {
+    if (session && session.expires_at - 60 < Date.now() / 1000) await refreshSession();
+    const headers = Object.assign({ apikey: SB_KEY, "Content-Type": "application/json" }, opts.headers || {});
+    if (session) headers.Authorization = "Bearer " + session.access_token;
+    const r = await fetch(SB_URL + path, Object.assign({}, opts, { headers }));
+    if (r.status === 401 && session && retry && (await refreshSession())) return api(path, opts, false);
+    return r;
+  }
+
+  async function checkAdmin() {
+    isAdmin = false;
+    if (!session) return;
+    try {
+      const r = await api("/rest/v1/rpc/e_admin_plataforma", { method: "POST", body: "{}" });
+      isAdmin = r.ok && (await r.json()) === true;
+    } catch (e) {}
+  }
+
+  async function load() {
+    try {
+      const r = await api("/rest/v1/hub_itens?select=*&order=ordem.asc,created_at.asc");
+      if (!r.ok) throw new Error(r.status);
+      itens = await r.json();
+      store.set(LS_CACHE, itens);
+      setStatus("");
+    } catch (e) {
+      setStatus("Sem ligação à base de dados — a mostrar a última lista guardada.");
+    }
+    render();
+  }
+
+  /* ---------- Interface ---------- */
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function setStatus(t) { $("status").textContent = t; }
+
+  function card(i) {
+    const wrap = el("div", "card-wrap");
+    const a = el("a", "card");
+    a.href = URL_RE.test(i.url) ? i.url : "#";
+    a.append(el("div", "card-title", i.titulo), el("div", "card-desc", i.descricao || ""));
+    wrap.append(a);
+    if (isAdmin && i.id) {
+      const b = el("button", "edit", "✎");
+      b.type = "button";
+      b.title = "Editar";
+      b.setAttribute("aria-label", "Editar " + i.titulo);
+      b.addEventListener("click", () => openItem(i));
+      wrap.append(b);
+    }
+    return wrap;
+  }
+
+  function render() {
+    for (const [cat, gridId] of [["site", "siteGrid"], ["curiosidade", "curiosidadesGrid"]]) {
+      const grid = $(gridId);
+      grid.replaceChildren();
+      itens
+        .filter((i) => i.categoria === cat)
+        .sort((a, b) => (a.ordem - b.ordem) || String(a.created_at || "").localeCompare(String(b.created_at || "")))
+        .forEach((i) => grid.append(card(i)));
+      if (!grid.children.length) grid.append(el("div", "empty", "Ainda não há itens."));
+    }
+    const tb = $("toolbar");
+    tb.replaceChildren();
+    if (isAdmin) {
+      const add = el("button", "primary", "+ site");
+      add.type = "button";
+      add.addEventListener("click", () => openItem(null));
+      tb.append(add);
+    }
+    if (session) {
+      const out = el("button", "ghost", "Sair");
+      out.type = "button";
+      out.title = session.email || "";
+      out.addEventListener("click", logout);
+      tb.append(out);
+    } else {
+      const inn = el("button", "ghost", "Entrar");
+      inn.type = "button";
+      inn.addEventListener("click", () => { $("loginErr").textContent = ""; $("loginDlg").showModal(); $("lEmail").focus(); });
+      tb.append(inn);
+    }
+  }
+
+  /* ---------- Diálogo de item ---------- */
+  function normUrl(u) {
+    u = u.trim();
+    const semParams = u.split(/[?#]/)[0];
+    if (/^[a-z0-9-]+(\.[a-z0-9-]+)+(\/\S*)?$/i.test(u) && !/\.(html?|php)$/i.test(semParams)) return "https://" + u;
+    return u;
+  }
+  function nextOrdem(cat) {
+    const o = itens.filter((i) => i.categoria === cat).map((i) => i.ordem || 0);
+    return (o.length ? Math.max(...o) : 0) + 10;
+  }
+
+  function openItem(item) {
+    editing = item;
+    $("itemDlgTitle").textContent = item ? "Editar item" : "Novo item";
+    $("fCat").value = item ? item.categoria : "site";
+    $("fUrl").value = item ? item.url : "";
+    $("fTitulo").value = item ? item.titulo : "";
+    $("fDesc").value = item ? item.descricao || "" : "";
+    $("itemErr").textContent = "";
+    $("btnDel").hidden = !item;
+    $("itemDlg").showModal();
+    $("fUrl").focus();
+  }
+
+  async function saveItem(ev) {
+    ev.preventDefault();
+    const err = $("itemErr");
+    const cat = $("fCat").value;
+    const url = normUrl($("fUrl").value);
+    const titulo = $("fTitulo").value.trim();
+    const descricao = $("fDesc").value.trim();
+    if (!url) { err.textContent = "Indica o link."; return; }
+    if (!URL_RE.test(url) || url.length > 500) { err.textContent = "Link inválido. Usa https://… ou o nome de um ficheiro (ex.: quantica.html)."; return; }
+    if (!titulo) { err.textContent = "Indica o título."; return; }
+
+    const body = { categoria: cat, titulo, url, descricao };
+    $("btnSave").disabled = true;
+    try {
+      let r;
+      if (editing) {
+        body.updated_at = new Date().toISOString();
+        if (editing.categoria !== cat) body.ordem = nextOrdem(cat);
+        r = await api("/rest/v1/hub_itens?id=eq." + encodeURIComponent(editing.id), {
+          method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(body)
+        });
+      } else {
+        body.ordem = nextOrdem(cat);
+        r = await api("/rest/v1/hub_itens", {
+          method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(body)
+        });
+      }
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        err.textContent = r.status === 401 || r.status === 403
+          ? "Sem permissão para guardar. Entra com a conta de administrador."
+          : "Não foi possível guardar" + (d.message ? ": " + d.message : ".");
+        return;
+      }
+      const rows = await r.json();
+      if (!rows.length) { err.textContent = "Sem permissão para guardar. Entra com a conta de administrador."; return; }
+      $("itemDlg").close();
+      await load();
+    } catch (e) {
+      err.textContent = "Sem ligação. Tenta outra vez.";
+    } finally {
+      $("btnSave").disabled = false;
+    }
+  }
+
+  async function deleteItem() {
+    if (!editing || !confirm('Apagar "' + editing.titulo + '"?')) return;
+    const err = $("itemErr");
+    try {
+      const r = await api("/rest/v1/hub_itens?id=eq." + encodeURIComponent(editing.id), {
+        method: "DELETE", headers: { Prefer: "return=representation" }
+      });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) { err.textContent = "Não foi possível apagar (sem permissão?)."; return; }
+      $("itemDlg").close();
+      await load();
+    } catch (e) {
+      err.textContent = "Sem ligação. Tenta outra vez.";
+    }
+  }
+
+  /* ---------- Login ---------- */
+  async function doLogin(ev) {
+    ev.preventDefault();
+    const err = $("loginErr");
+    err.textContent = "";
+    $("btnLogin").disabled = true;
+    try {
+      const email = $("lEmail").value.trim();
+      const r = await fetch(SB_URL + "/auth/v1/token?grant_type=password", {
+        method: "POST",
+        headers: { apikey: SB_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: $("lPass").value })
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        err.textContent = /invalid login/i.test(d.error_description || d.msg || "")
+          ? "Email ou palavra-passe incorretos."
+          : (d.error_description || d.msg || "Não foi possível entrar.");
+        return;
+      }
+      setSession(d, email);
+      $("lPass").value = "";
+      $("loginDlg").close();
+      await checkAdmin();
+      setStatus(isAdmin ? "" : "Sessão iniciada, mas esta conta não tem permissão para editar o hub.");
+      render();
+    } catch (e) {
+      err.textContent = "Sem ligação. Tenta outra vez.";
+    } finally {
+      $("btnLogin").disabled = false;
+    }
+  }
+
+  function logout() {
+    setSession(null);
+    isAdmin = false;
+    setStatus("");
+    render();
+  }
+
+  /* ---------- Eventos ---------- */
+  $("itemForm").addEventListener("submit", saveItem);
+  $("btnCancel").addEventListener("click", () => $("itemDlg").close());
+  $("btnDel").addEventListener("click", deleteItem);
+  $("loginForm").addEventListener("submit", doLogin);
+  $("btnLoginCancel").addEventListener("click", () => $("loginDlg").close());
+  for (const id of ["itemDlg", "loginDlg"]) {
+    $(id).addEventListener("click", (e) => { if (e.target === $(id)) $(id).close(); });
+  }
+
+  render(); // mostra já a última lista guardada
+  (async () => {
+    await checkAdmin();
+    await load();
+  })();
+})();
 </script>
 
 </body>
