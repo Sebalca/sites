@@ -38,6 +38,7 @@ nav.toc a.act:before{color:var(--acc)}
 .tabs button{font:inherit;font-weight:600;font-size:.95rem;padding:14px 16px 12px;border:0;border-bottom:3px solid transparent;background:none;color:var(--muted);cursor:pointer;white-space:nowrap}
 .tabs button:hover{color:var(--ink)}
 .tabs button.on{color:var(--acc);border-bottom-color:var(--acc)}
+@media (max-width:560px){.tabs .in{padding:0 4px;gap:0;justify-content:space-between}.tabs button{font-size:.8rem;padding:12px 7px 10px}}
 .panel{display:none}.panel.on{display:block}
 .chart svg{display:block;width:100%;height:auto}
 .chart text{fill:var(--muted);font-size:11px;font-family:inherit}
@@ -128,6 +129,17 @@ footer{max-width:1180px;margin:auto;padding:24px 16px 40px;color:var(--muted);fo
 .phases b{display:block;font-size:.92rem;margin-bottom:3px}
 .phases b:before{content:counter(ph)". ";color:var(--muted)}
 .phases.p4{grid-template-columns:repeat(4,1fr)}
+.cyc{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;counter-reset:c}
+.cyc>div,.flow>div{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:.9rem;color:var(--muted)}
+.cyc>div b,.flow>div b{display:block;color:var(--ink);font-size:.95rem;margin-bottom:3px}
+.cyc>div{border-left:4px solid var(--acc2)}
+.cyc>div:first-child{border-left-color:var(--gold)}
+.cyc>div:last-child:after{content:"↺ volta ao passo 3";position:absolute;right:10px;bottom:6px;font-size:.72rem;color:var(--acc2);font-weight:700}
+.cyc>div:last-child{padding-bottom:24px}
+.flow{display:grid;gap:22px;margin:14px 0}
+.flow>div{border-left:4px solid var(--acc2)}
+.flow>div:not(:last-child):after{content:"↓";position:absolute;left:50%;bottom:-21px;transform:translateX(-50%);color:var(--acc2);font-weight:800;font-size:1rem}
+@media (max-width:760px){.cyc{grid-template-columns:1fr}}
 @media (max-width:760px){.phases,.phases.p4{grid-template-columns:1fr}}
 .err{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:10px 0}
 .err .ix{grid-row:span 3;font-family:Georgia,serif;font-size:1.6rem;font-weight:700;color:var(--acc2);line-height:1}
@@ -142,13 +154,14 @@ footer{max-width:1180px;margin:auto;padding:24px 16px 40px;color:var(--muted);fo
 <header class="hero">
   <div class="kicker">Guia · Mercados financeiros</div>
   <h1>A Bolsa: da taberna de Bruges aos algoritmos</h1>
-  <p class="lead">Como surgiu, como funciona, os grandes marcos e crises, como se pagam impostos em Portugal e o que a história mostra sobre o comportamento do mercado.</p>
+  <p class="lead">Como surgiu, como funciona, os grandes marcos e crises, como se pagam impostos em Portugal e o que a história mostra sobre o comportamento do mercado e das recessões.</p>
 </header>
 
 <div class="tabs" role="tablist"><div class="in">
   <button class="on" data-tab="guia" role="tab">Guia da bolsa</button>
   <button data-tab="fiscal" role="tab">Fiscalidade</button>
   <button data-tab="analise" role="tab">Análise geral</button>
+  <button data-tab="recessoes" role="tab">Recessões</button>
 </div></div>
 <div class="layout">
 <nav class="toc" id="toc" aria-label="Tópicos">
@@ -972,6 +985,332 @@ footer{max-width:1180px;margin:auto;padding:24px 16px 40px;color:var(--muted);fo
   </div>
 </section>
 </div>
+<div class="panel" id="p-recessoes">
+<section id="r-oque">
+  <h2>O que é uma recessão</h2>
+  <p>Uma recessão é um período em que a <strong>atividade económica encolhe</strong>: produz-se e vende-se menos, as empresas ganham menos, há despedimentos e as pessoas gastam menos. É o oposto de uma fase de expansão.</p>
+  <div class="grid">
+    <div class="card"><span class="tag">Regra prática</span><h3>Dois trimestres a cair</h3><p>Na Europa e na imprensa usa-se muito esta definição: o PIB desce durante dois trimestres seguidos.</p></div>
+    <div class="card"><span class="tag">EUA</span><h3>Definição oficial</h3><p>Nos EUA quem declara é um comité de economistas (NBER), que olha para emprego, rendimentos, consumo e produção industrial. Muitas vezes só anuncia meses depois de a recessão ter começado.</p></div>
+    <div class="card"><span class="tag r">Mais grave</span><h3>Depressão</h3><p>Uma recessão muito longa e profunda, com quedas do PIB de dois dígitos e desemprego em massa. O exemplo é a Grande Depressão de 1929–33.</p></div>
+  </div>
+  <div class="note"><strong>Recessão ≠ queda da bolsa.</strong> A recessão é uma coisa da economia real (empregos, vendas, produção). A queda da bolsa é uma mudança de preços. Estão ligadas, mas nem sempre coincidem: em 1987 e 2022 a bolsa caiu muito sem haver recessão; e a bolsa costuma começar a cair <em>antes</em> da recessão e a subir <em>antes</em> de ela acabar.</div>
+</section>
+
+<section id="r-precos">
+  <h2>Porque é que as ações descem se ninguém tira dinheiro?</h2>
+  <p>Esta é a dúvida mais comum, e a resposta muda a forma como se olha para a bolsa: <strong>o valor de uma empresa em bolsa não é dinheiro guardado em lado nenhum</strong>. É apenas o preço do último negócio multiplicado pelo número de ações.</p>
+
+  <div class="deep">
+    <h3>1. O preço é o último negócio, não um saco de dinheiro</h3>
+    <p>Imagine uma empresa com 1 000 ações. O último negócio foi a 100 €. Diz-se que a empresa "vale" 100 000 € — mas ninguém tem esses 100 000 € numa conta. É uma conta: 1 000 × 100 €.</p>
+    <p>Agora alguém precisa de dinheiro, ou tem medo, e quer vender 10 ações. Os compradores disponíveis só pagam 80 €. Faz-se o negócio a 80 €.</p>
+    <div class="tablewrap" style="margin:8px 0"><table>
+      <tr><th>Momento</th><th>Último preço</th><th>"Valor" da empresa</th><th>Dinheiro que mudou de mãos</th></tr>
+      <tr><td>Antes</td><td>100 €</td><td>100 000 €</td><td>—</td></tr>
+      <tr><td>Depois de 1 negócio de 10 ações</td><td>80 €</td><td>80 000 €</td><td>800 € (do comprador para o vendedor)</td></tr>
+    </table></div>
+    <p>Desapareceram 20 000 € de "valor" com um único negócio de 800 €. <strong>Nenhum dinheiro saiu do mercado</strong>: o comprador deu 800 € e o vendedor recebeu 800 €. Os outros 990 acionistas não fizeram nada — mas as suas ações passaram a ser avaliadas a 80 €.</p>
+  </div>
+
+  <div class="deep">
+    <h3>2. Para cada vendedor há sempre um comprador</h3>
+    <p>Quando as notícias dizem "saíram 500 mil milhões da bolsa", é uma forma de falar. Em cada negócio, uma pessoa vende e outra compra: o dinheiro <em>muda de mãos</em>, não sai. O número de ações também não muda.</p>
+    <p>O que muda é <strong>a que preço</strong> as pessoas estão dispostas a negociar. Se os vendedores estão com pressa e os compradores desconfiados, os negócios fazem-se cada vez mais abaixo. Não é preciso muita gente a vender: basta que, à margem, quem quer vender aceite menos e quem pode comprar exija pagar menos.</p>
+    <div class="book">
+      <div class="side buy"><h3 style="color:var(--acc)">Antes: compradores confiantes</h3>
+        <div class="row" style="--w:80%"><span>500</span><b>99 €</b></div>
+        <div class="row" style="--w:60%"><span>300</span><span>98 €</span></div>
+        <div class="row" style="--w:40%"><span>200</span><span>97 €</span></div>
+      </div>
+      <div class="side sell"><h3 style="color:var(--acc2);text-align:right">Depois: compradores recuam</h3>
+        <div class="row" style="--w:30%"><b>85 €</b><span>100</span></div>
+        <div class="row" style="--w:50%"><span>82 €</span><span>200</span></div>
+        <div class="row" style="--w:70%"><span>80 €</span><span>400</span></div>
+      </div>
+    </div>
+    <p class="muted">Ninguém "levou" o dinheiro: os compradores simplesmente retiraram ou baixaram as ofertas. Quem quiser vender agora tem de aceitar 85 € ou menos.</p>
+  </div>
+
+  <div class="deep">
+    <h3>3. Porque é que os compradores passam a pagar menos?</h3>
+    <p>Uma ação vale, no fundo, os <strong>lucros que a empresa vai gerar no futuro</strong>. O preço que alguém aceita pagar hoje depende de três coisas — e numa recessão as três pioram ao mesmo tempo:</p>
+    <div class="grid">
+      <div class="card"><span class="tag r">↓</span><h3>Lucros esperados descem</h3><p>Se as pessoas compram menos carros, viagens e casas, as empresas vão ganhar menos. Uma ação que dava 5 € de lucro pode passar a dar 3 €.</p></div>
+      <div class="card"><span class="tag r">↓</span><h3>Múltiplo desce</h3><p>Com medo, os investidores pagam menos por cada euro de lucro: em vez de 20 vezes o lucro, só aceitam 14. É o "prémio de risco" a subir.</p></div>
+      <div class="card"><span class="tag r">↑</span><h3>Alternativas melhoram</h3><p>Se os juros dos depósitos e obrigações sobem, uma ação arriscada tem de ficar mais barata para continuar a compensar.</p></div>
+    </div>
+    <p>A fórmula simplificada é: <strong>Preço = lucro por ação × múltiplo (P/E)</strong>. Experimente:</p>
+    <div class="card calc" style="box-shadow:none">
+      <label for="rv1">Lucro por ação antes (€)<span class="val" id="rv1v"></span></label>
+      <input type="number" id="rv1" value="5" step="0.1" inputmode="decimal">
+      <label for="rv2">Variação dos lucros na recessão<span class="val" id="rv2v"></span></label>
+      <input type="range" id="rv2" min="-80" max="30" step="1" value="-20">
+      <label for="rv3">Múltiplo P/E antes<span class="val" id="rv3v"></span></label>
+      <input type="range" id="rv3" min="5" max="60" step="1" value="20">
+      <label for="rv4">Múltiplo P/E depois (medo)<span class="val" id="rv4v"></span></label>
+      <input type="range" id="rv4" min="5" max="60" step="1" value="15">
+      <div class="grid" style="margin-top:12px">
+        <div class="card" style="box-shadow:none"><div class="muted">Preço antes</div><div class="big" id="rvA"></div></div>
+        <div class="card" style="box-shadow:none"><div class="muted">Preço depois</div><div class="big" id="rvB"></div><div id="rvP" style="font-weight:700"></div></div>
+        <div class="card" style="box-shadow:none"><div class="muted">Dinheiro que "saiu" da bolsa</div><div class="big" style="color:var(--muted)">0 €</div><div class="muted" style="font-size:.85rem">Só mudaram as expectativas.</div></div>
+      </div>
+      <p class="muted" style="font-size:.85rem;margin-bottom:0" id="rvTxt"></p>
+    </div>
+    <p>Repare que uma descida de lucros de 20% pode dar uma queda de preço de 40%: os dois efeitos multiplicam-se. É por isso que as ações caem muito mais do que a economia — o PIB pode descer 3% e a bolsa 40%.</p>
+  </div>
+
+  <div class="deep">
+    <h3>4. O que acelera as quedas</h3>
+    <ul>
+      <li><b>Vendas forçadas:</b> quem comprou com dinheiro emprestado recebe chamadas de margem e é obrigado a vender, a qualquer preço.</li>
+      <li><b>Resgates de fundos:</b> quando muitos investidores pedem o dinheiro de volta, os fundos têm de vender ações para pagar.</li>
+      <li><b>Ordens automáticas:</b> stop-loss e algoritmos vendem quando o preço toca certos níveis, empurrando-o para o nível seguinte.</li>
+      <li><b>Medo contagioso:</b> ver o preço cair faz outros quererem sair antes que caia mais.</li>
+      <li><b>Falta de compradores:</b> em pânico, quem tem dinheiro prefere esperar. Com menos ofertas de compra, cada venda empurra mais o preço.</li>
+    </ul>
+    <h3>5. E o caminho inverso também é verdade</h3>
+    <p>Nas subidas acontece exatamente o mesmo: não é preciso "entrar" dinheiro novo para o preço subir. Basta que os compradores aceitem pagar mais do que o último preço. Por isso a riqueza da bolsa é, em grande parte, <strong>riqueza no papel</strong>: só se torna dinheiro real para quem vende — e, quando muitos tentam vender ao mesmo tempo, o preço desce.</p>
+    <div class="note" style="margin-bottom:0"><strong>Porque é que isto afeta a economia real?</strong> Quando as pessoas se sentem mais pobres (ações e fundos de pensões a valer menos), gastam menos — é o "efeito riqueza". E as empresas com ações baratas têm mais dificuldade em financiar-se. A queda da bolsa pode assim agravar a recessão que a provocou.</div>
+  </div>
+</section>
+
+<section id="r-ciclo">
+  <h2>Como funciona uma recessão</h2>
+  <p>A economia é uma rede: <strong>o que uma pessoa gasta é o rendimento de outra</strong>. Quando uma parte da rede trava, o travão espalha-se.</p>
+  <h3>A espiral descendente</h3>
+  <div class="cyc" role="img" aria-label="Espiral de uma recessão">
+    <div><b>1. Choque</b>Juros sobem, petróleo dispara, uma bolha rebenta, um banco falha ou uma pandemia fecha negócios.</div>
+    <div><b>2. Gastos caem</b>Famílias adiam compras; empresas cancelam investimentos e encomendas.</div>
+    <div><b>3. Vendas e lucros caem</b>As empresas vendem menos e ganham menos. A bolsa antecipa isto e desce.</div>
+    <div><b>4. Despedimentos</b>Para cortar custos, as empresas param de contratar e despedem.</div>
+    <div><b>5. Medo e crédito</b>Quem tem emprego poupa por precaução. Os bancos, com receio de incumprimentos, emprestam menos.</div>
+    <div><b>6. Gastos caem mais</b>Menos rendimento e menos crédito → menos consumo.</div>
+  </div>
+  <p class="muted">A espiral para quando os preços e os juros descem o suficiente para que comprar, investir e contratar volte a compensar — muitas vezes com a ajuda dos bancos centrais e dos governos.</p>
+
+  <h3>Os gatilhos mais comuns</h3>
+  <div class="grid">
+    <div class="card"><h3>Subida de juros</h3><p>Os bancos centrais sobem juros para travar a inflação. O crédito encarece, as compras e investimentos param. Exemplos: 1980–82, e o receio atual.</p></div>
+    <div class="card"><h3>Choque de energia</h3><p>O petróleo dispara e funciona como um imposto sobre todos: 1973, 1979, 1990.</p></div>
+    <div class="card"><h3>Rebentamento de bolha</h3><p>Um investimento excessivo pára de repente: empresas de internet em 2001, construção e casas em 2008.</p></div>
+    <div class="card"><h3>Crise bancária</h3><p>Se os bancos têm perdas, deixam de emprestar e a economia sufoca: 1930–33, 2008, zona euro em 2011.</p></div>
+    <div class="card"><h3>Choque externo</h3><p>Guerras, pandemias, desastres: COVID-19 em 2020.</p></div>
+    <div class="card"><h3>Austeridade forçada</h3><p>Quando um Estado perde acesso a financiamento e tem de cortar despesa de repente: Portugal e Grécia em 2011–13.</p></div>
+  </div>
+
+  <h3>Sinais de aviso que os economistas vigiam</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Indicador</th><th>O que mostra</th><th>Fiabilidade</th></tr>
+    <tr><td><b>Curva de juros invertida</b></td><td>Juros a 2 anos acima dos juros a 10 anos: o mercado espera cortes de juros porque antecipa uma economia fraca.</td><td>Antecedeu quase todas as recessões americanas desde os anos 60, mas em 2022–24 não foi seguida de recessão.</td></tr>
+    <tr><td><b>Regra de Sahm</b></td><td>Desemprego (média de 3 meses) sobe 0,5 pontos acima do mínimo dos 12 meses anteriores.</td><td>Muito fiável historicamente, mas é tardia: dispara quando a recessão já começou.</td></tr>
+    <tr><td><b>Índices PMI</b></td><td>Inquéritos aos diretores de compras. Abaixo de 50 indica contração.</td><td>Antecipam bem a indústria; menos os serviços.</td></tr>
+    <tr><td><b>Pedidos de subsídio de desemprego</b></td><td>Subida rápida e persistente dos pedidos semanais.</td><td>Sinal precoce de despedimentos.</td></tr>
+    <tr><td><b>Condições de crédito</b></td><td>Bancos a exigir mais garantias; diferença entre juros de empresas e do Estado a alargar.</td><td>Indica quando o crédito começa a secar.</td></tr>
+    <tr><td><b>Confiança do consumidor</b></td><td>Inquéritos às famílias sobre o futuro.</td><td>Muito sensível a notícias; dá muitos falsos alarmes.</td></tr>
+  </table></div>
+
+  <h3>Como se combate uma recessão</h3>
+  <div class="grid">
+    <div class="card"><span class="tag">Banco central</span><h3>Política monetária</h3><p>Descer juros, emprestar aos bancos sem limite em pânicos e comprar obrigações (quantitative easing) para baixar o custo do crédito.</p></div>
+    <div class="card"><span class="tag">Governo</span><h3>Política orçamental</h3><p>Subsídios de desemprego, apoios às empresas, obras públicas, cortes de impostos. Parte acontece automaticamente: na recessão cobra-se menos imposto e paga-se mais subsídio.</p></div>
+    <div class="card"><span class="tag r">Erro histórico</span><h3>Fazer o contrário</h3><p>Em 1930–33 a Fed deixou falir milhares de bancos e os governos cortaram despesa e subiram tarifas. A recessão transformou-se em depressão.</p></div>
+  </div>
+</section>
+
+<section id="r-historia">
+  <h2>As recessões passadas</h2>
+  <p>Cada recessão teve um gatilho diferente, mas o mecanismo — gastos que caem, lucros que caem, despedimentos — foi sempre parecido. Valores dos EUA, salvo indicação.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Recessão</th><th>Duração</th><th>Gatilho</th><th>Desemprego máx.</th><th>Queda da bolsa (S&amp;P 500)</th></tr>
+    <tr><td><b>Grande Depressão</b></td><td>1929–33 · 43 meses</td><td>Crash, falências bancárias, erros de política</td><td>~25%</td><td>−86%</td></tr>
+    <tr><td><b>Choque petrolífero</b></td><td>1973–75 · 16 meses</td><td>Embargo da OPEP, inflação</td><td>9%</td><td>−48%</td></tr>
+    <tr><td><b>Recessões Volcker</b></td><td>1980 e 1981–82</td><td>Juros a ~20% para matar a inflação</td><td>10,8%</td><td>−27%</td></tr>
+    <tr><td><b>Guerra do Golfo</b></td><td>1990–91 · 8 meses</td><td>Petróleo, crise das caixas de poupança</td><td>7,8%</td><td>−20%</td></tr>
+    <tr><td><b>Dot-com</b></td><td>2001 · 8 meses</td><td>Fim do investimento em internet, 11 de Setembro</td><td>6,3%</td><td>−49%</td></tr>
+    <tr><td><b>Grande Recessão</b></td><td>2007–09 · 18 meses</td><td>Subprime, Lehman Brothers</td><td>10%</td><td>−57%</td></tr>
+    <tr><td><b>Portugal / zona euro</b></td><td>2011–13</td><td>Crise da dívida, resgate da troika</td><td>~17% (PT)</td><td>PSI-20 ~−45% (2011–12)</td></tr>
+    <tr><td><b>COVID-19</b></td><td>2020 · 2 meses</td><td>Confinamentos</td><td>14,7%</td><td>−34%</td></tr>
+  </table></div>
+  <h3>Queda da bolsa em cada recessão</h3>
+  <div class="card"><div id="chRecess"></div><p class="muted" style="font-size:.8rem;margin:6px 0 0">Queda do S&amp;P 500 do máximo ao mínimo em torno de cada recessão (aproximado, sem dividendos).</p></div>
+
+  <div class="deep">
+    <span class="tag r">1929–1933</span>
+    <h3>A Grande Depressão</h3>
+    <p><b>Como começou:</b> depois de uma década de euforia e de compra de ações a crédito, a bolsa colapsou em outubro de 1929. Quem tinha comprado com dinheiro emprestado foi obrigado a vender, e os bancos que tinham emprestado tiveram perdas.</p>
+    <p><b>Como se agravou:</b> as pessoas correram aos bancos para levantar depósitos; cerca de 9 000 bancos faliram e as poupanças desapareceram. A Fed não injetou dinheiro, o padrão-ouro impediu descer juros e os EUA subiram tarifas (lei Smoot-Hawley, 1930), provocando retaliações e o colapso do comércio mundial. Os preços caíram (deflação), tornando as dívidas cada vez mais pesadas.</p>
+    <p><b>Números:</b> PIB real −26%, desemprego perto de 25%, Dow Jones −89%.</p>
+    <p><b>Como acabou:</b> abandono do padrão-ouro e New Deal (1933), garantia de depósitos e, mais tarde, a despesa da Segunda Guerra Mundial.</p>
+    <p class="muted"><b>Lição:</b> deixar os bancos falir e cortar despesa no meio da crise transforma uma recessão numa depressão.</p>
+  </div>
+
+  <div class="deep">
+    <span class="tag r">1973–1975</span>
+    <h3>O choque petrolífero e a estagflação</h3>
+    <p><b>Como começou:</b> em outubro de 1973, os países árabes da OPEP impuseram um embargo petrolífero aos aliados de Israel. O preço do petróleo quadruplicou em poucos meses.</p>
+    <p><b>Como funcionou:</b> energia mais cara encareceu tudo — transportes, fábricas, alimentos. As famílias tinham menos dinheiro para o resto e as empresas menos margem. Pela primeira vez houve ao mesmo tempo inflação alta (mais de 12%) e desemprego alto: a <strong>estagflação</strong>.</p>
+    <p><b>Números:</b> desemprego 9%, S&amp;P 500 −48%. Em Portugal, o choque coincidiu com a revolução de 1974 e o encerramento da bolsa.</p>
+    <p class="muted"><b>Lição:</b> um choque de custos é difícil de combater — descer juros alimenta a inflação, subir juros agrava o desemprego.</p>
+  </div>
+
+  <div class="deep">
+    <span class="tag r">1980–1982</span>
+    <h3>As recessões provocadas de propósito</h3>
+    <p><b>Como começou:</b> a inflação americana chegou a 13,5% em 1980. Paul Volcker, presidente da Fed, decidiu travá-la a qualquer custo e subiu os juros até cerca de 20%.</p>
+    <p><b>Como funcionou:</b> com crédito caríssimo, a compra de casas e carros parou, as empresas deixaram de investir e houve duas recessões seguidas. O desemprego chegou a 10,8% no fim de 1982.</p>
+    <p><b>Como acabou:</b> a inflação caiu para cerca de 3% em 1983, a Fed baixou os juros e começou um dos maiores ciclos de subida da bolsa da história (1982–2000).</p>
+    <p class="muted"><b>Lição:</b> muitas recessões são o "remédio" dos bancos centrais contra a inflação. É por isso que os mercados reagem tanto às decisões de juros.</p>
+  </div>
+
+  <div class="deep">
+    <span class="tag r">1990–1991</span>
+    <h3>Guerra do Golfo e crise das caixas de poupança</h3>
+    <p>A invasão do Kuwait pelo Iraque (agosto de 1990) fez disparar o petróleo e afundou a confiança. Ao mesmo tempo, centenas de caixas de poupança americanas (Savings &amp; Loans) faliram depois de anos de crédito imobiliário arriscado, e o crédito secou. Recessão curta (8 meses) mas com recuperação lenta do emprego.</p>
+  </div>
+
+  <div class="deep">
+    <span class="tag r">2001</span>
+    <h3>O fim da bolha dot-com</h3>
+    <p><b>Como funcionou:</b> no fim dos anos 90 as empresas investiram fortunas em computadores, redes de fibra ótica e software. Quando ficou claro que muitas empresas de internet nunca teriam lucro, o financiamento parou, o investimento em tecnologia caiu a pique e os fornecedores (Cisco, Lucent, Nortel) perderam clientes de um dia para o outro. Os atentados de 11 de Setembro agravaram a confiança.</p>
+    <p><b>Curiosidade:</b> foi uma recessão económica <em>leve</em> (8 meses, desemprego máximo de 6,3%), mas a bolsa teve uma das piores quedas: S&amp;P 500 −49% e Nasdaq −78%. A economia aguentou-se porque o consumo das famílias quase não caiu.</p>
+    <p class="muted"><b>Lição:</b> uma bolha concentrada em investimento empresarial e em bolsa pode destruir muito valor acionista sem destruir a economia. É o paralelo mais citado para a IA.</p>
+  </div>
+
+  <div class="deep">
+    <span class="tag r">2007–2009</span>
+    <h3>A Grande Recessão</h3>
+    <p><b>Como começou:</b> nos EUA concederam-se milhões de hipotecas a quem não as podia pagar (subprime). Os bancos agruparam-nas em títulos com rating AAA e venderam-nos ao mundo inteiro, muitas vezes com dinheiro emprestado (alavancagem de 30 para 1).</p>
+    <p><b>Como se espalhou:</b> quando os preços das casas começaram a cair (2006), os incumprimentos subiram e esses títulos perderam valor. Ninguém sabia que banco tinha quanto, por isso os bancos deixaram de emprestar uns aos outros. A falência do Lehman Brothers (15 de setembro de 2008) gelou o crédito mundial: empresas sem acesso a financiamento cortaram produção e despediram.</p>
+    <p><b>Números:</b> PIB EUA −4,3%, desemprego 10%, S&amp;P 500 −57%, preços das casas −27%.</p>
+    <p><b>Como acabou:</b> Fed com juros a zero e compra de obrigações (QE), resgate bancário de 700 mil milhões de dólares (TARP), testes de stress aos bancos e estímulos orçamentais.</p>
+    <p class="muted"><b>Lição:</b> o perigo não é só a bolha, é a dívida por trás dela. Bolhas financiadas com crédito contaminam os bancos e a economia toda.</p>
+  </div>
+
+  <div class="deep">
+    <span class="tag r">2011–2013</span>
+    <h3>Portugal e a crise da dívida</h3>
+    <p><b>Como começou:</b> depois de 2008, os investidores passaram a desconfiar dos países do sul da Europa com dívida alta e pouco crescimento. Os juros da dívida portuguesa a 10 anos dispararam (acima de 15% no mercado secundário em 2012) e o Estado deixou de conseguir financiar-se.</p>
+    <p><b>Como funcionou:</b> em maio de 2011, Portugal pediu um resgate de 78 mil milhões de euros à troika (FMI, BCE, Comissão Europeia). Em troca, cortou salários e pensões, subiu impostos e reduziu investimento. Menos rendimento → menos consumo → empresas a fechar → mais desemprego, que chegou a cerca de 17% em 2013. Os bancos, cheios de dívida pública e crédito malparado, deixaram de emprestar.</p>
+    <p><b>Como acabou:</b> o "whatever it takes" de Mario Draghi (julho de 2012) acalmou os mercados, os juros caíram, Portugal saiu do programa em 2014 e regressou ao crescimento — embora o colapso do BES (2014) e do Banif (2015) tenha mostrado que as feridas da banca demoraram.</p>
+    <p class="muted"><b>Lição:</b> numa união monetária, um país não pode desvalorizar a moeda nem descer juros sozinho. Sem um banco central disposto a intervir, a austeridade aprofunda a recessão.</p>
+  </div>
+
+  <div class="deep">
+    <span class="tag r">2020</span>
+    <h3>COVID-19: a recessão mais curta e mais violenta</h3>
+    <p><b>Como funcionou:</b> não houve bolha nem crise bancária: os governos fecharam deliberadamente partes da economia. Restaurantes, viagens e lojas pararam de um dia para o outro. Nos EUA o desemprego saltou de 3,5% para 14,7% num mês; em Portugal o PIB de 2020 caiu cerca de 8%.</p>
+    <p><b>Como acabou:</b> a resposta foi enorme e imediata — juros a zero, compras maciças de obrigações, cheques às famílias, lay-off simplificado e moratórias de crédito. A recessão durou 2 meses; a bolsa recuperou o máximo em 5.</p>
+    <p class="muted"><b>Lição:</b> a velocidade e o tamanho da resposta contam. Mas o dinheiro injetado contribuiu para a inflação de 2021–22 e para a bolha de ativos especulativos de 2021.</p>
+  </div>
+</section>
+
+<section id="r-bolsa">
+  <h2>Recessão e bolsa: quem vem primeiro</h2>
+  <p>A bolsa olha para a frente; a economia é medida a olhar para trás. Por isso as duas raramente estão sincronizadas.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Recessão</th><th>Bolsa no fundo</th><th>Fim da recessão</th><th>Quem chegou primeiro</th></tr>
+    <tr><td>1929–33</td><td>jul. 1932</td><td>mar. 1933</td><td>Bolsa, 8 meses antes</td></tr>
+    <tr><td>1973–75</td><td>out. 1974</td><td>mar. 1975</td><td>Bolsa, 5 meses antes</td></tr>
+    <tr><td>1981–82</td><td>ago. 1982</td><td>nov. 1982</td><td>Bolsa, 3 meses antes</td></tr>
+    <tr><td>1990–91</td><td>out. 1990</td><td>mar. 1991</td><td>Bolsa, 5 meses antes</td></tr>
+    <tr><td>2001</td><td>out. 2002</td><td>nov. 2001</td><td><span style="color:var(--acc2);font-weight:700">Economia</span> — a bolsa caiu mais 11 meses</td></tr>
+    <tr><td>2007–09</td><td>mar. 2009</td><td>jun. 2009</td><td>Bolsa, 3 meses antes</td></tr>
+    <tr><td>2020</td><td>mar. 2020</td><td>abr. 2020</td><td>Bolsa, 1 mês antes</td></tr>
+  </table></div>
+  <div class="grid">
+    <div class="card"><h3>A bolsa costuma cair antes</h3><p>Os investidores vendem quando <em>antecipam</em> menos lucros, muitas vezes meses antes de os números da economia confirmarem a recessão.</p></div>
+    <div class="card"><h3>E recupera antes</h3><p>O fundo da bolsa acontece normalmente no pior momento das notícias: desemprego ainda a subir, manchetes negativas. Quem espera por "boas notícias" costuma perder a recuperação.</p></div>
+    <div class="card"><h3>Exceção: bolhas</h3><p>Quando a recessão vem de uma bolha na própria bolsa (2001), as ações podem continuar a cair depois de a economia recuperar, porque o problema era o preço inicial.</p></div>
+    <div class="card"><h3>Nem todas as quedas são recessões</h3><p>1987 (−34%) e 2022 (−25%) foram bear markets sem recessão. Diz-se que a bolsa "previu nove das últimas cinco recessões".</p></div>
+  </div>
+  <h3>Quem sofre mais e quem resiste</h3>
+  <div class="pc">
+    <div class="con"><b>Cíclicos — caem mais</b><ul><li>Banca e seguros</li><li>Automóvel, construção, imobiliário</li><li>Viagens, hotelaria, luxo</li><li>Indústria e matérias-primas</li><li>Empresas pequenas e endividadas</li></ul></div>
+    <div class="pro"><b>Defensivos — caem menos</b><ul><li>Alimentação e bens essenciais</li><li>Saúde e farmacêuticas</li><li>Eletricidade, água, gás</li><li>Obrigações do Estado de boa qualidade</li><li>Empresas com pouca dívida e muito dinheiro em caixa</li></ul></div>
+  </div>
+</section>
+
+<section id="r-ia">
+  <h2>A bolha da IA: como poderia acontecer</h2>
+  <div class="note"><strong>Isto não é uma previsão.</strong> Ninguém sabe se, quando ou como uma eventual bolha da IA rebenta. O que se pode fazer é olhar para os números atuais, perceber o mecanismo e comparar com bolhas anteriores. Dados até meados de outubro de 2026.</div>
+
+  <h3>Onde estamos (outubro de 2026)</h3>
+  <div class="grid">
+    <div class="card"><div class="big">~720–745 mil M$</div><p>Investimento previsto em 2026 por Alphabet, Amazon, Meta e Microsoft, sobretudo em centros de dados — contra cerca de 410 mil milhões em 2025 (+75–80%).</p></div>
+    <div class="card"><div class="big">96 mil M$</div><p>Receitas trimestrais da Nvidia (agosto de 2026), +106% num ano. Quase tudo vem dos centros de dados — ou seja, do investimento das grandes tecnológicas.</p></div>
+    <div class="card"><div class="big">−5,9 mil M$</div><p>Free cash flow da Alphabet no 2.º trimestre de 2026, o primeiro negativo desde que entrou em bolsa em 2004. A Meta caiu para 0,8 mil M$.</p></div>
+    <div class="card"><div class="big">~40%</div><p>Peso das 10 maiores empresas no S&amp;P 500 — o mais alto desde os anos 60. Quem tem um ETF mundial está muito exposto a elas.</p></div>
+  </div>
+  <div class="deep">
+    <h3>Sinais que preocupam</h3>
+    <ul>
+      <li><b>Investimento muito acima das receitas:</b> as receitas anualizadas dos dois maiores laboratórios de IA (OpenAI e Anthropic) somam pouco mais de 100 mil milhões de dólares, contra mais de 700 mil milhões de investimento das grandes tecnológicas (não são medidas diretamente comparáveis, mas a diferença é grande).</li>
+      <li><b>Dívida e emissão de ações:</b> a dívida da Alphabet passou de cerca de 16 para 100 mil milhões num ano e fez um aumento de capital de 80 mil milhões; a Meta acumulou dívida, suspendeu recompras e o mercado espera um aumento de capital. O Banco de Pagamentos Internacionais (BIS) avisou em junho que o financiamento por dívida dos centros de dados pode ameaçar a estabilidade financeira.</li>
+      <li><b>Juros a subir:</b> a Fed subiu os juros em setembro de 2026 (para 3,75–4%), a primeira subida em mais de três anos, e as obrigações a 10 anos chegaram perto de 5%. Juros altos tornam mais caro financiar estes projetos e pesam nas ações caras.</li>
+      <li><b>Receitas concentradas e circulares:</b> boa parte da procura vem de poucos clientes (OpenAI, Anthropic) que, por sua vez, dependem de financiamento das próprias empresas que lhes vendem capacidade. Contratos como os ~300 mil milhões da OpenAI com a Oracle inflacionam carteiras de encomendas.</li>
+      <li><b>Retorno incerto para as empresas utilizadoras:</b> num inquérito da PwC de 2026, 56% dos CEO disseram ainda não ver nem mais receitas nem menos custos com a IA.</li>
+      <li><b>Primeiras fissuras:</b> em meados de outubro de 2026, AMD, Oracle e Broadcom estavam 18–22% abaixo dos máximos de três meses.</li>
+    </ul>
+  </div>
+  <div class="pc">
+    <div class="con"><b>Argumentos de que é bolha</b><ul><li>Avaliação do mercado (CAPE) perto do pico de 2000</li><li>Investimento a crescer mais depressa do que as receitas finais</li><li>Grandes tecnológicas com free cash flow a cair e dívida a subir</li><li>Concentração recorde dos índices</li><li>Modelos baratos (tipo DeepSeek) podem esmagar preços e margens</li></ul></div>
+    <div class="pro"><b>Argumentos de que não é (ou não como em 2000)</b><ul><li>As empresas líderes têm lucros reais e enormes; em 2000 a maioria das dot-com não tinha</li><li>P/E do S&amp;P 500 ~19 (set. 2026) contra ~60 do Nasdaq-100 em 2000</li><li>Lucros a crescer mais de 30%, absorvendo as subidas</li><li>Investimento em IA ~2% do PIB, dentro do intervalo de outras vagas tecnológicas</li><li>A procura de capacidade de cálculo continua acima da oferta</li></ul></div>
+  </div>
+
+  <h3>O mecanismo provável de um rebentamento</h3>
+  <p>Se acontecer, não deverá começar por "pessoas a tirar dinheiro". Deverá começar por uma <strong>mudança de expectativas</strong> — exatamente o mecanismo explicado acima:</p>
+  <div class="flow">
+    <div><b>Receitas não acompanham</b>Os clientes finais pagam menos pela IA do que o previsto, ou os preços por utilização caem muito.</div>
+    <div><b>Investimento abranda</b>Uma ou duas grandes tecnológicas anunciam menos investimento para o ano seguinte, para proteger o free cash flow.</div>
+    <div><b>Receitas dos fornecedores caem</b>O investimento de uns é a receita de outros: Nvidia, AMD, Broadcom, TSMC, energia, construtoras de centros de dados.</div>
+    <div><b>Múltiplos comprimem</b>Ações avaliadas para crescer 50% ao ano passam a ser avaliadas para crescer 10%. Lucros mais baixos × múltiplo mais baixo = quedas de 50–80%.</div>
+    <div><b>Índices caem por arrasto</b>Como 10 empresas pesam ~40% do S&amp;P 500, o índice cai mesmo que o resto da economia esteja bem.</div>
+    <div><b>Contágio à economia</b>Efeito riqueza, menos investimento (que tem sustentado o crescimento dos EUA), perdas em dívida de centros de dados e em crédito privado.</div>
+  </div>
+  <h3>Possíveis gatilhos</h3>
+  <div class="grid">
+    <div class="card"><h3>Guidance de investimento</h3><p>Um anúncio de corte de capex numa apresentação de resultados trimestrais.</p></div>
+    <div class="card"><h3>Um cliente que falha</h3><p>Um grande laboratório de IA que não consegue financiar-se ou renegocia contratos.</p></div>
+    <div class="card"><h3>Juros mais altos</h3><p>Inflação persistente obriga a Fed a subir mais, encarecendo a dívida e as ações de crescimento.</p></div>
+    <div class="card"><h3>Guerra de preços</h3><p>Modelos abertos e baratos tornam a IA uma mercadoria com margens baixas.</p></div>
+    <div class="card"><h3>IPO falhada</h3><p>Uma grande entrada em bolsa (fala-se de Anthropic e OpenAI) que corre mal pode mudar o sentimento.</p></div>
+    <div class="card"><h3>Limites físicos</h3><p>Falta de eletricidade, chips ou licenças atrasa projetos e quebra as projeções.</p></div>
+  </div>
+
+  <h3>Três cenários possíveis</h3>
+  <div class="deep">
+    <span class="tag">Cenário A</span>
+    <h3>Aterragem suave</h3>
+    <p>As receitas da IA crescem a tempo de justificar o investimento. As ações caras sobem menos do que os lucros durante alguns anos (os múltiplos encolhem devagar). Pode haver correções de 10–20%, mas sem crise.</p>
+    <p class="muted">O que teria de acontecer: receitas de IA e free cash flow a recuperar nos próximos trimestres; juros estáveis.</p>
+  </div>
+  <div class="deep">
+    <span class="tag r">Cenário B</span>
+    <h3>Correção forte tipo 2000, sem crise financeira</h3>
+    <p>O investimento abranda, as ações ligadas à IA perdem 40–70% e os grandes índices 25–35%. A economia abranda ou entra numa recessão ligeira, como em 2001, mas os bancos aguentam porque a maior parte foi financiada com capital próprio. A tecnologia continua a ser usada — tal como a internet depois de 2000 — mas os investidores que compraram nos máximos demoram muitos anos a recuperar.</p>
+    <p class="muted">Paralelo: a Cisco caiu 86% entre 2000 e 2002 e levou mais de duas décadas a voltar a aproximar-se do máximo; a Amazon caiu 94% e acabou por se tornar gigante.</p>
+  </div>
+  <div class="deep">
+    <span class="tag r">Cenário C</span>
+    <h3>Rebentamento com crise de crédito</h3>
+    <p>Se uma parte grande dos centros de dados tiver sido financiada com dívida (obrigações, crédito privado, leasings), uma queda das receitas transforma-se em incumprimentos. Credores com perdas emprestam menos à economia toda — o mecanismo de 2008. Recessão mais profunda e mais longa.</p>
+    <p class="muted">O que vigiar: emissões de dívida das tecnológicas, spreads do crédito privado, avisos de reguladores como o BIS.</p>
+  </div>
+
+  <h3>O que vigiar nos próximos meses</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Indicador</th><th>Sinal tranquilizador</th><th>Sinal de alerta</th></tr>
+    <tr><td>Investimento previsto das grandes tecnológicas (resultados trimestrais)</td><td>Continua a crescer com receitas a acompanhar</td><td>Cortes súbitos ou adiamentos de projetos</td></tr>
+    <tr><td>Free cash flow de Alphabet, Meta, Amazon, Microsoft</td><td>Volta a subir</td><td>Continua negativo, financiado com dívida e ações</td></tr>
+    <tr><td>Receitas e previsões da Nvidia</td><td>Previsões acima do esperado</td><td>Primeira previsão abaixo do esperado</td></tr>
+    <tr><td>Juros a 10 anos nos EUA</td><td>Estáveis ou a descer</td><td>Acima de 5% de forma persistente</td></tr>
+    <tr><td>Preço da IA por utilização</td><td>Clientes dispostos a pagar mais por mais capacidade</td><td>Guerra de preços e margens a cair</td></tr>
+    <tr><td>Entradas em bolsa de laboratórios de IA</td><td>Procura forte e boa estreia</td><td>Adiamentos ou estreias em queda</td></tr>
+  </table></div>
+  <div class="note"><strong>Para o investidor comum:</strong> as lições das bolhas anteriores aplicam-se aqui — diversificar para além das mesmas 10 empresas, não investir com dinheiro emprestado, não pôr em ações o dinheiro necessário a curto prazo e não tentar adivinhar o momento exato do topo. Conteúdo informativo, não é aconselhamento de investimento.</div>
+</section>
+</div>
 </main>
 </div>
 
@@ -1033,6 +1372,7 @@ function setTab(tab,scrollTop=true){
   document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+tab));
   buildToc(tab);
+  const ab=document.querySelector('.tabs button.on');if(ab)ab.scrollIntoView({block:'nearest',inline:'nearest'});
   try{localStorage.setItem('bolsaTab',tab)}catch(e){}
   if(scrollTop)window.scrollTo({top:0});
 }
@@ -1064,6 +1404,20 @@ function fcalc(){
 }
 ['fR','fG','fS'].forEach(i=>document.getElementById(i).addEventListener('input',fcalc));fcalc();
 
+// Recession valuation simulator
+function rvcalc(){
+  const e=parseFloat(String(document.getElementById('rv1').value).replace(',','.'))||0,ch=+document.getElementById('rv2').value,p0=+document.getElementById('rv3').value,p1=+document.getElementById('rv4').value;
+  const a=e*p0,e1=e*(1+ch/100),b=e1*p1,pct=a>0?(b/a-1)*100:0;
+  const f=n=>n.toLocaleString('pt-PT',{style:'currency',currency:'EUR',maximumFractionDigits:2});
+  document.getElementById('rv1v').textContent=f(e);
+  document.getElementById('rv2v').textContent=(ch>0?'+':'')+ch+'%';
+  document.getElementById('rv3v').textContent=p0+'×';document.getElementById('rv4v').textContent=p1+'×';
+  document.getElementById('rvA').textContent=f(a);document.getElementById('rvB').textContent=f(b);
+  const pe=document.getElementById('rvP');pe.textContent=(pct>0?'+':'')+pct.toLocaleString('pt-PT',{maximumFractionDigits:1})+'%';pe.style.color=pct<0?'var(--acc2)':'var(--acc)';
+  document.getElementById('rvTxt').textContent=`Lucro ${f(e)} → ${f(e1)} e múltiplo ${p0}× → ${p1}×. Os lucros variam ${ch}%, mas o preço varia ${pct.toLocaleString('pt-PT',{maximumFractionDigits:1})}%.`;
+}
+['rv1','rv2','rv3','rv4'].forEach(i=>document.getElementById(i).addEventListener('input',rvcalc));rvcalc();
+
 // Event table filter
 document.getElementById('evf').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   document.querySelectorAll('#evf button').forEach(x=>x.classList.toggle('on',x===b));
@@ -1082,6 +1436,7 @@ function hbar(el,data,unit,fmt){
 hbar(document.getElementById('chRec'),[
  ['Bitcoin 2021',2.3],['S&P 500 2007',5.5],['Imobiliário EUA',10],['Nasdaq 2000',15.1],['Dow Jones 1929',25.2,'','var(--gold)'],['Ouro 1980',28,'','var(--gold)'],['Nikkei 1989',34.2,'','var(--acc2)'],['PSI-20 2000',null,'ainda não recuperou'],['Mares do Sul 1720',null,'nunca recuperou']
 ],'',v=>v.toLocaleString('pt-PT')+' anos');
+hbar(document.getElementById('chRecess'),[['1929–32',86,'','var(--acc2)'],['2007–09',57,'','var(--acc2)'],['2000–02',49,'','var(--acc2)'],['1973–74',48,'','var(--acc2)'],['2020',34,'','var(--acc2)'],['1980–82',27,'','var(--acc2)'],['1990',20,'','var(--acc2)']],'',v=>'−'+v+'%');
 hbar(document.getElementById('chLoss'),[['1 dia',47],['1 ano',26],['5 anos',12],['10 anos',5],['20 anos',0.0001]],'',v=>v<1?'0%':'~'+v+'%');
 (function(){const m=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'],v=[1.0,-0.1,1.1,1.5,0.2,0.0,1.2,-0.1,-0.7,0.9,1.7,1.4];
   const W=620,H=215,z=125,sc=60,bw=W/12;
