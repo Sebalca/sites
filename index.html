@@ -126,13 +126,11 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 16px var(--shadow);
   }
-  .card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 4px; padding-right: 36px; }
+  .card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 4px; padding-right: 112px; }
   .curiosidades .card-title { color: var(--accent2); }
   .card-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.4; }
-  .edit {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+  .tools { position: absolute; top: 10px; right: 10px; display: flex; gap: 4px; }
+  .tools button {
     width: 32px;
     height: 32px;
     padding: 0;
@@ -251,7 +249,7 @@
   </form>
 </dialog>
 
-<footer>v2.1</footer>
+<footer>v2.2</footer>
 
 <script>
 (() => {
@@ -364,14 +362,61 @@
     a.append(el("div", "card-title", i.titulo), el("div", "card-desc", i.descricao || ""));
     wrap.append(a);
     if (isAdmin && i.id) {
+      const tools = el("div", "tools");
+      if (!searching()) {
+        for (const [txt, dir, lbl] of [["▲", -1, "Subir"], ["▼", 1, "Descer"]]) {
+          const m = el("button", "mv", txt);
+          m.type = "button";
+          m.title = lbl;
+          m.setAttribute("aria-label", lbl + " " + i.titulo);
+          m.addEventListener("click", () => move(i, dir));
+          tools.append(m);
+        }
+      }
       const b = el("button", "edit", "✎");
       b.type = "button";
       b.title = "Editar";
       b.setAttribute("aria-label", "Editar " + i.titulo);
       b.addEventListener("click", () => openItem(i));
-      wrap.append(b);
+      tools.append(b);
+      wrap.append(tools);
     }
     return wrap;
+  }
+
+  const searching = () => ($("q").value || "").trim() !== "";
+  const byOrdem = (a, b) => (a.ordem - b.ordem) || String(a.created_at || "").localeCompare(String(b.created_at || ""));
+
+  let moving = false;
+  async function move(item, dir) {
+    if (moving) return;
+    const list = itens.filter((x) => x.categoria === item.categoria).sort(byOrdem);
+    const from = list.findIndex((x) => x.id === item.id);
+    const to = from + dir;
+    if (from < 0 || to < 0 || to >= list.length) return;
+    list.splice(to, 0, list.splice(from, 1)[0]);
+    const changed = [];
+    list.forEach((x, idx) => {
+      const o = (idx + 1) * 10;
+      if (x.ordem !== o) { x.ordem = o; changed.push(x); }
+    });
+    store.set(LS_CACHE, itens);
+    render();
+    moving = true;
+    try {
+      const rs = await Promise.all(changed.map((x) =>
+        api("/rest/v1/hub_itens?id=eq." + encodeURIComponent(x.id), {
+          method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ ordem: x.ordem })
+        }).then(async (r) => r.ok && (await r.json()).length > 0)
+      ));
+      if (rs.some((ok) => !ok)) throw new Error("save");
+      setStatus("");
+    } catch (e) {
+      await load();
+      setStatus("Não foi possível guardar a nova ordem.");
+    } finally {
+      moving = false;
+    }
   }
 
   function render() {
@@ -384,7 +429,7 @@
       itens
         .filter((i) => i.categoria === cat)
         .filter((i) => !nq || norm(i.titulo).includes(nq) || norm(i.descricao).includes(nq))
-        .sort((a, b) => (a.ordem - b.ordem) || String(a.created_at || "").localeCompare(String(b.created_at || "")))
+        .sort(byOrdem)
         .forEach((i) => grid.append(card(i)));
       if (!grid.children.length) grid.append(el("div", "empty", nq ? "Sem resultados." : "Ainda não há itens."));
     }
