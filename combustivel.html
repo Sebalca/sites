@@ -727,6 +727,19 @@ tbody tr{cursor:pointer}tbody tr:hover{background:rgba(127,127,127,.08)}
 .leg{display:flex;gap:10px;align-items:center;font-size:.78rem;color:var(--mu)}
 .lg{height:8px;width:120px;border-radius:4px;background:linear-gradient(90deg,#1a8f4c,#e0a800,#c4372b)}
 .note{font-size:.75rem;color:var(--mu)}
+.bsel{position:relative}
+.bsel>button{min-width:170px;text-align:left}
+.bpop{position:absolute;top:100%;left:0;z-index:2100;margin-top:4px;width:280px;max-width:calc(100vw - 32px);background:var(--card);border:1px solid var(--bd);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:8px}
+.bpop input[type=search]{width:100%;margin-bottom:6px}
+.bpop .acts{display:flex;gap:6px;margin-bottom:6px}.bpop .acts button{flex:1;padding:6px;font-size:.8rem}
+.blist{max-height:280px;overflow:auto}
+.blist label{color:var(--tx);padding:5px 4px;border-radius:6px;cursor:pointer}
+.blist label:hover{background:rgba(127,127,127,.1)}
+.blist .c{margin-left:auto;color:var(--mu);font-size:.75rem}
+.bt{display:inline-block;background:var(--b);color:var(--bf,#fff);font:800 9px/1 system-ui;padding:3px 4px;border-radius:4px;letter-spacing:.02em;vertical-align:middle}
+.price-ic .bt{margin-right:4px;border:1px solid rgba(255,255,255,.7)}
+.star-ic .bt{margin-right:4px}
+.nm .bt{margin-right:5px;vertical-align:1px}
 </style>
 </head>
 <body>
@@ -777,7 +790,14 @@ tbody tr{cursor:pointer}tbody tr:hover{background:rgba(127,127,127,.08)}
 <div class="row"><button class="pri" id="bRoute">Calcular percurso</button><span class="note">Podes arrastar os marcadores A e B no mapa.</span></div>
 </div>
 
-<div class="row" style="margin-top:8px"><label><input type="checkbox" id="noAE"> Excluir auto-estradas</label></div>
+<div class="row" style="margin-top:8px">
+<div class="bsel"><button id="bBrand" type="button">⛽ Marcas: todas ▾</button>
+<div class="bpop hid" id="brandPop"><input type="search" id="brandQ" placeholder="Procurar marca…">
+<div class="acts"><button type="button" id="bAll">Todas</button><button type="button" id="bNone">Nenhuma</button></div>
+<div class="blist" id="brandList"></div></div></div>
+<label><input type="checkbox" id="showBrand"> Mostrar marca no mapa</label>
+<label><input type="checkbox" id="noAE"> Excluir auto-estradas</label>
+</div>
 <div id="status">Escolhe um local: pesquisa, usa 📍 ou toca no mapa.</div>
 <div class="leg"><span id="lmin"></span><span class="lg"></span><span id="lmax"></span><span id="legTxt">· preço</span></div>
 <div id="map"></div>
@@ -805,7 +825,30 @@ const gmin=Math.min(...S.map(s=>s.p)),gmax=Math.max(...S.map(s=>s.p));
 $('cnt').textContent=S.length.toLocaleString('pt-PT');$('dmin').textContent=fmtP(gmin);$('dmax').textContent=fmtP(gmax);
 function hav(a,b,c,d){const R=6371,r=Math.PI/180,x=Math.sin((c-a)*r/2),y=Math.sin((d-b)*r/2);return 2*R*Math.asin(Math.sqrt(x*x+Math.cos(a*r)*Math.cos(c*r)*y*y))}
 function col(t){t=Math.max(0,Math.min(1,t));const a=[26,143,76],m=[224,168,0],b=[196,55,43];const [p,q,u]=t<.5?[a,m,t*2]:[m,b,(t-.5)*2];return`rgb(${p.map((v,i)=>Math.round(v+(q[i]-v)*u)).join(',')})`}
-const ok=s=>!($('noAE').checked&&s.tipo==='A');
+/* ---------- MARCAS ---------- */
+const BR={'GALP':['GALP','#f26f21'],'REPSOL':['REP','#c9302c'],'BP':['BP','#009b3a'],'PRIO':['PRIO','#00a19a'],'INTERMARCHÉ':['ITM','#e2001a'],'Genérico':['GEN','#6b7280'],'ALVES BANDEIRA':['AB','#0054a6'],'CEPSA':['CEP','#d6001c'],'MOEVE':['MOE','#00a0b0'],'FREITAS':['FRE','#1f4e9c'],'SHELL':['SHELL','#ffd500','#c4001a'],'PINGO DOCE':['PD','#4c9a2a'],'AUCHAN':['AUC','#e3001b'],'GASPE':['GSP','#00539f'],'OZ Energia':['OZ','#0c7c59'],'GESTROIL ENERGY':['GST','#33475b'],'LECLERC':['LEC','#0068b4'],'REDE ENERGIA':['RE','#8a1538'],'PLENERGY':['PLE','#7ab800'],'NOVA':['NOVA','#5b2c83'],'PETROPRIX':['PPX','#004b93'],'AUTO JULIO':['AJ','#b31b1b'],'TFUEL':['TF','#222'],'BXPRESS':['BX','#e5007d'],'Q8':['Q8','#f9b200','#003a70'],'ESSO':['ESSO','#d6001c'],'AVIA':['AVIA','#c8102e'],'DPP':['DPP','#0a5c36']};
+function hue(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return`hsl(${h},55%,38%)`}
+function bInfo(m){if(BR[m])return BR[m];const w=m.replace(/[^A-Za-zÀ-ÿ0-9 ]/g,'').split(/\s+/).filter(Boolean);const ab=(w.length>1?w.slice(0,3).map(x=>x[0]).join(''):(w[0]||'?').slice(0,4)).toUpperCase();return BR[m]=[ab,hue(m)]}
+const bTag=m=>{const [a,c,f]=bInfo(m);return`<span class="bt" style="--b:${c}${f?';--bf:'+f:''}">${esc(a)}</span>`};
+const brands=Object.entries(S.reduce((o,s)=>(o[s.marca]=(o[s.marca]||0)+1,o),{})).sort((a,b)=>b[1]-a[1]);
+const LS='gas.v1';const st=(()=>{try{return JSON.parse(localStorage.getItem(LS))||{}}catch(e){return{}}})();
+const saveSt=()=>{try{localStorage.setItem(LS,JSON.stringify({off:[...offB],show:$('showBrand').checked}))}catch(e){}};
+const offB=new Set((st.off||[]).filter(m=>brands.some(b=>b[0]===m)));
+$('showBrand').checked=!!st.show;
+function brandLabel(){const n=brands.length-offB.size;$('bBrand').textContent='⛽ Marcas: '+(offB.size===0?'todas':n===0?'nenhuma':n<=2?brands.filter(b=>!offB.has(b[0])).map(b=>b[0]).join(', '):n+' de '+brands.length)+' ▾'}
+function renderBrands(){const q=$('brandQ').value.trim().toLowerCase();
+ $('brandList').innerHTML=brands.filter(([m])=>!q||m.toLowerCase().includes(q)).map(([m,c])=>`<label><input type="checkbox" data-m="${esc(m)}"${offB.has(m)?'':' checked'}>${bTag(m)} ${esc(m)}<span class="c">${c}</span></label>`).join('')||'<div class="empty">Sem marcas.</div>'}
+let bTimer=null;const brandChanged=()=>{brandLabel();saveSt();clearTimeout(bTimer);bTimer=setTimeout(()=>refresh(false),250)};
+$('bBrand').onclick=e=>{e.stopPropagation();const p=$('brandPop');p.classList.toggle('hid');if(!p.classList.contains('hid')){renderBrands();$('brandQ').focus()}};
+$('brandPop').addEventListener('click',e=>e.stopPropagation());
+document.addEventListener('click',()=>$('brandPop').classList.add('hid'));
+$('brandQ').oninput=renderBrands;
+$('brandList').onchange=e=>{const m=e.target.dataset.m;if(!m)return;e.target.checked?offB.delete(m):offB.add(m);brandChanged()};
+$('bAll').onclick=()=>{const q=$('brandQ').value.trim().toLowerCase();brands.forEach(([m])=>{if(!q||m.toLowerCase().includes(q))offB.delete(m)});renderBrands();brandChanged()};
+$('bNone').onclick=()=>{const q=$('brandQ').value.trim().toLowerCase();brands.forEach(([m])=>{if(!q||m.toLowerCase().includes(q))offB.add(m)});renderBrands();brandChanged()};
+$('showBrand').onchange=()=>{saveSt();refresh(false)};
+brandLabel();
+const ok=s=>!($('noAE').checked&&s.tipo==='A')&&!offB.has(s.marca);
 const median=a=>{if(!a.length)return 0;const b=a.map(s=>s.p).sort((x,y)=>x-y),m=b.length>>1;return b.length%2?b[m]:(b[m-1]+b[m])/2};
 function setStatus(t,err){const e=$('status');e.textContent=t;e.className=err?'err':''}
 
@@ -813,10 +856,10 @@ function setStatus(t,err){const e=$('status');e.textContent=t;e.className=err?'e
 const map=L.map('map',{preferCanvas:true}).setView([39.6,-8.1],7);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 const gAll=L.layerGroup().addTo(map),gLab=L.layerGroup().addTo(map),gRoute=L.layerGroup().addTo(map);
-function popup(s){return`<b>${esc(s.nome)}</b><br>${esc(s.marca)}<br>${esc(s.morada)}, ${esc(s.loc)}<br><b style="font-size:1.1em">${fmtP(s.p)}</b>${s.info?' · '+s.info:''}<br><small>Atualizado ${s.data}${s.tipo==='A'?' · Auto-estrada':''}</small><br><a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}">Direções ↗</a>`}
+function popup(s){return`<b>${esc(s.nome)}</b><br>${bTag(s.marca)} ${esc(s.marca)}<br>${esc(s.morada)}, ${esc(s.loc)}<br><b style="font-size:1.1em">${fmtP(s.p)}</b>${s.info?' · '+s.info:''}<br><small>Atualizado ${s.data}${s.tipo==='A'?' · Auto-estrada':''}</small><br><a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}">Direções ↗</a>`}
 function drawAll(){gAll.clearLayers();S.forEach(s=>{if(!ok(s))return;L.circleMarker([s.lat,s.lng],{radius:4,weight:1,color:'#fff',fillColor:col((s.p-gmin)/(gmax-gmin)),fillOpacity:.85}).bindPopup(()=>popup(s)).addTo(gAll)})}
 function priceLabels(list){const lo=list.length?Math.min(...list.map(s=>s.p)):gmin,hi=list.length?Math.max(...list.map(s=>s.p)):gmax;$('lmin').textContent=fmtP(lo);$('lmax').textContent=fmtP(hi);
- list.forEach(s=>{const c=col(hi>lo?(s.p-lo)/(hi-lo):0);L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',html:`<span class="price-ic" style="--c:${c}">${s.p.toFixed(3).replace('.',',')}</span>`,iconSize:[0,0]}),zIndexOffset:Math.round((hi-s.p)*1000)}).bindPopup(()=>popup(s)).addTo(gLab)})}
+ list.forEach(s=>{const c=col(hi>lo?(s.p-lo)/(hi-lo):0);L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',html:`<span class="price-ic" style="--c:${c}">${$('showBrand').checked?bTag(s.marca):''}${s.p.toFixed(3).replace('.',',')}</span>`,iconSize:[0,0]}),zIndexOffset:Math.round((hi-s.p)*1000)}).bindPopup(()=>popup(s)).addTo(gLab)})}
 const abIcon=(t,c)=>L.divIcon({className:'',html:`<div class="ab-ic" style="--c:${c}"><b>${t}</b></div>`,iconSize:[28,28],iconAnchor:[14,30]});
 
 /* ---------- ESTADO ---------- */
@@ -948,7 +991,7 @@ function updRoute(fit){
 const fmtMin=m=>m<1?'<1 min':m<60?Math.round(m)+' min':Math.floor(m/60)+' h '+Math.round(m%60)+' min';
 const gStar=L.layerGroup().addTo(map);
 function drawBest(best){gStar.clearLayers();
- best.forEach((s,k)=>L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',html:`<span class="star-ic">★${k+1} ${s.p.toFixed(3).replace('.',',')}</span>`,iconSize:[0,0]}),zIndexOffset:20000-k}).bindPopup(()=>popup(s)).addTo(gStar));
+ best.forEach((s,k)=>L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',html:`<span class="star-ic">★${k+1} ${$('showBrand').checked?bTag(s.marca):''}${s.p.toFixed(3).replace('.',',')}</span>`,iconSize:[0,0]}),zIndexOffset:20000-k}).bindPopup(()=>popup(s)).addTo(gStar));
  $('tBest').innerHTML=tbl(best,'route')}
 let detTok=0;
 // Desvio real: rota A → posto → B comparada com A → B (OSRM). Avalia os 10 melhores candidatos e reordena.
@@ -969,7 +1012,7 @@ const sum0=$('rSum').textContent;$('rSum').textContent=sum0+' · a calcular desv
 function tbl(a,kind){
  const head={simple:'<th class="n">Preço</th>',dist:'<th class="n">Preço</th><th class="n">Dist.</th>',route:'<th class="n">Preço</th><th class="n">Desvio</th><th class="n">Custo</th>',route2:'<th class="n">Preço</th><th class="n">Afast.</th>'}[kind];
  return`<table><thead><tr><th>Posto</th>${head}</tr></thead><tbody>${a.map((s,k)=>{
-  const nm=`<td><div class="nm">${kind==='route'?`<span class="rk">${k+1}</span>`:''}${esc(s.nome)}</div><div class="ad">${esc(s.marca)} · ${esc(s.loc||s.mun)}${kind.startsWith('route')?` · km ${Math.round(s.along)}`:''}</div></td>`;
+  const nm=`<td><div class="nm">${kind==='route'?`<span class="rk">${k+1}</span>`:''}${bTag(s.marca)}${esc(s.nome)}</div><div class="ad">${esc(s.marca)} · ${esc(s.loc||s.mun)}${kind.startsWith('route')?` · km ${Math.round(s.along)}`:''}</div></td>`;
   const p=`<td class="n pr">${fmtP(s.p)}</td>`;
   const x=kind==='dist'?`<td class="n">${fmtD(s.d)}</td>`:kind==='route'?`<td class="n"><b>${s.real?'':'≈'}+${fmtMin(s.dMin)}</b><div class="ad">+${fmtD(s.det)}</div></td><td class="n">${fmtE(s.cost)}<div class="sv${s.save<0?' neg':''}">${s.save>=0?'poupa ':'+'}${fmtE(Math.abs(s.save))}</div></td>`:kind==='route2'?`<td class="n">${fmtD(s.off)}</td>`:'';
   return`<tr data-i="${s.i}">${nm}${p}${x}</tr>`}).join('')}</tbody></table>`}
