@@ -51,3 +51,10 @@
 - "Os meus locais": botão ⭐ ao lado de Local, Origem e Destino — escolher um local guardado, "＋ Guardar … atual" com nome (Casa, Trabalho…), mudar nome e apagar.
 - Locais no mapa com ícone e nome (🏠 Casa, 💼 Trabalho, 🏫, 🏋️… pelo nome); tocar → "Postos perto", "Origem" ou "Destino".
 - Gravados na conta frisk.pt (`user_site_data`, chave `locais`); sem login ficam no browser e juntam-se à conta ao entrar.
+
+## 0.2d — 2026-10-27
+- Nova aba "📊 Comparação" (antes de Análise): preço mais recente — mínimo, média, mediana e máximo — por marca, distrito, município (dentro de um distrito), tipo de posto (normal / auto-estrada / hipermercado) e combustível.
+- Gráfico em "Intervalo" (barra mín→máx com marca da mediana e da média) ou "Barras agrupadas"; ordenar por mediana, média, mín., máx., nº de postos ou nome; mínimo de postos por grupo; tabela de valores.
+- Opção "Aplicar filtros da caixa Geral" (marcas, auto-estradas, descontos, preços a mostrar); por defeito usa preços oficiais de todos os postos.
+- `gas_atuais` passa a devolver o distrito; cópia embutida atualizada com distrito e tipo de posto.
+- Correção: no telemóvel, abas e seletores já não fazem a página alargar.
