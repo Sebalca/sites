@@ -28,3 +28,14 @@
 - Nova aba "📈 Análise": evolução do preço médio por marca (comparar até 10 marcas + média nacional), ranking de marcas (preço médio, variação no período, nº postos) e evolução por posto (todos os combustíveis + lista de alterações). Link "📈 Evolução" no popup de cada posto.
 - Caixa "Percursos recorrentes" minimizada por defeito.
 - Cópia de reserva embutida (Gasolina 95 de 26/10) e cache no browser se a base de dados não responder.
+
+## 0.2a — 2026-10-27
+- Coluna à esquerda, comum a todas as abas, com duas caixas:
+  - **Geral**: combustível, marcas, mostrar marca no mapa, excluir auto-estradas, aplicar descontos.
+  - **Valores de referência**: perfis com nome (veículo, tipo de combustível, consumo, depósito, litros a abastecer, valor do tempo €/h, afastamento máx. da rota, descontos/cartões/promoções por marca em €/L ou %). Gravados na conta frisk.pt (`user_site_data`, chave `perfis`); sem login ficam no browser.
+- Escolher um perfil muda o combustível da caixa Geral para o do veículo.
+- Descontos aplicados aos preços (mapa, tabelas, recomendações), com o preço original riscado; se vários se aplicarem, conta o maior.
+- Custo dos recomendados inclui o valor do tempo do desvio.
+- Tabelas "Perto" mostram o custo de abastecer os litros do perfil.
+- Telemóvel: as caixas abrem num painel lateral pelo botão ⚙️.
+- Afastamento, litros e consumo saíram da aba Percurso (agora no perfil), com um resumo do perfil ativo.

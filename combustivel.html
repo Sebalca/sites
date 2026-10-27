@@ -677,7 +677,35 @@ svg.leaflet-image-layer.leaflet-interactive path {
 @media (prefers-color-scheme:dark){:root{--bg:#14171b;--card:#1d2127;--tx:#e8ebef;--mu:#98a2ae;--bd:#2d333b;--ac:#4b9bf0;--in:#262b32}}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx)}
-.wrap{max-width:1100px;margin:auto;padding:0 16px}
+.wrap{max-width:1360px;margin:auto;padding:0 16px}
+.layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+.side{position:sticky;top:8px;max-height:calc(100vh - 16px);overflow:auto;display:flex;flex-direction:column;gap:12px;padding-bottom:8px}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:9px}
+.box h3{margin:0;font-size:.95rem;display:flex;align-items:center;gap:6px}
+.box label.f{flex-direction:column;align-items:stretch;gap:3px;font-size:.78rem}
+.box label.f>input,.box label.f>select{width:100%}
+.box .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.box .two input{width:100%}
+.box .pfrow{display:flex;gap:6px}.box .pfrow select{flex:1;min-width:0}.box .pfrow button{padding:6px 9px}
+.box .bsel>button{width:100%}
+.side .bpop{position:static;width:auto;max-width:none;box-shadow:none;margin-top:6px}
+.disc{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--bd);padding-top:9px}
+.drow{display:grid;grid-template-columns:1fr auto;gap:4px;border:1px solid var(--bd);border-radius:8px;padding:6px}
+.drow input,.drow select{padding:5px 6px;font-size:.8rem;min-width:0}
+.drow .dl{display:grid;grid-template-columns:1fr 70px 62px;gap:4px;grid-column:1/-1}
+.drow .x{padding:4px 7px;font-size:.8rem}
+.dtag{display:inline-block;background:var(--ok);color:#fff;font:700 9px/1 system-ui;padding:3px 4px;border-radius:4px;margin-left:4px;vertical-align:middle}
+#bSide{display:none}
+.sideBg{display:none}
+@media(max-width:999px){
+ .layout{grid-template-columns:1fr}
+ #bSide{display:inline-flex}
+ .side{position:fixed;top:0;left:0;bottom:0;width:min(340px,88vw);max-height:none;z-index:3000;background:var(--bg);padding:12px;transform:translateX(-105%);transition:transform .2s;box-shadow:4px 0 24px rgba(0,0,0,.25)}
+ .side.open{transform:none}
+ .sideBg.open{display:block;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:2999}
+ .sideHead{display:flex!important}
+}
+.sideHead{display:none;justify-content:space-between;align-items:center}
 header{padding-top:14px}
 h1{font-size:1.25rem;margin:0 0 4px}
 .sub{color:var(--mu);font-size:.85rem;font-weight:400}
@@ -695,6 +723,7 @@ button.pri{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:60
 button.ic{padding:8px 10px}
 button.armed{outline:2px solid var(--ac);background:rgba(11,107,203,.15)}
 label{font-size:.85rem;color:var(--mu);display:flex;align-items:center;gap:6px}
+.box>label:not(.f){color:var(--tx)}
 .lbl{font-size:.75rem;color:var(--mu);font-weight:600;text-transform:uppercase;width:58px}
 .fld{position:relative;flex:1;min-width:180px;display:flex}
 .fld input{flex:1;min-width:0}
@@ -788,9 +817,40 @@ th.sort{cursor:pointer;user-select:none}th.sort.on{color:var(--ac)}
 <h1>⛽ Postos de combustível</h1>
 <div class="sub"><span id="fuelName"></span> · <span id="cnt"></span> postos · preços de <span id="dmin"></span> a <span id="dmax"></span></div>
 </div>
-<div class="acct" id="acct"></div>
+<div style="display:flex;gap:6px;align-items:flex-start"><button id="bSide" title="Geral e valores de referência">⚙️</button><div class="acct" id="acct"></div></div>
 </header>
 
+<div class="layout">
+<aside class="side" id="side">
+<div class="sideHead"><b>⚙️ Definições</b><button id="bSideX">✕</button></div>
+<section class="box" id="boxGeral">
+<h3>🧭 Geral</h3>
+<label class="f">Combustível <select id="fuel"><option>Gasolina simples 95</option></select></label>
+<div class="bsel"><button id="bBrand" type="button">⛽ Marcas: todas ▾</button>
+<div class="bpop hid" id="brandPop"><input type="search" id="brandQ" placeholder="Procurar marca…">
+<div class="acts"><button type="button" id="bAll">Todas</button><button type="button" id="bNone">Nenhuma</button></div>
+<div class="blist" id="brandList"></div></div></div>
+<label><input type="checkbox" id="showBrand"> Mostrar marca no mapa</label>
+<label><input type="checkbox" id="noAE"> Excluir auto-estradas</label>
+<label><input type="checkbox" id="useDisc" checked> Aplicar descontos aos preços</label>
+</section>
+<section class="box" id="boxRef">
+<h3>🚗 Valores de referência</h3>
+<div class="pfrow"><select id="pfSel" title="Perfil"></select><button id="pfNew" title="Novo perfil">＋</button><button id="pfRen" title="Mudar nome">✏️</button><button id="pfDel" title="Apagar perfil">🗑</button></div>
+<label class="f">Veículo <input id="pfVeic" placeholder="ex.: Renault Clio 1.0 TCe" maxlength="60"></label>
+<label class="f">Tipo de combustível <select id="pfFuel"></select></label>
+<div class="two"><label class="f">Consumo (L/100 km)<input type="number" id="cons" value="6.5" min="1" max="40" step="0.1"></label><label class="f">Depósito (L)<input type="number" id="pfCap" value="50" min="5" max="200" step="1"></label></div>
+<div class="two"><label class="f">Abastecer (L)<input type="number" id="lit" value="40" min="1" max="200" step="1"></label><label class="f">Valor do tempo (€/h)<input type="number" id="pfTempo" value="0" min="0" max="200" step="1"></label></div>
+<label class="f">Afastamento máx. da rota<select id="corr"><option value="0.5">0,5 km</option><option value="1">1 km</option><option value="2" selected>2 km</option><option value="5">5 km</option><option value="10">10 km</option></select></label>
+<div class="disc"><b style="font-size:.85rem">🏷️ Descontos, cartões e promoções</b>
+<div id="discList"></div>
+<button id="discAdd" type="button">＋ Adicionar desconto</button>
+<span class="note">Ex.: cartão Galp −0,10 €/L; cartão de empresa 5 % em todas as marcas. Se vários se aplicarem ao mesmo posto, conta o maior.</span></div>
+<span class="note" id="pfSync"></span>
+</section>
+</aside>
+<div class="sideBg" id="sideBg"></div>
+<main class="main">
 <div class="tabs">
 <button class="tab on" data-m="near">📍 Perto de um local</button>
 <button class="tab" data-m="route">🛣️ Percurso</button>
@@ -825,11 +885,7 @@ th.sort{cursor:pointer;user-select:none}th.sort.on{color:var(--ac)}
 <button class="ic" id="bSwap" title="Trocar">⇅</button>
 <button class="ic" id="bBPick" title="Escolher no mapa">📌</button>
 </div>
-<div class="row">
-<label>Afastamento máx. <select id="corr"><option value="0.5">0,5</option><option value="1">1</option><option value="2" selected>2</option><option value="5">5</option><option value="10">10</option></select> km</label>
-<label>Abastecer <input type="number" id="lit" value="40" min="1" step="1"> L</label>
-<label>Consumo <input type="number" id="cons" value="6.5" min="1" step="0.1"> L/100</label>
-</div>
+<div class="note" id="refInfo"></div>
 <div class="row"><button class="pri" id="bRoute">Calcular percurso</button><button id="bSaveRoute">⭐ Percurso recorrente</button><span class="note">Podes arrastar os marcadores A e B no mapa.</span></div>
 <details class="saved" id="savedBox"><summary>⭐ Percursos recorrentes <span class="c" id="savedCnt"></span></summary>
 <div class="svbody">
@@ -859,15 +915,6 @@ th.sort{cursor:pointer;user-select:none}th.sort.on{color:var(--ac)}
 </details>
 </div>
 
-<div class="row" style="margin-top:8px" id="filtRow">
-<label>Combustível <select id="fuel"><option>Gasolina simples 95</option></select></label>
-<div class="bsel"><button id="bBrand" type="button">⛽ Marcas: todas ▾</button>
-<div class="bpop hid" id="brandPop"><input type="search" id="brandQ" placeholder="Procurar marca…">
-<div class="acts"><button type="button" id="bAll">Todas</button><button type="button" id="bNone">Nenhuma</button></div>
-<div class="blist" id="brandList"></div></div></div>
-<label><input type="checkbox" id="showBrand"> Mostrar marca no mapa</label>
-<label><input type="checkbox" id="noAE"> Excluir auto-estradas</label>
-</div>
 <div id="status">Escolhe um local: pesquisa, usa 📍 ou toca no mapa.</div>
 <div class="leg"><span id="lmin"></span><span class="lg"></span><span id="lmax"></span><span id="legTxt">· preço</span></div>
 <div id="map"></div>
@@ -882,8 +929,10 @@ th.sort{cursor:pointer;user-select:none}th.sort.on{color:var(--ac)}
 <div class="card hid" id="anHistCard"><h2>🧾 Alterações de preço</h2><div id="anHist"></div></div>
 </div>
 <div class="grid hid" id="gRoute">
-<div class="card"><h2 id="hBest">⭐ Recomendados no percurso</h2><p class="sum" id="rSum"></p><div id="tBest"></div><p class="note">Desvio = tempo e km a mais em relação ao percurso original (A → posto → B). ≈ = estimativa enquanto calcula ou sem ligação. Custo = abastecimento + combustível gasto no desvio. Poupança comparada com o preço mediano dos postos no percurso.</p></div>
+<div class="card"><h2 id="hBest">⭐ Recomendados no percurso</h2><p class="sum" id="rSum"></p><div id="tBest"></div><p class="note">Desvio = tempo e km a mais em relação ao percurso original (A → posto → B). ≈ = estimativa enquanto calcula ou sem ligação. Custo = abastecimento + combustível gasto no desvio + tempo do desvio (valor do tempo do perfil). Preços já com os teus descontos. Poupança comparada com o preço mediano dos postos no percurso.</p></div>
 <div class="card"><h2 id="hCheapR">💶 5 mais baratos no percurso</h2><div id="tRCheap"></div></div>
+</div>
+</main>
 </div>
 <dialog id="loginDlg"><form id="loginForm" method="dialog">
 <h2 id="loginTitle">Entrar na conta frisk.pt</h2>
@@ -901,12 +950,22 @@ const D=[["Lubripor - Lub. Comb. Portalegre","GALP",2.162,39.295848,-7.4325,"Est
 const FUEL0='Gasolina simples 95';
 let S=[],gmin=0,gmax=1,brands=[],ready=false,curFuel=FUEL0;
 const rowsFromD=()=>D.map(r=>[r[3].toFixed(5)+','+r[4].toFixed(5),r[0],r[1],r[2],r[3],r[4],r[5],r[6],r[7],r[8],r[9]]);
-function setData(rows){
- S=rows.map((r,i)=>({i,id:r[0],nome:r[1]||'',marca:r[2]||'Genérico',p:+r[3],lat:+r[4],lng:+r[5],morada:r[6]||'',loc:r[7]||'',mun:r[8]||'',tipo:(r[9]||'O')[0],data:r[10]||''})).filter(s=>s.p>0&&isFinite(s.lat)&&isFinite(s.lng));
- S.forEach((s,i)=>s.i=i);
+/* ---------- PERFIS (valores de referência) ---------- */
+const PF_DEF=()=>({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),nome:'O meu carro',veiculo:'',combustivel:FUEL0,consumo:6.5,capacidade:50,litros:40,tempo:0,afast:2,descontos:[]});
+let PF=(()=>{try{const o=JSON.parse(localStorage.getItem('gas.perfis'));if(o&&Array.isArray(o.lista)&&o.lista.length)return o}catch(e){}const p=PF_DEF();return{lista:[p],ativo:p.id}})();
+let prof=PF.lista.find(p=>p.id===PF.ativo)||PF.lista[0];
+function discFor(s){if(!document.getElementById('useDisc')||!document.getElementById('useDisc').checked)return null;let best=null;
+ for(const d of prof.descontos||[]){const v=+d.valor||0;if(v<=0)continue;if(d.marca!=='*'&&d.marca!==s.marca)continue;const e=d.tipo==='%'?s.p0*v/100:v;if(!best||e>best.v)best={v:e,n:d.nome||(d.tipo==='%'?v+' %':'−'+v.toFixed(2).replace('.',',')+' €/L')}}
+ return best}
+function applyDisc(){S.forEach(s=>{const d=discFor(s);s.disc=d;s.p=d?Math.max(.001,+(s.p0-d.v).toFixed(3)):s.p0});
  gmin=S.length?Math.min(...S.map(s=>s.p)):0;gmax=S.length?Math.max(...S.map(s=>s.p)):1;if(gmax===gmin)gmax=gmin+.001;
+ $('dmin').textContent=fmtP(gmin);$('dmax').textContent=fmtP(gmax)}
+function setData(rows){
+ S=rows.map((r,i)=>({i,id:r[0],nome:r[1]||'',marca:r[2]||'Genérico',p0:+r[3],lat:+r[4],lng:+r[5],morada:r[6]||'',loc:r[7]||'',mun:r[8]||'',tipo:(r[9]||'O')[0],data:r[10]||''})).filter(s=>s.p0>0&&isFinite(s.lat)&&isFinite(s.lng));
+ S.forEach((s,i)=>s.i=i);
+ applyDisc();
  brands=Object.entries(S.reduce((o,s)=>(o[s.marca]=(o[s.marca]||0)+1,o),{})).sort((a,b)=>b[1]-a[1]);
- $('cnt').textContent=S.length.toLocaleString('pt-PT');$('dmin').textContent=fmtP(gmin);$('dmax').textContent=fmtP(gmax);$('fuelName').textContent=curFuel;
+ $('cnt').textContent=S.length.toLocaleString('pt-PT');$('fuelName').textContent=curFuel;if(ready)renderDisc();
  if(ready){if(typeof route!=='undefined'&&route)route.det={};if(typeof saved!=='undefined')saved.forEach(r=>r.det={});brandLabel();refresh(false)}}
 const $=id=>document.getElementById(id);
 const fmtP=p=>p.toFixed(3).replace('.',',')+' €';
@@ -946,7 +1005,7 @@ function setStatus(t,err){const e=$('status');e.textContent=t;e.className=err?'e
 const map=L.map('map',{preferCanvas:true}).setView([39.6,-8.1],7);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 const gAll=L.layerGroup().addTo(map),gLab=L.layerGroup().addTo(map),gRoute=L.layerGroup().addTo(map);
-function popup(s){return`<b>${esc(s.nome)}</b><br>${bTag(s.marca)} ${esc(s.marca)}<br>${esc(s.morada)}, ${esc(s.loc)}<br><b style="font-size:1.1em">${fmtP(s.p)}</b>${s.info?' · '+s.info:''}<br><small>Atualizado ${s.data}${s.tipo==='A'?' · Auto-estrada':''}</small><br><a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}">Direções ↗</a> · <a href="#" data-an="${s.i}">📈 Evolução</a>`}
+function popup(s){return`<b>${esc(s.nome)}</b><br>${bTag(s.marca)} ${esc(s.marca)}<br>${esc(s.morada)}, ${esc(s.loc)}<br><b style="font-size:1.1em">${fmtP(s.p)}</b>${s.disc?` <s style="opacity:.6">${fmtP(s.p0)}</s><span class="dtag">${esc(s.disc.n)}</span>`:''}${s.info?' · '+s.info:''}<br><small>Atualizado ${s.data}${s.tipo==='A'?' · Auto-estrada':''}</small><br><a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}">Direções ↗</a> · <a href="#" data-an="${s.i}">📈 Evolução</a>`}
 function drawAll(){gAll.clearLayers();S.forEach(s=>{if(!ok(s))return;L.circleMarker([s.lat,s.lng],{radius:4,weight:1,color:'#fff',fillColor:col((s.p-gmin)/(gmax-gmin)),fillOpacity:.85}).bindPopup(()=>popup(s)).addTo(gAll)})}
 function priceLabels(list){const lo=list.length?Math.min(...list.map(s=>s.p)):gmin,hi=list.length?Math.max(...list.map(s=>s.p)):gmax;$('lmin').textContent=fmtP(lo);$('lmax').textContent=fmtP(hi);
  list.forEach(s=>{const c=col(hi>lo?(s.p-lo)/(hi-lo):0);L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',html:`<span class="price-ic" style="--c:${c}">${$('showBrand').checked?bTag(s.marca):''}${s.p.toFixed(3).replace('.',',')}</span>`,iconSize:[0,0]}),zIndexOffset:Math.round((hi-s.p)*1000)}).bindPopup(()=>popup(s)).addTo(gLab)})}
@@ -961,7 +1020,6 @@ function setMode(m){mode=m;document.querySelectorAll('.tab').forEach(t=>t.classL
  $('pNear').classList.toggle('hid',m!=='near');$('pRoute').classList.toggle('hid',m!=='route');$('pAn').classList.toggle('hid',m!=='an');
  $('gNear').classList.toggle('hid',m!=='near');$('gRoute').classList.toggle('hid',m!=='route');$('gAn').classList.toggle('hid',m!=='an');
  ['map','status'].forEach(id=>$(id).classList.toggle('hid',m==='an'));document.querySelector('.leg').classList.toggle('hid',m==='an');
- ['bBrand','showBrand','noAE'].forEach(id=>{const e=$(id).closest('.bsel')||$(id).closest('label');e.classList.toggle('hid',m==='an')});
  if(m==='an'){setPick(null);updAn();return}
  setPick(null);refresh(true)}
 function refresh(fit){if(mode==='an'){updAn();return}
@@ -1033,7 +1091,7 @@ $('rad').onchange=()=>refresh(true);
 function setPoint(w,ll){if(w==='A')A=ll;else B=ll;route=null;multi=null;if(A&&B)calcRoute();else{setStatus(w==='A'?'Origem definida. Agora o destino.':'Destino definido. Agora a origem.');refresh(false);map.setView(ll,Math.max(map.getZoom(),11))}}
 $('bSwap').onclick=()=>{[A,B]=[B,A];const t=$('qA').value;$('qA').value=$('qB').value;$('qB').value=t;route=null;if(A&&B)calcRoute();else refresh(false)};
 $('bRoute').onclick=async()=>{if(!A&&$('qA').value.trim())await goA();if(!B&&$('qB').value.trim())await goB();if(A&&B)calcRoute();else setStatus('Define a origem e o destino.',true)};
-['corr','lit','cons'].forEach(id=>$(id).addEventListener('change',()=>{if(route)refresh(false)}));
+
 
 async function calcRoute(){multi=null;setStatus('A calcular percurso…');
  try{const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${A[1]},${A[0]};${B[1]},${B[0]}?overview=full&geometries=geojson`);
@@ -1071,7 +1129,7 @@ function updRoute(fit){
  const {list}=corridor(route.pts,maxKm);
  const med=median(list);
  const calc=s=>{const r=route.det[s.i];if(r){s.det=Math.max(0,r.km);s.dMin=Math.max(0,r.min);s.real=true}else{s.det=2*s.off*1.3;s.dMin=s.det/50*60;s.real=false}
-  s.cost=s.p*Lt+s.det*cons/100*s.p;s.save=med*Lt-s.cost;s.info=`a ${fmtD(s.off)} da rota · km ${Math.round(s.along)} · desvio ${s.real?'':'≈'}+${fmtMin(s.dMin)}`};
+  s.cost=s.p*Lt+s.det*cons/100*s.p+s.dMin/60*vTempo();s.save=med*Lt-s.cost;s.info=`a ${fmtD(s.off)} da rota · km ${Math.round(s.along)} · desvio ${s.real?'':'≈'}+${fmtMin(s.dMin)}`};
  list.forEach(calc);
  const best=[...list].sort((a,b)=>a.cost-b.cost||a.along-b.along).slice(0,5);
  const cheap=[...list].sort((a,b)=>a.p-b.p||a.off-b.off).slice(0,5);
@@ -1121,7 +1179,7 @@ function updMulti(fit){
  const uniq=a=>{const m=new Map();a.forEach(c=>{const o=m.get(c.i);if(!o||c.cost<o.cost||(c.cost===o.cost&&c.off<o.off))m.set(c.i,c)});return[...m.values()]};
  const med=median(uniq(items.map(c=>(c.cost=c.p,c))));
  const calc=c=>{const d=c.r.det[c.i];if(d){c.det=Math.max(0,d.km);c.dMin=Math.max(0,d.min);c.real=true}else{c.det=2*c.off*1.3;c.dMin=c.det/50*60;c.real=false}
-  c.cost=c.p*Lt+c.det*cons/100*c.p;c.save=med*Lt-c.cost;c.info=`${esc(c.r.nome)} · a ${fmtD(c.off)} da rota · desvio ${c.real?'':'≈'}+${fmtMin(c.dMin)}`};
+  c.cost=c.p*Lt+c.det*cons/100*c.p+c.dMin/60*vTempo();c.save=med*Lt-c.cost;c.info=`${esc(c.r.nome)} · a ${fmtD(c.off)} da rota · desvio ${c.real?'':'≈'}+${fmtMin(c.dMin)}`};
  items.forEach(calc);
  const rank=()=>uniq(items).sort((a,b)=>a.cost-b.cost||a.off-b.off);
  const u=rank(),best=u.slice(0,5),ids=new Set(u.slice(0,12).map(c=>c.i));
@@ -1174,7 +1232,7 @@ async function api(path,opts={},retry=true){if(session&&session.expires_at-60<Da
  const r=await fetch(SB_URL+path,Object.assign({},opts,{headers}));
  if(r.status===401&&session&&retry&&(await refreshSession()))return api(path,opts,false);return r}
 const uid=()=>{try{return JSON.parse(atob(session.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub}catch(e){return null}};
-async function loadSaved(){savedLoaded=false;renderSaved();if(!session)return;
+async function loadSaved(){savedLoaded=false;renderSaved();loadPF();if(!session)return;
  try{const r=await api(`/rest/v1/user_site_data?site_id=eq.${SITE}&chave=eq.percursos&select=valor`);
   if(r.status===401){setSession(null);renderAcct();renderSaved();return}
   const j=await r.json();saved=(j[0]&&Array.isArray(j[0].valor))?j[0].valor:[]}catch(e){setStatus('Não foi possível carregar os percursos recorrentes.',true)}
@@ -1211,12 +1269,12 @@ async function rpc(fn,args){const r=await api('/rest/v1/rpc/'+fn,{method:'POST',
 const cacheGet=k=>{try{return JSON.parse(localStorage.getItem('gas.cache.'+k))}catch(e){return null}};
 const cacheSet=(k,v)=>{try{localStorage.setItem('gas.cache.'+k,JSON.stringify(v))}catch(e){}};
 let fuels=[];
-function renderFuels(){const sel=$('fuel');const list=fuels.length?fuels:[{c:FUEL0,n:S.length}];
- if(!list.some(f=>f.c===curFuel))list.unshift({c:curFuel,n:0});
- sel.innerHTML=list.map(f=>`<option value="${esc(f.c)}"${f.c===curFuel?' selected':''}>${esc(f.c)}${f.n?` (${f.n})`:''}</option>`).join('')}
+function renderFuels(){const base=fuels.length?fuels:[{c:FUEL0,n:S.length}];
+ const opts=(cur)=>{const list=[...base];if(cur&&!list.some(f=>f.c===cur))list.unshift({c:cur,n:0});return list.map(f=>`<option value="${esc(f.c)}"${f.c===cur?' selected':''}>${esc(f.c)}${f.n?` (${f.n})`:''}</option>`).join('')};
+ $('fuel').innerHTML=opts(curFuel);$('pfFuel').innerHTML=opts(prof.combustivel)}
 async function loadFuels(){try{fuels=await rpc('gas_combustiveis');cacheSet('fuels',fuels)}catch(e){fuels=cacheGet('fuels')||[]}
  if(fuels.length&&!fuels.some(f=>f.c===curFuel))curFuel=fuels.some(f=>f.c===FUEL0)?FUEL0:fuels[0].c;renderFuels()}
-async function loadFuel(c){curFuel=c;saveSt();
+async function loadFuel(c){curFuel=c;saveSt();if($('fuel').value!==c)renderFuels();
  const cached=cacheGet('f.'+c);if(cached&&cached.length)setData(cached);
  try{const rows=await rpc('gas_atuais',{p_comb:c});
   if(rows.length){cacheSet('f.'+c,rows);setData(rows)}
@@ -1343,18 +1401,64 @@ $('impGo').onclick=async()=>{const f=$('impFile').files[0];if(!f)return;const lo
   serieCache={};await loadFuels();await loadFuel(curFuel)
  }catch(e){log('❌ '+e.message)}finally{$('impGo').disabled=false}};
 
+/* ---------- VALORES DE REFERÊNCIA (UI) ---------- */
+const refL=()=>Math.max(1,+prof.litros||40);
+const vTempo=()=>Math.max(0,+prof.tempo||0);
+function renderProf(){
+ $('pfSel').innerHTML=PF.lista.map(p=>`<option value="${esc(p.id)}"${p===prof?' selected':''}>${esc(p.nome)}${p.veiculo?' — '+esc(p.veiculo):''}</option>`).join('');
+ $('pfVeic').value=prof.veiculo||'';$('cons').value=prof.consumo;$('pfCap').value=prof.capacidade;$('lit').value=prof.litros;$('pfTempo').value=prof.tempo||0;
+ $('corr').value=String(prof.afast||2);if(!$('corr').value)$('corr').value='2';$('pfDel').disabled=PF.lista.length<2;
+ renderFuels();renderDisc();refInfo()}
+function refInfo(){$('refInfo').textContent=`🚗 ${prof.nome}${prof.veiculo?' ('+prof.veiculo+')':''} · ${String(prof.consumo).replace('.',',')} L/100 · abastecer ${prof.litros} L · afastamento ${String(prof.afast).replace('.',',')} km${vTempo()?` · tempo ${vTempo()} €/h`:''}${(prof.descontos||[]).length?` · ${prof.descontos.length} desconto(s)`:''} — muda em “Valores de referência”.`}
+function renderDisc(){const bl=[['*','Todas as marcas'],...brands.map(b=>[b[0],b[0]])];
+ (prof.descontos||[]).forEach(d=>{if(d.marca!=='*'&&!bl.some(x=>x[0]===d.marca))bl.push([d.marca,d.marca])});
+ $('discList').innerHTML=(prof.descontos||[]).map((d,k)=>`<div class="drow" data-k="${k}"><input data-f="nome" value="${esc(d.nome||'')}" placeholder="Nome (ex.: Cartão empresa)" maxlength="40"><button class="x" data-del="${k}" title="Remover">✕</button>
+  <div class="dl"><select data-f="marca">${bl.map(([v,l])=>`<option value="${esc(v)}"${v===d.marca?' selected':''}>${esc(l)}</option>`).join('')}</select><input data-f="valor" type="number" min="0" step="0.01" value="${d.valor}"><select data-f="tipo"><option value="L"${d.tipo!=='%'?' selected':''}>€/L</option><option value="%"${d.tipo==='%'?' selected':''}>%</option></select></div></div>`).join('')||'<span class="note">Sem descontos.</span>'}
+let pfT=null;
+function pfChanged(redraw){refInfo();savePF();if(redraw){applyDisc();clearTimeout(pfT);pfT=setTimeout(()=>refresh(false),200)}}
+function savePF(){PF.ativo=prof.id;try{localStorage.setItem('gas.perfis',JSON.stringify(PF))}catch(e){}
+ clearTimeout(savePF.t);savePF.t=setTimeout(async()=>{if(!session)return;$('pfSync').textContent='A gravar…';
+  try{const r=await api('/rest/v1/user_site_data?on_conflict=user_id,site_id,chave',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid(),site_id:SITE,chave:'perfis',valor:PF,updated_at:new Date().toISOString()})});
+   if(!r.ok)throw new Error(r.status);$('pfSync').textContent='✓ Gravado na tua conta'}catch(e){$('pfSync').textContent='⚠ Não foi possível gravar na conta ('+e.message+')'}},700)}
+async function loadPF(){if(!session){$('pfSync').textContent='Entra na conta para guardar os perfis em todos os dispositivos.';return}
+ try{const r=await api(`/rest/v1/user_site_data?site_id=eq.${SITE}&chave=eq.perfis&select=valor`);if(!r.ok)throw new Error(r.status);const j=await r.json();
+  const v=j[0]&&j[0].valor;
+  if(v&&Array.isArray(v.lista)&&v.lista.length){PF=v;const old=prof.combustivel;prof=PF.lista.find(p=>p.id===PF.ativo)||PF.lista[0];try{localStorage.setItem('gas.perfis',JSON.stringify(PF))}catch(e){}
+   renderProf();applyDisc();if(prof.combustivel&&prof.combustivel!==curFuel)loadFuel(prof.combustivel);else refresh(false);$('pfSync').textContent='✓ Sincronizado com a tua conta'}
+  else savePF()}catch(e){$('pfSync').textContent='⚠ Não foi possível carregar os perfis da conta'}}
+function setProf(id){const p=PF.lista.find(x=>x.id===id);if(!p)return;prof=p;renderProf();savePF();applyDisc();
+ if(prof.combustivel&&prof.combustivel!==curFuel)loadFuel(prof.combustivel);else refresh(false)}
+$('pfSel').onchange=()=>setProf($('pfSel').value);
+$('pfNew').onclick=()=>{const n=prompt('Nome do novo perfil (ex.: Carro da empresa)','');if(!n||!n.trim())return;const p=Object.assign(JSON.parse(JSON.stringify(prof)),{id:Date.now().toString(36),nome:n.trim().slice(0,40),veiculo:''});PF.lista.push(p);setProf(p.id)};
+$('pfRen').onclick=()=>{const n=prompt('Nome do perfil',prof.nome);if(!n||!n.trim())return;prof.nome=n.trim().slice(0,40);renderProf();pfChanged(false)};
+$('pfDel').onclick=()=>{if(PF.lista.length<2)return;if(!confirm('Apagar o perfil “'+prof.nome+'”?'))return;PF.lista=PF.lista.filter(p=>p!==prof);setProf(PF.lista[0].id)};
+$('pfVeic').oninput=()=>{prof.veiculo=$('pfVeic').value.trim();pfChanged(false);clearTimeout(renderProf.t);renderProf.t=setTimeout(()=>{const v=$('pfSel').selectedIndex;$('pfSel').options[v].textContent=prof.nome+(prof.veiculo?' — '+prof.veiculo:'')},300)};
+$('pfFuel').onchange=()=>{prof.combustivel=$('pfFuel').value;pfChanged(false);loadFuel(prof.combustivel)};
+const numF=(id,key,min,max)=>$(id).addEventListener('change',()=>{let v=parseFloat($(id).value);if(!isFinite(v))v=PF_DEF()[key];v=Math.min(max,Math.max(min,v));$(id).value=v;prof[key]=v;
+ if(key==='litros'&&prof.capacidade&&v>prof.capacidade)setStatus('Atenção: abastecer ('+v+' L) é mais do que o depósito ('+prof.capacidade+' L).',true);pfChanged(true)});
+numF('cons','consumo',1,40);numF('pfCap','capacidade',5,200);numF('lit','litros',1,200);numF('pfTempo','tempo',0,200);
+$('corr').onchange=()=>{prof.afast=+$('corr').value;pfChanged(true)};
+$('discAdd').onclick=()=>{(prof.descontos=prof.descontos||[]).push({nome:'',marca:'*',valor:0.05,tipo:'L'});renderDisc();pfChanged(true)};
+$('discList').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(!b)return;prof.descontos.splice(+b.dataset.del,1);renderDisc();pfChanged(true)});
+$('discList').addEventListener('change',e=>{const f=e.target.dataset.f,row=e.target.closest('.drow');if(!f||!row)return;const d=prof.descontos[+row.dataset.k];
+ d[f]=f==='valor'?Math.max(0,parseFloat(e.target.value)||0):e.target.value.trim();pfChanged(f!=='nome')});
+$('useDisc').onchange=()=>{applyDisc();refresh(false)};
+// painel lateral (telemóvel)
+const sideOpen=o=>{$('side').classList.toggle('open',o);$('sideBg').classList.toggle('open',o)};
+$('bSide').onclick=()=>sideOpen(true);$('bSideX').onclick=()=>sideOpen(false);$('sideBg').onclick=()=>sideOpen(false);
+
 /* ---------- TABELAS ---------- */
 function tbl(a,kind){
  const head={simple:'<th class="n">Preço</th>',dist:'<th class="n">Preço</th><th class="n">Dist.</th>',route:'<th class="n">Preço</th><th class="n">Desvio</th><th class="n">Custo</th>',route2:'<th class="n">Preço</th><th class="n">Afast.</th>'}[kind];
  return`<table><thead><tr><th>Posto</th>${head}</tr></thead><tbody>${a.map((s,k)=>{
   const nm=`<td><div class="nm">${kind==='route'?`<span class="rk"${s.r?` style="background:${s.r.color}"`:''}>${k+1}</span>`:''}${bTag(s.marca)}${esc(s.nome)}</div><div class="ad">${esc(s.marca)} · ${esc(s.loc||s.mun)}${s.r?` · <b style="color:${s.r.color}">${esc(s.r.nome)}</b>`:''}${kind.startsWith('route')?` · km ${Math.round(s.along)}`:''}</div></td>`;
-  const p=`<td class="n pr">${fmtP(s.p)}</td>`;
+  const p=`<td class="n pr">${fmtP(s.p)}${s.disc?`<div class="ad" title="${esc(s.disc.n)}"><s>${fmtP(s.p0)}</s></div>`:''}${kind==='dist'||kind==='simple'?`<div class="ad">${refL()} L = ${fmtE(s.p*refL())}</div>`:''}</td>`;
   const x=kind==='dist'?`<td class="n">${fmtD(s.d)}</td>`:kind==='route'?`<td class="n"><b>${s.real?'':'≈'}+${fmtMin(s.dMin)}</b><div class="ad">+${fmtD(s.det)}</div></td><td class="n">${fmtE(s.cost)}<div class="sv${s.save<0?' neg':''}">${s.save>=0?'poupa ':'+'}${fmtE(Math.abs(s.save))}</div></td>`:kind==='route2'?`<td class="n">${fmtD(s.off)}</td>`:'';
   return`<tr data-i="${s.i}">${nm}${p}${x}</tr>`}).join('')}</tbody></table>`}
 document.querySelectorAll('.grid').forEach(g=>g.addEventListener('click',e=>{const tr=e.target.closest('tr[data-i]');if(!tr)return;const s=S[+tr.dataset.i];map.setView([s.lat,s.lng],15);L.popup().setLatLng([s.lat,s.lng]).setContent(popup(s)).openOn(map);$('map').scrollIntoView({behavior:'smooth',block:'center'})}));
 $('noAE').onchange=()=>refresh(false);
 
-curFuel=st.fuel||FUEL0;ready=true;brandLabel();refresh(false);
+curFuel=prof.combustivel||st.fuel||FUEL0;ready=true;renderProf();applyDisc();brandLabel();refresh(false);
 loadFuels().then(()=>loadFuel(curFuel));
 </script>
 </body>
