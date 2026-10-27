@@ -727,6 +727,24 @@ tbody tr{cursor:pointer}tbody tr:hover{background:rgba(127,127,127,.08)}
 .leg{display:flex;gap:10px;align-items:center;font-size:.78rem;color:var(--mu)}
 .lg{height:8px;width:120px;border-radius:4px;background:linear-gradient(90deg,#1a8f4c,#e0a800,#c4372b)}
 .note{font-size:.75rem;color:var(--mu)}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.acct{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--mu);flex-shrink:0;padding-top:2px}
+.acct .em{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct button{padding:6px 10px;font-size:.8rem}
+.saved{border-top:1px solid var(--bd);padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.saved h3{font-size:.9rem;margin:0}
+.rlist{display:flex;flex-direction:column;gap:4px}
+.ritem{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--bd);border-radius:8px}
+.ritem .sw{width:10px;height:10px;border-radius:50%;flex-shrink:0;background:var(--rc)}
+.ritem .t{flex:1;min-width:0}.ritem .t b{display:block;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ritem .t span{font-size:.75rem;color:var(--mu)}
+.ritem button{padding:5px 8px;font-size:.85rem}
+dialog{border:1px solid var(--bd);border-radius:14px;background:var(--card);color:var(--tx);padding:18px;width:min(360px,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h2{margin:0 0 6px;font-size:1.1rem}
+dialog form{display:flex;flex-direction:column;gap:10px}
+dialog .err{color:var(--bad);font-size:.82rem;min-height:1em;margin:0}
+dialog .acts{display:flex;gap:8px;flex-wrap:wrap}
 .bsel{position:relative}
 .bsel>button{min-width:170px;text-align:left}
 .bpop{position:absolute;top:100%;left:0;z-index:2100;margin-top:4px;width:280px;max-width:calc(100vw - 32px);background:var(--card);border:1px solid var(--bd);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:8px}
@@ -745,8 +763,11 @@ tbody tr{cursor:pointer}tbody tr:hover{background:rgba(127,127,127,.08)}
 <body>
 <div class="wrap">
 <header>
+<div>
 <h1>⛽ Postos de Gasolina simples 95</h1>
 <div class="sub"><span id="cnt"></span> postos · preços de <span id="dmin"></span> a <span id="dmax"></span></div>
+</div>
+<div class="acct" id="acct"></div>
 </header>
 
 <div class="tabs">
@@ -787,7 +808,12 @@ tbody tr{cursor:pointer}tbody tr:hover{background:rgba(127,127,127,.08)}
 <label>Abastecer <input type="number" id="lit" value="40" min="1" step="1"> L</label>
 <label>Consumo <input type="number" id="cons" value="6.5" min="1" step="0.1"> L/100</label>
 </div>
-<div class="row"><button class="pri" id="bRoute">Calcular percurso</button><span class="note">Podes arrastar os marcadores A e B no mapa.</span></div>
+<div class="row"><button class="pri" id="bRoute">Calcular percurso</button><button id="bSaveRoute">⭐ Percurso recorrente</button><span class="note">Podes arrastar os marcadores A e B no mapa.</span></div>
+<div class="saved">
+<h3>⭐ Percursos recorrentes</h3>
+<div class="rlist" id="rlist"></div>
+<div class="row" id="savedActs"><button class="pri" id="bRecommend">Recomendar nos selecionados</button><button id="bMultiOff" class="hid">Voltar ao percurso</button></div>
+</div>
 </div>
 
 <div class="row" style="margin-top:8px">
@@ -807,9 +833,17 @@ tbody tr{cursor:pointer}tbody tr:hover{background:rgba(127,127,127,.08)}
 <div class="card"><h2>📏 5 mais próximos</h2><div id="tNear"></div></div>
 </div>
 <div class="grid hid" id="gRoute">
-<div class="card"><h2>⭐ Recomendados no percurso</h2><p class="sum" id="rSum"></p><div id="tBest"></div><p class="note">Desvio = tempo e km a mais em relação ao percurso original (A → posto → B). ≈ = estimativa enquanto calcula ou sem ligação. Custo = abastecimento + combustível gasto no desvio. Poupança comparada com o preço mediano dos postos no percurso.</p></div>
-<div class="card"><h2>💶 5 mais baratos no percurso</h2><div id="tRCheap"></div></div>
+<div class="card"><h2 id="hBest">⭐ Recomendados no percurso</h2><p class="sum" id="rSum"></p><div id="tBest"></div><p class="note">Desvio = tempo e km a mais em relação ao percurso original (A → posto → B). ≈ = estimativa enquanto calcula ou sem ligação. Custo = abastecimento + combustível gasto no desvio. Poupança comparada com o preço mediano dos postos no percurso.</p></div>
+<div class="card"><h2 id="hCheapR">💶 5 mais baratos no percurso</h2><div id="tRCheap"></div></div>
 </div>
+<dialog id="loginDlg"><form id="loginForm" method="dialog">
+<h2 id="loginTitle">Entrar na conta frisk.pt</h2>
+<span class="note">A mesma conta dos outros sites frisk.pt.</span>
+<input id="lEmail" type="email" autocomplete="email" placeholder="Email" required>
+<input id="lPass" type="password" autocomplete="current-password" placeholder="Palavra-passe" required minlength="6">
+<p class="err" id="loginErr"></p>
+<div class="acts"><button class="pri" id="bDoLogin" type="submit">Entrar</button><button type="button" id="bDoSignup">Criar conta</button><button type="button" id="bLoginCancel">Cancelar</button></div>
+</form></dialog>
 <p class="note" style="margin-bottom:24px">Mapa © OpenStreetMap · pesquisa Nominatim · rotas OSRM. A pesquisa e as rotas precisam de internet.</p>
 </div>
 
@@ -892,7 +926,8 @@ map.on('click',e=>{const ll=[e.latlng.lat,e.latlng.lng];
 function parseLL(q){const m=q.trim().match(/^(-?\d+(?:\.\d+)?)\s*[,; ]\s*(-?\d+(?:\.\d+)?)$/);return m?[+m[1],+m[2]]:null}
 async function geocode(q){const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=pt&accept-language=pt&q='+encodeURIComponent(q));if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
 async function reverse(ll,inp){$(inp).value=ll[0].toFixed(5)+', '+ll[1].toFixed(5);try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=17&accept-language=pt&lat=${ll[0]}&lon=${ll[1]}`);const j=await r.json();if(j&&j.display_name)$(inp).value=j.display_name.split(',').slice(0,3).join(',')}catch(e){}}
-function bindSearch(inp,box,btn,onPick){
+function bindSearch(inp,box,btn,onPick0){
+ const onPick=ll=>{$(inp).dataset.done=$(inp).value.trim();onPick0(ll)};
  const go=async()=>{const q=$(inp).value.trim();if(!q)return;const ll=parseLL(q);if(ll){$(box).classList.add('hid');onPick(ll);return}
   setStatus('A procurar “'+q+'”…');
   try{const res=await geocode(q);if(!res.length){setStatus('Sem resultados para “'+q+'”.',true);return}
@@ -907,8 +942,8 @@ function bindSearch(inp,box,btn,onPick){
 bindSearch('qNear','sNear','bNearSearch',ll=>setMe(ll,'Local encontrado.'));
 const goA=bindSearch('qA','sA',null,ll=>setPoint('A',ll));
 const goB=bindSearch('qB','sB',null,ll=>setPoint('B',ll));
-$('qA').addEventListener('change',()=>{if($('qA').value.trim())goA()});
-$('qB').addEventListener('change',()=>{if($('qB').value.trim())goB()});
+$('qA').addEventListener('change',()=>{const v=$('qA').value.trim();if(v&&v!==$('qA').dataset.done)goA()});
+$('qB').addEventListener('change',()=>{const v=$('qB').value.trim();if(v&&v!==$('qB').dataset.done)goB()});
 
 /* ---------- GPS ---------- */
 function gps(cb){if(!navigator.geolocation){setStatus('Geolocalização não suportada — usa a pesquisa ou 📌.',true);return}
@@ -935,16 +970,16 @@ function updNear(fit){
 $('rad').onchange=()=>refresh(true);
 
 /* ---------- MODO PERCURSO ---------- */
-function setPoint(w,ll){if(w==='A')A=ll;else B=ll;route=null;if(A&&B)calcRoute();else{setStatus(w==='A'?'Origem definida. Agora o destino.':'Destino definido. Agora a origem.');refresh(false);map.setView(ll,Math.max(map.getZoom(),11))}}
+function setPoint(w,ll){if(w==='A')A=ll;else B=ll;route=null;multi=null;if(A&&B)calcRoute();else{setStatus(w==='A'?'Origem definida. Agora o destino.':'Destino definido. Agora a origem.');refresh(false);map.setView(ll,Math.max(map.getZoom(),11))}}
 $('bSwap').onclick=()=>{[A,B]=[B,A];const t=$('qA').value;$('qA').value=$('qB').value;$('qB').value=t;route=null;if(A&&B)calcRoute();else refresh(false)};
 $('bRoute').onclick=async()=>{if(!A&&$('qA').value.trim())await goA();if(!B&&$('qB').value.trim())await goB();if(A&&B)calcRoute();else setStatus('Define a origem e o destino.',true)};
 ['corr','lit','cons'].forEach(id=>$(id).addEventListener('change',()=>{if(route)refresh(false)}));
 
-async function calcRoute(){setStatus('A calcular percurso…');
+async function calcRoute(){multi=null;setStatus('A calcular percurso…');
  try{const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${A[1]},${A[0]};${B[1]},${B[0]}?overview=full&geometries=geojson`);
   const j=await r.json();if(j.code!=='Ok'||!j.routes.length)throw new Error(j.message||j.code);
-  const rt=j.routes[0];route={pts:rt.geometry.coordinates.map(c=>[c[1],c[0]]),km:rt.distance/1000,min:rt.duration/60,approx:false,det:{}}
- }catch(e){route={pts:[A,B],km:hav(A[0],A[1],B[0],B[1]),min:null,approx:true,det:{}}}
+  const rt=j.routes[0];route={pts:rt.geometry.coordinates.map(c=>[c[1],c[0]]),km:rt.distance/1000,min:rt.duration/60,approx:false,det:{},A:A.slice(),B:B.slice()}
+ }catch(e){route={pts:[A,B],km:hav(A[0],A[1],B[0],B[1]),min:null,approx:true,det:{},A:A.slice(),B:B.slice()}}
  refresh(true)}
 
 // distância de cada posto à rota + km ao longo da rota (projeção local em km)
@@ -965,6 +1000,9 @@ function corridor(pts,maxKm){
 
 function updRoute(fit){
  $('legTxt').textContent='· preço no percurso';
+ $('bMultiOff').classList.toggle('hid',!multi);
+ $('hBest').textContent=multi?'⭐ Recomendados nos percursos recorrentes':'⭐ Recomendados no percurso';$('hCheapR').textContent=multi?'💶 5 mais baratos nos percursos recorrentes':'💶 5 mais baratos no percurso';
+ if(multi)return updMulti(fit);
  if(A){aM=L.marker(A,{icon:abIcon('A','#1a8f4c'),draggable:true,zIndexOffset:10000}).addTo(map);aM.on('dragend',e=>{const p=e.target.getLatLng();A=[p.lat,p.lng];reverse(A,'qA');calcRoute()})}
  if(B){bM=L.marker(B,{icon:abIcon('B','#c4372b'),draggable:true,zIndexOffset:10000}).addTo(map);bM.on('dragend',e=>{const p=e.target.getLatLng();B=[p.lat,p.lng];reverse(B,'qB');calcRoute()})}
  if(!route){S.forEach(s=>s.info='');$('rSum').textContent='';$('tBest').innerHTML='<div class="empty">Define a origem e o destino e carrega em “Calcular percurso”.</div>';$('tRCheap').innerHTML='';$('lmin').textContent=fmtP(gmin);$('lmax').textContent=fmtP(gmax);return}
@@ -984,7 +1022,7 @@ function updRoute(fit){
  $('rSum').textContent=`${fmtD(route.km)}${dur} · ${list.length} postos até ${String(maxKm).replace('.',',')} km da rota · mediana ${list.length?fmtP(med):'—'}`;
  setStatus(route.approx?'Não foi possível obter a rota por estrada (sem internet?) — a usar linha reta aproximada.':'Percurso calculado. Arrasta A ou B para ajustar.',route.approx);
  if(!best.length)$('tBest').innerHTML='<div class="empty">Nenhum posto perto da rota. Aumenta o afastamento máximo.</div>';
- if(best.length&&!route.approx)refineDetours(list,calc);
+ if(best.length&&!route.approx){const rt=route;refineDetours(list,calc,{live:()=>rt===route&&!multi,rt:()=>rt,rank:()=>[...list].sort((a,b)=>a.cost-b.cost||a.along-b.along),draw:r=>drawBest(r.slice(0,5))})}
  $('tRCheap').innerHTML=cheap.length?tbl(cheap,'route2'):'<div class="empty">—</div>';
  if(fit)map.fitBounds(line.getBounds(),{padding:[20,20]})}
 
@@ -995,24 +1033,121 @@ function drawBest(best){gStar.clearLayers();
  $('tBest').innerHTML=tbl(best,'route')}
 let detTok=0;
 // Desvio real: rota A → posto → B comparada com A → B (OSRM). Avalia os 10 melhores candidatos e reordena.
-async function refineDetours(list,calc){const tok=++detTok,rt=route;
- let cands=[...list].sort((a,b)=>a.cost-b.cost).slice(0,10).filter(s=>!rt.det[s.i]);
- const done=()=>{if(tok!==detTok||rt!==route)return false;list.forEach(calc);drawBest([...list].sort((a,b)=>a.cost-b.cost||a.along-b.along).slice(0,5));return true};
- if(!cands.length){done();return}
-const sum0=$('rSum').textContent;$('rSum').textContent=sum0+' · a calcular desvios…';
+async function refineDetours(list,calc,o){const tok=++detTok;
+ const live=()=>tok===detTok&&o.live(),has=s=>o.rt(s).det[s.i];
+ const rank=()=>{list.forEach(calc);return o.rank()};
+ let cands=rank().slice(0,10).filter(s=>!has(s));
+ if(!cands.length){if(live())o.draw(rank());return}
+ const sum0=$('rSum').textContent;$('rSum').textContent=sum0+' · a calcular desvios…';
  for(let i=0;i<cands.length;i+=2){const part=cands.slice(i,i+2);
-  await Promise.all(part.map(async s=>{try{const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${A[1]},${A[0]};${s.lng},${s.lat};${B[1]},${B[0]}?overview=false`);const j=await r.json();
-   if(j.code==='Ok'){const x=j.routes[0];rt.det[s.i]={km:x.distance/1000-rt.km,min:(x.duration/60)-rt.min}}}catch(e){}}));
-  if(tok!==detTok||rt!==route)return;
-  const more=[...list].map(s=>(calc(s),s)).sort((a,b)=>a.cost-b.cost).slice(0,10).filter(s=>!rt.det[s.i]&&!cands.includes(s));cands.push(...more.slice(0,4));
+  await Promise.all(part.map(async s=>{const R=o.rt(s);try{const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${R.A[1]},${R.A[0]};${s.lng},${s.lat};${R.B[1]},${R.B[0]}?overview=false`);const j=await r.json();
+   if(j.code==='Ok'){const x=j.routes[0];R.det[s.i]={km:x.distance/1000-R.km,min:(x.duration/60)-R.min}}}catch(e){}}));
+  if(!live())return;
+  const more=rank().slice(0,10).filter(s=>!has(s)&&!cands.includes(s));cands.push(...more.slice(0,4));
   if(cands.length>16)cands.length=16}
- if(done())$('rSum').textContent=sum0}
+ if(live()){o.draw(rank());$('rSum').textContent=sum0}}
+
+/* ---------- PERCURSOS RECORRENTES ---------- */
+const RCOL=['#0b6bcb','#7b2ff7','#e67e22','#16a085','#c0392b','#2c3e50','#d4a017','#8e44ad'];
+let multi=null,saved=[],savedLoaded=false;
+function updMulti(fit){
+ const maxKm=+$('corr').value,Lt=Math.max(1,+$('lit').value||40),cons=Math.max(1,+$('cons').value||6.5);
+ const items=[];let bounds=null;
+ multi.forEach(r=>{const line=L.polyline(r.pts,{color:r.color,weight:5,opacity:.75}).bindTooltip(r.nome,{sticky:true}).addTo(gRoute);
+  bounds=bounds?bounds.extend(line.getBounds()):line.getBounds();
+  L.marker(r.A,{icon:abIcon('A',r.color),zIndexOffset:10000}).bindTooltip(r.nome+' — origem').addTo(gRoute);
+  L.marker(r.B,{icon:abIcon('B',r.color),zIndexOffset:10000}).bindTooltip(r.nome+' — destino').addTo(gRoute);
+  corridor(r.pts,maxKm).list.forEach(s=>items.push(Object.assign({},s,{r})))});
+ const uniq=a=>{const m=new Map();a.forEach(c=>{const o=m.get(c.i);if(!o||c.cost<o.cost||(c.cost===o.cost&&c.off<o.off))m.set(c.i,c)});return[...m.values()]};
+ const med=median(uniq(items.map(c=>(c.cost=c.p,c))));
+ const calc=c=>{const d=c.r.det[c.i];if(d){c.det=Math.max(0,d.km);c.dMin=Math.max(0,d.min);c.real=true}else{c.det=2*c.off*1.3;c.dMin=c.det/50*60;c.real=false}
+  c.cost=c.p*Lt+c.det*cons/100*c.p;c.save=med*Lt-c.cost;c.info=`${esc(c.r.nome)} · a ${fmtD(c.off)} da rota · desvio ${c.real?'':'≈'}+${fmtMin(c.dMin)}`};
+ items.forEach(calc);
+ const rank=()=>uniq(items).sort((a,b)=>a.cost-b.cost||a.off-b.off);
+ const u=rank(),best=u.slice(0,5),ids=new Set(u.slice(0,12).map(c=>c.i));
+ priceLabels(u.filter(c=>!ids.has(c.i)).sort((a,b)=>a.p-b.p).slice(0,80));
+ drawBest(best);
+ $('rSum').textContent=`${multi.length} percurso${multi.length>1?'s':''} recorrente${multi.length>1?'s':''} · ${u.length} postos até ${String(maxKm).replace('.',',')} km · mediana ${u.length?fmtP(med):'—'}`;
+ setStatus('Recomendação nos percursos recorrentes selecionados.');
+ if(!best.length)$('tBest').innerHTML='<div class="empty">Nenhum posto perto destes percursos. Aumenta o afastamento máximo.</div>';
+ else{const m=multi;refineDetours(items,calc,{live:()=>multi===m&&mode==='route',rt:c=>c.r,rank,draw:r=>drawBest(r.slice(0,5))})}
+ $('tRCheap').innerHTML=u.length?tbl([...u].sort((a,b)=>a.p-b.p||a.off-b.off).slice(0,5),'route2'):'<div class="empty">—</div>';
+ if(fit&&bounds)map.fitBounds(bounds,{padding:[20,20]})}
+
+function simplify(pts){const out=[pts[0]];for(let i=1;i<pts.length-1;i++){const q=out[out.length-1];if(hav(q[0],q[1],pts[i][0],pts[i][1])>=.25)out.push(pts[i])}out.push(pts[pts.length-1]);return out.map(p=>[+p[0].toFixed(5),+p[1].toFixed(5)])}
+const shortName=s=>(s||'').split(',')[0].trim().slice(0,30);
+function renderSaved(){
+ const el=$('rlist');
+ if(!session){el.innerHTML='<div class="empty">Entra na tua conta frisk.pt para gravar percursos recorrentes. <button id="bLoginInline">Entrar</button></div>';$('savedActs').classList.add('hid');$('bLoginInline').onclick=()=>openLogin();return}
+ $('savedActs').classList.toggle('hid',!saved.length);
+ if(!savedLoaded){el.innerHTML='<div class="empty">A carregar…</div>';return}
+ if(!saved.length){el.innerHTML='<div class="empty">Ainda não tens percursos recorrentes. Calcula um percurso e carrega em “⭐ Percurso recorrente”.</div>';return}
+ el.innerHTML=saved.map((r,k)=>`<div class="ritem" style="--rc:${RCOL[k%RCOL.length]}"><input type="checkbox" data-sel="${k}"${r.sel?' checked':''}><span class="sw"></span><div class="t"><b>${esc(r.nome)}</b><span>${fmtD(r.km)} · ${fmtMin(r.min)}</span></div><button data-show="${k}" title="Ver no mapa">👁</button><button data-ren="${k}" title="Mudar nome">✏️</button><button data-del="${k}" title="Apagar">🗑</button></div>`).join('')}
+$('rlist').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.show!=null){const r=saved[+b.dataset.show];A=r.A.slice();B=r.B.slice();$('qA').value=r.qA||'';$('qB').value=r.qB||'';multi=null;route={pts:r.pts,km:r.km,min:r.min,approx:false,det:r.det||(r.det={}),A:r.A,B:r.B};refresh(true)}
+ if(b.dataset.ren!=null){const r=saved[+b.dataset.ren];const n=prompt('Nome do percurso',r.nome);if(n&&n.trim()){r.nome=n.trim().slice(0,60);persist();renderSaved();if(multi)refresh(false)}}
+ if(b.dataset.del!=null){const k=+b.dataset.del,r=saved[k];if(confirm('Apagar o percurso “'+r.nome+'”?')){saved.splice(k,1);if(multi){multi=multi.filter(x=>x!==r);if(!multi.length)multi=null}persist();renderSaved();refresh(false)}}});
+$('rlist').addEventListener('change',e=>{const k=e.target.dataset.sel;if(k==null)return;saved[+k].sel=e.target.checked;persist()});
+$('bSaveRoute').onclick=()=>{
+ if(!route||route.approx||multi){setStatus('Calcula primeiro um percurso (com ligação à internet) para o poderes gravar.',true);return}
+ if(!session){openLogin(()=>$('bSaveRoute').click());return}
+ const def=(shortName($('qA').value)||'Origem')+' → '+(shortName($('qB').value)||'Destino');
+ const n=prompt('Nome do percurso recorrente',def);if(n===null)return;
+ saved.push({id:Date.now().toString(36),nome:(n.trim()||def).slice(0,60),A:route.A.map(v=>+v.toFixed(5)),B:route.B.map(v=>+v.toFixed(5)),qA:$('qA').value.slice(0,120),qB:$('qB').value.slice(0,120),pts:simplify(route.pts),km:+route.km.toFixed(2),min:+route.min.toFixed(1),sel:true,det:route.det});
+ persist(true);renderSaved()};
+$('bRecommend').onclick=()=>{const sel=saved.map((r,k)=>(r.color=RCOL[k%RCOL.length],r)).filter(r=>r.sel);
+ if(!sel.length){setStatus('Seleciona pelo menos um percurso recorrente.',true);return}
+ sel.forEach(r=>r.det=r.det||{});multi=sel;refresh(true);document.getElementById('gRoute').scrollIntoView({behavior:'smooth'})};
+$('bMultiOff').onclick=()=>{multi=null;refresh(true)};
+
+/* ---------- CONTA (Supabase, sessão partilhada com hub.frisk.pt) ---------- */
+const SB_URL='https://aehitgqsfcpzuunyzpsh.supabase.co',SB_KEY='sb_publishable_UezgSImwgpd_EDfi02YC_w_6sqkD2Qc',SITE='combustivel',LS_SES='hub.session';
+let session=(()=>{try{return JSON.parse(localStorage.getItem(LS_SES))}catch(e){return null}})();
+function setSession(d,email){if(!d){session=null;try{localStorage.removeItem(LS_SES)}catch(e){}return}
+ session={access_token:d.access_token,refresh_token:d.refresh_token,expires_at:Math.floor(Date.now()/1000)+(d.expires_in||3600),email:email||(d.user&&d.user.email)||''};
+ try{localStorage.setItem(LS_SES,JSON.stringify(session))}catch(e){}}
+async function refreshSession(){if(!session||!session.refresh_token)return false;
+ try{const r=await fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token})});
+  if(!r.ok){setSession(null);return false}setSession(await r.json(),session.email);return true}catch(e){return false}}
+async function api(path,opts={},retry=true){if(session&&session.expires_at-60<Date.now()/1000)await refreshSession();
+ const headers=Object.assign({apikey:SB_KEY,'Content-Type':'application/json'},opts.headers||{});if(session)headers.Authorization='Bearer '+session.access_token;
+ const r=await fetch(SB_URL+path,Object.assign({},opts,{headers}));
+ if(r.status===401&&session&&retry&&(await refreshSession()))return api(path,opts,false);return r}
+const uid=()=>{try{return JSON.parse(atob(session.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub}catch(e){return null}};
+async function loadSaved(){savedLoaded=false;renderSaved();if(!session)return;
+ try{const r=await api(`/rest/v1/user_site_data?site_id=eq.${SITE}&chave=eq.percursos&select=valor`);
+  if(r.status===401){setSession(null);renderAcct();renderSaved();return}
+  const j=await r.json();saved=(j[0]&&Array.isArray(j[0].valor))?j[0].valor:[]}catch(e){setStatus('Não foi possível carregar os percursos recorrentes.',true)}
+ savedLoaded=true;renderSaved()}
+let pTimer=null;
+function persist(now){clearTimeout(pTimer);pTimer=setTimeout(async()=>{if(!session)return;
+ const valor=saved.map(({det,color,...r})=>r);
+ try{const r=await api('/rest/v1/user_site_data?on_conflict=user_id,site_id,chave',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid(),site_id:SITE,chave:'percursos',valor,updated_at:new Date().toISOString()})});
+  if(!r.ok)throw new Error(r.status);if(now)setStatus('Percurso recorrente gravado na tua conta.')}catch(e){setStatus('Erro ao gravar os percursos ('+e.message+').',true)}},now?0:600)}
+function renderAcct(){const a=$('acct');
+ if(session){a.innerHTML=`<span class="em" title="${esc(session.email)}">👤 ${esc(session.email)}</span><button id="bLogout">Sair</button>`;$('bLogout').onclick=()=>{api('/auth/v1/logout',{method:'POST'}).catch(()=>{});setSession(null);saved=[];if(multi){multi=null;refresh(false)}renderAcct();renderSaved()}}
+ else{a.innerHTML='<button id="bLogin">👤 Entrar</button>';$('bLogin').onclick=()=>openLogin()}}
+let afterLogin=null;
+function openLogin(cb){afterLogin=cb||null;$('loginErr').textContent='';$('loginDlg').showModal();$('lEmail').focus()}
+async function auth(signup){const email=$('lEmail').value.trim(),pass=$('lPass').value,err=$('loginErr');
+ if(!email||pass.length<6){err.textContent='Indica o email e uma palavra-passe com pelo menos 6 caracteres.';return}
+ err.textContent=signup?'A criar conta…':'A entrar…';
+ try{const r=await fetch(SB_URL+(signup?'/auth/v1/signup':'/auth/v1/token?grant_type=password'),{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok){const m=d.error_description||d.msg||d.message||'';err.textContent=/invalid login/i.test(m)?'Email ou palavra-passe errados.':/already registered/i.test(m)?'Esse email já tem conta — usa “Entrar”.':(m||'Erro '+r.status);return}
+  if(!d.access_token){err.textContent='Conta criada. Confirma o email que te enviámos e depois entra.';return}
+  setSession(d,email);$('lPass').value='';$('loginDlg').close();renderAcct();await loadSaved();const cb=afterLogin;afterLogin=null;if(cb)cb()
+ }catch(e){err.textContent='Sem ligação ao servidor.'}}
+$('loginForm').addEventListener('submit',e=>{e.preventDefault();auth(false)});
+$('bDoSignup').onclick=()=>auth(true);
+$('bLoginCancel').onclick=()=>$('loginDlg').close();
+renderAcct();loadSaved();
 
 /* ---------- TABELAS ---------- */
 function tbl(a,kind){
  const head={simple:'<th class="n">Preço</th>',dist:'<th class="n">Preço</th><th class="n">Dist.</th>',route:'<th class="n">Preço</th><th class="n">Desvio</th><th class="n">Custo</th>',route2:'<th class="n">Preço</th><th class="n">Afast.</th>'}[kind];
  return`<table><thead><tr><th>Posto</th>${head}</tr></thead><tbody>${a.map((s,k)=>{
-  const nm=`<td><div class="nm">${kind==='route'?`<span class="rk">${k+1}</span>`:''}${bTag(s.marca)}${esc(s.nome)}</div><div class="ad">${esc(s.marca)} · ${esc(s.loc||s.mun)}${kind.startsWith('route')?` · km ${Math.round(s.along)}`:''}</div></td>`;
+  const nm=`<td><div class="nm">${kind==='route'?`<span class="rk"${s.r?` style="background:${s.r.color}"`:''}>${k+1}</span>`:''}${bTag(s.marca)}${esc(s.nome)}</div><div class="ad">${esc(s.marca)} · ${esc(s.loc||s.mun)}${s.r?` · <b style="color:${s.r.color}">${esc(s.r.nome)}</b>`:''}${kind.startsWith('route')?` · km ${Math.round(s.along)}`:''}</div></td>`;
   const p=`<td class="n pr">${fmtP(s.p)}</td>`;
   const x=kind==='dist'?`<td class="n">${fmtD(s.d)}</td>`:kind==='route'?`<td class="n"><b>${s.real?'':'≈'}+${fmtMin(s.dMin)}</b><div class="ad">+${fmtD(s.det)}</div></td><td class="n">${fmtE(s.cost)}<div class="sv${s.save<0?' neg':''}">${s.save>=0?'poupa ':'+'}${fmtE(Math.abs(s.save))}</div></td>`:kind==='route2'?`<td class="n">${fmtD(s.off)}</td>`:'';
   return`<tr data-i="${s.i}">${nm}${p}${x}</tr>`}).join('')}</tbody></table>`}
