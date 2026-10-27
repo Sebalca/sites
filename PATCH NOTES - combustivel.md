@@ -62,3 +62,6 @@
 ## 0.2e — 2026-10-27
 - Comparação: "Mín. postos" com 20, 50, 100 e 200.
 - Comparação: na tabela de valores, tocar no mín., máx. ou nº de postos abre uma lista dos postos desse grupo (ordenada do mais barato ou do mais caro, com os do preço mínimo/máximo destacados), com "🗺 Mapa" em cada posto e "Ver estes postos no mapa" para todos.
+
+## 0.2f — 2026-10-27
+- Raio (aba Perto): novas opções 0,5, 1 e 2 km.

@@ -902,7 +902,7 @@ th.sort{cursor:pointer;user-select:none}th.sort.on{color:var(--ac)}
 <button class="ic" id="bNearPick" title="Escolher no mapa">📌</button>
 </div>
 <div class="row">
-<label>Raio <select id="rad"><option>5</option><option selected>10</option><option>20</option><option>50</option><option>100</option><option value="9999">Todo o país</option></select> km</label>
+<label>Raio <select id="rad"><option value="0.5">0,5</option><option value="1">1</option><option value="2">2</option><option>5</option><option selected>10</option><option>20</option><option>50</option><option>100</option><option value="9999">Todo o país</option></select> km</label>
 </div>
 </div>
 
@@ -1145,7 +1145,7 @@ function updNear(fit){
  meM=L.marker(me,{icon:L.divIcon({className:'',html:'<div class="me-ic"></div>',iconSize:[16,16],iconAnchor:[8,8]}),zIndexOffset:9999}).addTo(map);
  const R=+$('rad').value;S.forEach(s=>{s.d=hav(me[0],me[1],s.lat,s.lng);s.info=fmtD(s.d)});
  const inR=S.filter(s=>ok(s)&&s.d<=R);
- $('cheapSub').textContent=R>=9999?'(país)':`(até ${R} km)`;
+ $('cheapSub').textContent=R>=9999?'(país)':`(até ${String(R).replace('.',',')} km)`;
  if(R<9999)circ=L.circle(me,{radius:R*1000,color:'#0b6bcb',weight:1,fillOpacity:.04,interactive:false}).addTo(map);
  $('legTxt').textContent='· preço no raio'+pctTxt();
  priceLabels([...inR].sort((a,b)=>a.d-b.d).slice(0,60));
