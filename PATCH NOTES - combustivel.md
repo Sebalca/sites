@@ -20,3 +20,11 @@
 - "Recomendar nos selecionados": top 5 global (preço + desvio) em todos os percursos selecionados, indicando o percurso de cada posto.
 - Login/criar conta no próprio site (sessão partilhada com o hub).
 - Correção: o campo de origem/destino já não volta a recalcular a rota ao perder o foco.
+
+## 0.2 — 2026-10-27
+- Base de dados de preços no Supabase: tabelas `gas_postos` e `gas_precos` (um registo por posto + combustível + data de atualização; se o mesmo posto/combustível/data voltar a ser importado, grava o valor novo). Leitura pública, escrita só admin.
+- Importar Excel (.xlsx) ou CSV da DGEG (admin, aba Análise → "⬆ Atualizar base de dados").
+- Seletor de combustível (todos os combustíveis importados); o mapa e as tabelas usam o preço mais recente de cada posto.
+- Nova aba "📈 Análise": evolução do preço médio por marca (comparar até 10 marcas + média nacional), ranking de marcas (preço médio, variação no período, nº postos) e evolução por posto (todos os combustíveis + lista de alterações). Link "📈 Evolução" no popup de cada posto.
+- Caixa "Percursos recorrentes" minimizada por defeito.
+- Cópia de reserva embutida (Gasolina 95 de 26/10) e cache no browser se a base de dados não responder.
