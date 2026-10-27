@@ -726,6 +726,15 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 .seg{flex-wrap:wrap;max-width:100%}
 @media(max-width:600px){.tabs{gap:4px}.tabs .tab{padding:8px 4px;font-size:.78rem}.seg button{padding:7px 9px;font-size:.82rem}}
 .main{min-width:0}
+.cmpv{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.cmpv:hover{color:var(--ac)}
+dialog.wide{width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 40px);display:none;flex-direction:column}
+dialog.wide[open]{display:flex}
+.dlgh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.dlgh h2{font-size:1.05rem}
+.dlgb{overflow-y:auto;overflow-x:hidden;flex:1;min-height:0;border-top:1px solid var(--bd)}
+.dlgb table{table-layout:fixed;width:100%}.dlgb th:last-child,.dlgb td:last-child{width:92px}.dlgb td:first-child{overflow-wrap:anywhere}
+.dlgb tr.hl td{background:rgba(26,143,76,.1)}.dlgb tr.hlx td{background:rgba(196,55,43,.1)}
+.dlgb button{padding:5px 9px;font-size:.8rem;white-space:nowrap}
 .sideHead{display:none;justify-content:space-between;align-items:center}
 header{padding-top:14px}
 h1{font-size:1.25rem;margin:0 0 4px}
@@ -930,7 +939,7 @@ th.sort{cursor:pointer;user-select:none}th.sort.on{color:var(--ac)}
 <div class="row hid" id="cmpDistRow"><label>Distrito <select id="cmpDist"></select></label></div>
 <div class="row"><span class="lbl" style="width:auto">Gráfico</span><div class="seg" id="cmpType"><button data-v="range" class="on">Intervalo</button><button data-v="group">Barras agrupadas</button></div>
 <label>Ordenar por <select id="cmpSort"><option value="med">Mediana</option><option value="avg">Média</option><option value="min">Mínimo</option><option value="max">Máximo</option><option value="n">Nº de postos</option><option value="nome">Nome</option></select></label>
-<label>Mín. postos <select id="cmpMinN"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
+<label>Mín. postos <select id="cmpMinN"><option>1</option><option selected>3</option><option>5</option><option>10</option><option>20</option><option>50</option><option>100</option><option>200</option></select></label></div>
 <label><input type="checkbox" id="cmpFilt"> Aplicar filtros da caixa Geral (marcas, auto-estradas, descontos, preços a mostrar)</label>
 </div>
 
@@ -977,6 +986,7 @@ th.sort{cursor:pointer;user-select:none}th.sort.on{color:var(--ac)}
 </main>
 </div>
 <div id="locMenu" class="locmenu hid"></div>
+<dialog id="cmpDlg" class="wide"><div class="dlgh"><h2 id="cmpDlgT"></h2><button id="cmpDlgX" title="Fechar">✕</button></div><p class="note" id="cmpDlgS"></p><div class="dlgb" id="cmpDlgB"></div><div class="acts" style="margin-top:8px"><button id="cmpDlgAll">🗺 Ver estes postos no mapa</button></div></dialog>
 <dialog id="loginDlg"><form id="loginForm" method="dialog">
 <h2 id="loginTitle">Entrar na conta frisk.pt</h2>
 <span class="note">A mesma conta dos outros sites frisk.pt.</span>
@@ -1521,7 +1531,8 @@ try{$('cmpFilt').checked=!!(JSON.parse(localStorage.getItem('gas.cmp'))||{}).f}c
 function statsOf(ps){const a=ps.slice().sort((x,y)=>x-y),n=a.length,m=n>>1;return{n,min:a[0],max:a[n-1],avg:a.reduce((s,v)=>s+v,0)/n,med:n%2?a[m]:(a[m-1]+a[m])/2}}
 function cmpPool(list){if(!$('cmpFilt').checked)return list.map(s=>({s,p:s.p0}));
  let L2=list.filter(ok0);if(pctNow()<100){const th=quant(L2,pctNow());L2=L2.filter(s=>s.p<=th+1e-9)}return L2.map(s=>({s,p:s.p}))}
-function groupBy(pool,key){const g={};pool.forEach(o=>{const k=key(o.s);if(!k)return;(g[k]=g[k]||[]).push(o.p)});return Object.entries(g).map(([k,ps])=>Object.assign({k},statsOf(ps)))}
+function groupBy(pool,key){const g={};pool.forEach(o=>{const k=key(o.s);if(!k)return;(g[k]=g[k]||[]).push(o)});return Object.entries(g).map(([k,os])=>Object.assign({k,items:os},statsOf(os.map(o=>o.p))))}
+let cmpRows=[];
 async function fuelStats(){let fs=fuels.length?fuels.map(f=>f.c):[curFuel];const out=[];
  for(const c of fs){let rows=fuelRows[c]||cacheGet('f.'+c);
   if(!fuelRows[c]){try{rows=await rpc('gas_atuais',{p_comb:c});cacheSet('f.'+c,rows)}catch(e){}if(!rows||!rows.length)rows=c===FUEL0?rowsFromD():[];fuelRows[c]=rows}
@@ -1539,12 +1550,12 @@ async function updCmp(){const tok=++cmpTok;$('cmpDistRow').classList.toggle('hid
   else if(cmpDim==='dist'){rows=groupBy(pool,s=>s.dist);title='por distrito'}
   else if(cmpDim==='mun'){const d=$('cmpDist').value;rows=groupBy(pool.filter(o=>o.s.dist===d),s=>s.mun);title='por município — '+d}
   else{rows=groupBy(pool,s=>TIPO_N[s.tipo]||'Normal');title='por tipo de posto'}}
- const tot=rows.length;rows=rows.filter(r=>r.n>=(cmpDim==='fuel'||cmpDim==='tipo'?1:minN));
- rows.sort(sort==='nome'?(a,b)=>a.k.localeCompare(b.k,'pt'):sort==='n'?(a,b)=>b.n-a.n:(a,b)=>a[sort]-b[sort]);
+ const tot=rows.length;cmpRows=rows=rows.filter(r=>r.n>=(cmpDim==='fuel'||cmpDim==='tipo'?1:minN));
+ cmpRows=rows;rows.sort(sort==='nome'?(a,b)=>a.k.localeCompare(b.k,'pt'):sort==='n'?(a,b)=>b.n-a.n:(a,b)=>a[sort]-b[sort]);
  $('cmpTitle').textContent='📊 Preço mais recente '+title+(cmpDim==='fuel'?'':' — '+curFuel);
  const all=rows.length?statsOf(rows.flatMap(r=>[r.min,r.max])):null;
  $('cmpSum').textContent=rows.length?`${rows.length} ${rows.length===1?'grupo':'grupos'}${tot>rows.length?` (${tot-rows.length} com menos de ${minN} postos ocultos)`:''} · ${$('cmpFilt').checked?'com filtros e descontos':'preços oficiais, todos os postos'}`:'Sem dados para comparar.';
- $('cmpTbl').innerHTML=rows.length?`<table><thead><tr><th>${{marca:'Marca',dist:'Distrito',mun:'Município',tipo:'Tipo',fuel:'Combustível'}[cmpDim]}</th><th class="n">Mín.</th><th class="n">Média</th><th class="n">Mediana</th><th class="n">Máx.</th><th class="n">Postos</th></tr></thead><tbody>${rows.map(r=>`<tr><td><div class="nm">${cmpDim==='marca'?bTag(r.k):''}${esc(r.k)}</div></td><td class="n">${fmtP(r.min)}</td><td class="n">${fmtP(r.avg)}</td><td class="n pr">${fmtP(r.med)}</td><td class="n">${fmtP(r.max)}</td><td class="n">${r.n}</td></tr>`).join('')}</tbody></table>`:'';
+ $('cmpTbl').innerHTML=rows.length?`<table><thead><tr><th>${{marca:'Marca',dist:'Distrito',mun:'Município',tipo:'Tipo',fuel:'Combustível'}[cmpDim]}</th><th class="n">Mín.</th><th class="n">Média</th><th class="n">Mediana</th><th class="n">Máx.</th><th class="n">Postos</th></tr></thead><tbody>${rows.map((r,gi)=>{const cl=r.items?' class="cmpv"':'';return`<tr><td><div class="nm">${cmpDim==='marca'?bTag(r.k):''}${esc(r.k)}</div></td><td class="n"><span${cl} data-g="${gi}" data-x="min" title="Ver postos">${fmtP(r.min)}</span></td><td class="n">${fmtP(r.avg)}</td><td class="n pr">${fmtP(r.med)}</td><td class="n"><span${cl} data-g="${gi}" data-x="max" title="Ver postos">${fmtP(r.max)}</span></td><td class="n">${r.items?`<span class="cmpv" data-g="${gi}" data-x="all" title="Ver postos">${r.n}</span>`:r.n}</td></tr>`}).join('')}</tbody></table>`:'';
  try{await ensureChart()}catch(e){$('cmpSum').textContent+=' · gráfico indisponível sem internet';return}
  if(tok!==cmpTok)return;
  const per=cmpType==='range'?26:58;$('cmpBox').style.height=Math.max(220,rows.length*per+70)+'px';
@@ -1562,6 +1573,25 @@ async function updCmp(){const tok=++cmpTok;$('cmpDistRow').classList.toggle('hid
   interaction:{mode:'index',intersect:false,axis:'y'},
   plugins:{legend:{labels:{color:tc,boxWidth:12,font:{size:11}}},tooltip:{callbacks:{title:x=>rows[x[0].dataIndex].k,label:x=>{const r=rows[x.dataIndex];if(x.dataset.label==='Mínimo → máximo')return`Mín ${fmtP(r.min)} · Máx ${fmtP(r.max)}`;return`${x.dataset.label}: ${fmtP(x.parsed.x)}`},afterBody:x=>`${rows[x[0].dataIndex].n} postos`}}},
   scales:{x:{min:xmin,max:xmax,ticks:{color:tc,callback:v=>v.toFixed(2).replace('.',',')+' €'},grid:{color:gc}},y:{ticks:{color:tc,autoSkip:false,font:{size:11}},grid:{display:false}}}}})}
+
+let dlgList=[];
+$('cmpTbl').addEventListener('click',e=>{const v=e.target.closest('.cmpv');if(!v)return;const r=cmpRows[+v.dataset.g];if(!r||!r.items)return;const x=v.dataset.x;
+ const its=[...r.items].sort((a,b)=>x==='max'?b.p-a.p:a.p-b.p);dlgList=its.map(o=>o.s);
+ const lbl={marca:'',dist:'Distrito ',mun:'',tipo:'',fuel:''}[cmpDim]||'';
+ $('cmpDlgT').innerHTML=`${cmpDim==='marca'?bTag(r.k)+' ':''}${esc(lbl+r.k)} — ${x==='min'?'mais baratos':x==='max'?'mais caros':'todos os postos'}`;
+ const ex=x==='max'?r.max:r.min,nEx=its.filter(o=>Math.abs(o.p-ex)<1e-9).length;
+ $('cmpDlgS').textContent=`${its.length} postos · ${curFuel} · ${x==='all'?`de ${fmtP(r.min)} a ${fmtP(r.max)}`:`${nEx} posto${nEx>1?'s':''} ao preço ${x==='min'?'mínimo':'máximo'} (${fmtP(ex)})`}`;
+ $('cmpDlgB').innerHTML=`<table><thead><tr><th>Posto</th><th class="n">Preço</th></tr></thead><tbody>${its.map((o,k)=>{const s=o.s,hl=Math.abs(o.p-r.min)<1e-9?' class="hl"':Math.abs(o.p-r.max)<1e-9?' class="hlx"':'';
+  return`<tr${hl}><td><div class="nm">${cmpDim!=='marca'?bTag(s.marca):''}${esc(s.nome)}</div><div class="ad">${esc(s.marca)} · ${esc(s.loc||s.mun)}${s.dist?' · '+esc(s.dist):''}${s.tipo==='A'?' · Auto-estrada':''} · ${esc(s.data)}</div></td><td class="n"><div class="pr">${fmtP(o.p)}</div><button data-map="${k}" style="margin-top:4px">🗺 Mapa</button></td></tr>`}).join('')}</tbody></table>`;
+ $('cmpDlg').showModal();$('cmpDlgB').scrollTop=0});
+$('cmpDlgX').onclick=()=>$('cmpDlg').close();
+$('cmpDlg').addEventListener('click',e=>{if(e.target===$('cmpDlg'))$('cmpDlg').close()});
+function showOnMap(list,one){$('cmpDlg').close();setMode('near');sideOpen&&sideOpen(false);
+ setTimeout(()=>{map.invalidateSize();if(one){const s=list[0];map.setView([s.lat,s.lng],15);L.popup().setLatLng([s.lat,s.lng]).setContent(popup(s)).openOn(map)}
+  else{gLab.clearLayers();priceLabels(list.slice(0,300));map.fitBounds(L.latLngBounds(list.map(s=>[s.lat,s.lng])),{padding:[30,30],maxZoom:14});setStatus(`A mostrar ${list.length} postos da comparação. Escolhe um local para voltar ao normal.`)}
+  $('map').scrollIntoView({behavior:'smooth',block:'center'})},60)}
+$('cmpDlgB').addEventListener('click',e=>{const b=e.target.closest('[data-map]');if(!b)return;showOnMap([dlgList[+b.dataset.map]],true)});
+$('cmpDlgAll').onclick=()=>showOnMap(dlgList,false);
 
 /* ---------- OS MEUS LOCAIS ---------- */
 let LOC=(()=>{try{const a=JSON.parse(localStorage.getItem('gas.locais'));if(Array.isArray(a))return a}catch(e){}return[]})();
