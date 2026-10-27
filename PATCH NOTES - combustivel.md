@@ -46,3 +46,8 @@
 - Popup do posto com percurso ativo: "⛽ Incluir na rota (Maps) ↗" (Google Maps origem → posto → destino) e "Waze ↗" (direto ao posto). Sem percurso: "Google Maps ↗" e "Waze ↗".
 - Removido o texto por baixo do título.
 - Rodapé com link para o site da DGEG.
+
+## 0.2c — 2026-10-27
+- "Os meus locais": botão ⭐ ao lado de Local, Origem e Destino — escolher um local guardado, "＋ Guardar … atual" com nome (Casa, Trabalho…), mudar nome e apagar.
+- Locais no mapa com ícone e nome (🏠 Casa, 💼 Trabalho, 🏫, 🏋️… pelo nome); tocar → "Postos perto", "Origem" ou "Destino".
+- Gravados na conta frisk.pt (`user_site_data`, chave `locais`); sem login ficam no browser e juntam-se à conta ao entrar.

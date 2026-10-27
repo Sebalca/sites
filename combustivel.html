@@ -714,6 +714,14 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 .pop-acts a{display:inline-block;padding:5px 9px;border-radius:7px;background:#0b6bcb;color:#fff!important;text-decoration:none;font-weight:600;font-size:12px}
 .pop-acts a.wz{background:#33ccff;color:#05324a!important}
 .pop-acts a.gh{background:transparent;color:#0b6bcb!important;border:1px solid #0b6bcb}
+.locmenu{position:absolute;z-index:3500;width:280px;max-width:calc(100vw - 24px);background:var(--card);border:1px solid var(--bd);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.22);padding:6px}
+.locmenu .li{display:flex;align-items:center;gap:6px;padding:4px;border-radius:7px}
+.locmenu .li:hover{background:rgba(127,127,127,.1)}
+.locmenu .li .u{flex:1;text-align:left;border:0;background:none;padding:6px 4px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.locmenu .li .s{padding:4px 7px;font-size:.8rem}
+.locmenu .add{width:100%;margin-top:4px}
+.locmenu .hd{font-size:.75rem;color:var(--mu);padding:4px 6px}
+.loc-ic{background:#fff;color:#1b1f24;font:700 12px system-ui;padding:3px 7px;border-radius:12px;white-space:nowrap;box-shadow:0 1px 5px rgba(0,0,0,.4);border:2px solid #0b6bcb;transform:translate(-50%,-50%);display:inline-block}
 .sideHead{display:none;justify-content:space-between;align-items:center}
 header{padding-top:14px}
 h1{font-size:1.25rem;margin:0 0 4px}
@@ -875,6 +883,7 @@ th.sort{cursor:pointer;user-select:none}th.sort.on{color:var(--ac)}
 <span class="lbl">Local</span>
 <div class="fld"><input id="qNear" placeholder="Morada, localidade ou lat, lng" autocomplete="off"><div class="sug hid" id="sNear"></div></div>
 <button class="ic" id="bNearSearch" title="Procurar">🔍</button>
+<button class="ic" data-loc="near" title="Os meus locais">⭐</button>
 <button class="ic" id="bNearGps" title="A minha localização">📍</button>
 <button class="ic" id="bNearPick" title="Escolher no mapa">📌</button>
 </div>
@@ -888,12 +897,14 @@ th.sort{cursor:pointer;user-select:none}th.sort.on{color:var(--ac)}
 <div class="row">
 <span class="lbl">Origem</span>
 <div class="fld"><input id="qA" placeholder="Morada, localidade ou lat, lng" autocomplete="off"><div class="sug hid" id="sA"></div></div>
+<button class="ic" data-loc="A" title="Os meus locais">⭐</button>
 <button class="ic" id="bAGps" title="A minha localização">📍</button>
 <button class="ic" id="bAPick" title="Escolher no mapa">📌</button>
 </div>
 <div class="row">
 <span class="lbl">Destino</span>
 <div class="fld"><input id="qB" placeholder="Morada, localidade ou lat, lng" autocomplete="off"><div class="sug hid" id="sB"></div></div>
+<button class="ic" data-loc="B" title="Os meus locais">⭐</button>
 <button class="ic" id="bSwap" title="Trocar">⇅</button>
 <button class="ic" id="bBPick" title="Escolher no mapa">📌</button>
 </div>
@@ -946,6 +957,7 @@ th.sort{cursor:pointer;user-select:none}th.sort.on{color:var(--ac)}
 </div>
 </main>
 </div>
+<div id="locMenu" class="locmenu hid"></div>
 <dialog id="loginDlg"><form id="loginForm" method="dialog">
 <h2 id="loginTitle">Entrar na conta frisk.pt</h2>
 <span class="note">A mesma conta dos outros sites frisk.pt.</span>
@@ -1258,7 +1270,7 @@ async function api(path,opts={},retry=true){if(session&&session.expires_at-60<Da
  const r=await fetch(SB_URL+path,Object.assign({},opts,{headers}));
  if(r.status===401&&session&&retry&&(await refreshSession()))return api(path,opts,false);return r}
 const uid=()=>{try{return JSON.parse(atob(session.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub}catch(e){return null}};
-async function loadSaved(){savedLoaded=false;renderSaved();loadPF();if(!session)return;
+async function loadSaved(){savedLoaded=false;renderSaved();loadPF();loadLoc();if(!session)return;
  try{const r=await api(`/rest/v1/user_site_data?site_id=eq.${SITE}&chave=eq.percursos&select=valor`);
   if(r.status===401){setSession(null);renderAcct();renderSaved();return}
   const j=await r.json();saved=(j[0]&&Array.isArray(j[0].valor))?j[0].valor:[]}catch(e){setStatus('Não foi possível carregar os percursos recorrentes.',true)}
@@ -1478,6 +1490,40 @@ try{const [a,b]=(localStorage.getItem('gas.pct')||'').split('|');if(a){$('pct').
 // painel lateral (telemóvel)
 const sideOpen=o=>{$('side').classList.toggle('open',o);$('sideBg').classList.toggle('open',o)};
 $('bSide').onclick=()=>sideOpen(true);$('bSideX').onclick=()=>sideOpen(false);$('sideBg').onclick=()=>sideOpen(false);
+
+/* ---------- OS MEUS LOCAIS ---------- */
+let LOC=(()=>{try{const a=JSON.parse(localStorage.getItem('gas.locais'));if(Array.isArray(a))return a}catch(e){}return[]})();
+const gLoc=L.layerGroup().addTo(map);
+const locIcon=n=>{n=(n||'').toLowerCase();return /casa|home|lar/.test(n)?'🏠':/trab|escrit|office|empresa/.test(n)?'💼':/escola|col[eé]gio|univ|faculd/.test(n)?'🏫':/gin[aá]s|gym/.test(n)?'🏋️':/pais|m[aã]e|pai|av[oó]|fam/.test(n)?'👪':/praia/.test(n)?'🏖️':/f[eé]rias|campo|aldeia/.test(n)?'🏡':'📍'};
+function curLL(w){return w==='near'?me:w==='A'?A:B}
+const fieldOf={near:'qNear',A:'qA',B:'qB'};
+function useLoc(w,l){const ll=[l.lat,l.lng];$(fieldOf[w]).value=l.nome;$(fieldOf[w]).dataset.done=l.nome;closeLocMenu();
+ if(w==='near'){if(mode!=='near')setMode('near');setMe(ll,'Local: '+l.nome)}else{if(mode!=='route')setMode('route');setPoint(w,ll)}}
+function drawLoc(){gLoc.clearLayers();LOC.forEach(l=>{const m=L.marker([l.lat,l.lng],{icon:L.divIcon({className:'',html:`<span class="loc-ic">${locIcon(l.nome)} ${esc(l.nome)}</span>`,iconSize:[0,0]}),zIndexOffset:15000});
+ m.bindPopup(()=>{const d=document.createElement('div');d.innerHTML=`<b>${locIcon(l.nome)} ${esc(l.nome)}</b><div class="pop-acts"><a href="#" data-w="near">📍 Postos perto</a><a href="#" data-w="A">Origem</a><a href="#" data-w="B">Destino</a></div>`;
+  d.onclick=e=>{const a=e.target.closest('[data-w]');if(!a)return;e.preventDefault();map.closePopup();useLoc(a.dataset.w,l)};return d});m.addTo(gLoc)})}
+function saveLoc(){try{localStorage.setItem('gas.locais',JSON.stringify(LOC))}catch(e){}drawLoc();
+ clearTimeout(saveLoc.t);saveLoc.t=setTimeout(async()=>{if(!session)return;try{const r=await api('/rest/v1/user_site_data?on_conflict=user_id,site_id,chave',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid(),site_id:SITE,chave:'locais',valor:LOC,updated_at:new Date().toISOString()})});if(!r.ok)throw new Error(r.status)}catch(e){setStatus('Não foi possível gravar os locais na conta ('+e.message+').',true)}},500)}
+async function loadLoc(){if(!session)return;try{const r=await api(`/rest/v1/user_site_data?site_id=eq.${SITE}&chave=eq.locais&select=valor`);if(!r.ok)return;const j=await r.json();
+ if(j[0]&&Array.isArray(j[0].valor)){const remote=j[0].valor,ids=new Set(remote.map(l=>l.id));const extra=LOC.filter(l=>!ids.has(l.id));LOC=remote.concat(extra);saveLoc()}else if(LOC.length)saveLoc();else drawLoc()}catch(e){}}
+let locW=null;
+function closeLocMenu(){$('locMenu').classList.add('hid');locW=null}
+function openLocMenu(w,btn){if(locW===w){closeLocMenu();return}locW=w;const m=$('locMenu'),cur=curLL(w);
+ const lbl={near:'o local',A:'a origem',B:'o destino'}[w];
+ m.innerHTML=`<div class="hd">Os meus locais${session?'':' · entra na conta para sincronizar'}</div>`+(LOC.length?LOC.map((l,k)=>`<div class="li"><button class="u" data-use="${k}" title="Usar como ${lbl}">${locIcon(l.nome)} ${esc(l.nome)}</button><button class="s" data-ren="${k}" title="Mudar nome">✏️</button><button class="s" data-del="${k}" title="Apagar">🗑</button></div>`).join(''):'<div class="hd">Ainda não tens locais guardados.</div>')+
+  `<button class="add" data-add="1"${cur?'':' disabled'}>＋ Guardar ${lbl} atual</button>`+(cur?'':`<div class="hd">Define primeiro ${lbl} (pesquisa, 📍 ou 📌).</div>`);
+ const r=btn.getBoundingClientRect();m.classList.remove('hid');const w2=m.offsetWidth;
+ m.style.top=(r.bottom+window.scrollY+4)+'px';m.style.left=Math.max(8,Math.min(window.scrollX+r.right-w2,window.scrollX+document.documentElement.clientWidth-w2-8))+'px'}
+document.querySelectorAll('[data-loc]').forEach(b=>b.onclick=e=>{e.stopPropagation();openLocMenu(b.dataset.loc,b)});
+$('locMenu').addEventListener('click',e=>{e.stopPropagation();const b=e.target.closest('button');if(!b)return;const w=locW;
+ if(b.dataset.use!=null)useLoc(w,LOC[+b.dataset.use]);
+ else if(b.dataset.ren!=null){const l=LOC[+b.dataset.ren],n=prompt('Nome do local',l.nome);if(n&&n.trim()){l.nome=n.trim().slice(0,30);saveLoc();locW=null;openLocMenu(w,document.querySelector(`[data-loc="${w}"]`))}}
+ else if(b.dataset.del!=null){const l=LOC[+b.dataset.del];if(confirm('Apagar o local “'+l.nome+'”?')){LOC.splice(+b.dataset.del,1);saveLoc();locW=null;openLocMenu(w,document.querySelector(`[data-loc="${w}"]`))}}
+ else if(b.dataset.add){const ll=curLL(w);if(!ll)return;const sug=LOC.some(l=>/casa/i.test(l.nome))?(LOC.some(l=>/trabalho/i.test(l.nome))?'':'Trabalho'):'Casa';
+  const n=prompt('Nome do local (ex.: Casa, Trabalho, Ginásio)',sug);if(!n||!n.trim())return;
+  LOC.push({id:Date.now().toString(36),nome:n.trim().slice(0,30),lat:+ll[0].toFixed(6),lng:+ll[1].toFixed(6)});saveLoc();$(fieldOf[w]).value=n.trim();setStatus('Local “'+n.trim()+'” guardado.');closeLocMenu()}});
+document.addEventListener('click',()=>closeLocMenu());
+drawLoc();
 
 /* ---------- TABELAS ---------- */
 function tbl(a,kind){
