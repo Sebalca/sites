@@ -705,6 +705,15 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
  .sideBg.open{display:block;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:2999}
  .sideHead{display:flex!important}
 }
+.box h3 .mini{margin-left:auto;padding:2px 8px;font-size:.8rem;border-radius:6px}
+.pfbody{display:flex;flex-direction:column;gap:9px}
+#boxRef.min .pfbody,#boxRef.min .pfx{display:none}
+#boxRef.min .mini{transform:rotate(-90deg)}
+.pctc{display:flex;align-items:center;gap:6px}.pctc input{width:70px}
+.pop-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pop-acts a{display:inline-block;padding:5px 9px;border-radius:7px;background:#0b6bcb;color:#fff!important;text-decoration:none;font-weight:600;font-size:12px}
+.pop-acts a.wz{background:#33ccff;color:#05324a!important}
+.pop-acts a.gh{background:transparent;color:#0b6bcb!important;border:1px solid #0b6bcb}
 .sideHead{display:none;justify-content:space-between;align-items:center}
 header{padding-top:14px}
 h1{font-size:1.25rem;margin:0 0 4px}
@@ -815,7 +824,6 @@ th.sort{cursor:pointer;user-select:none}th.sort.on{color:var(--ac)}
 <header>
 <div>
 <h1>⛽ Postos de combustível</h1>
-<div class="sub"><span id="fuelName"></span> · <span id="cnt"></span> postos · preços de <span id="dmin"></span> a <span id="dmax"></span></div>
 </div>
 <div style="display:flex;gap:6px;align-items:flex-start"><button id="bSide" title="Geral e valores de referência">⚙️</button><div class="acct" id="acct"></div></div>
 </header>
@@ -833,10 +841,13 @@ th.sort{cursor:pointer;user-select:none}th.sort.on{color:var(--ac)}
 <label><input type="checkbox" id="showBrand"> Mostrar marca no mapa</label>
 <label><input type="checkbox" id="noAE"> Excluir auto-estradas</label>
 <label><input type="checkbox" id="useDisc" checked> Aplicar descontos aos preços</label>
+<label class="f">Preços a mostrar (na zona do raio / percurso)<select id="pct"><option value="100">Todos (100%)</option><option value="75">Os 75% mais baratos</option><option value="50">Os 50% mais baratos (abaixo da mediana)</option><option value="25">Os 25% mais baratos</option><option value="c">Personalizado…</option></select></label>
+<div class="pctc hid" id="pctCustom"><span class="note">Mostrar os</span><input type="number" id="pctVal" min="1" max="100" step="1" value="10"><span class="note">% mais baratos</span></div>
 </section>
 <section class="box" id="boxRef">
-<h3>🚗 Valores de referência</h3>
-<div class="pfrow"><select id="pfSel" title="Perfil"></select><button id="pfNew" title="Novo perfil">＋</button><button id="pfRen" title="Mudar nome">✏️</button><button id="pfDel" title="Apagar perfil">🗑</button></div>
+<h3>🚗 Valores de referência<button id="pfMin" class="mini" title="Minimizar / expandir">▾</button></h3>
+<div class="pfrow"><select id="pfSel" title="Perfil"></select><button id="pfNew" title="Novo perfil">＋</button><button id="pfRen" class="pfx" title="Mudar nome">✏️</button><button id="pfDel" class="pfx" title="Apagar perfil">🗑</button></div>
+<div class="pfbody" id="pfBody">
 <label class="f">Veículo <input id="pfVeic" placeholder="ex.: Renault Clio 1.0 TCe" maxlength="60"></label>
 <label class="f">Tipo de combustível <select id="pfFuel"></select></label>
 <div class="two"><label class="f">Consumo (L/100 km)<input type="number" id="cons" value="6.5" min="1" max="40" step="0.1"></label><label class="f">Depósito (L)<input type="number" id="pfCap" value="50" min="5" max="200" step="1"></label></div>
@@ -847,6 +858,7 @@ th.sort{cursor:pointer;user-select:none}th.sort.on{color:var(--ac)}
 <button id="discAdd" type="button">＋ Adicionar desconto</button>
 <span class="note">Ex.: cartão Galp −0,10 €/L; cartão de empresa 5 % em todas as marcas. Se vários se aplicarem ao mesmo posto, conta o maior.</span></div>
 <span class="note" id="pfSync"></span>
+</div>
 </section>
 </aside>
 <div class="sideBg" id="sideBg"></div>
@@ -942,7 +954,7 @@ th.sort{cursor:pointer;user-select:none}th.sort.on{color:var(--ac)}
 <p class="err" id="loginErr"></p>
 <div class="acts"><button class="pri" id="bDoLogin" type="submit">Entrar</button><button type="button" id="bDoSignup">Criar conta</button><button type="button" id="bLoginCancel">Cancelar</button></div>
 </form></dialog>
-<p class="note" style="margin-bottom:24px">Preços: DGEG (importados para a base de dados frisk.pt) · Mapa © OpenStreetMap · pesquisa Nominatim · rotas OSRM · gráficos Chart.js.</p>
+<p class="note" style="margin-bottom:24px">Preços: <a href="https://precoscombustiveis.dgeg.gov.pt/" target="_blank" rel="noopener">DGEG</a> (importados para a base de dados frisk.pt) · Mapa © OpenStreetMap · pesquisa Nominatim · rotas OSRM · gráficos Chart.js.</p>
 </div>
 
 <script>
@@ -959,13 +971,13 @@ function discFor(s){if(!document.getElementById('useDisc')||!document.getElement
  return best}
 function applyDisc(){S.forEach(s=>{const d=discFor(s);s.disc=d;s.p=d?Math.max(.001,+(s.p0-d.v).toFixed(3)):s.p0});
  gmin=S.length?Math.min(...S.map(s=>s.p)):0;gmax=S.length?Math.max(...S.map(s=>s.p)):1;if(gmax===gmin)gmax=gmin+.001;
- $('dmin').textContent=fmtP(gmin);$('dmax').textContent=fmtP(gmax)}
+ }
 function setData(rows){
  S=rows.map((r,i)=>({i,id:r[0],nome:r[1]||'',marca:r[2]||'Genérico',p0:+r[3],lat:+r[4],lng:+r[5],morada:r[6]||'',loc:r[7]||'',mun:r[8]||'',tipo:(r[9]||'O')[0],data:r[10]||''})).filter(s=>s.p0>0&&isFinite(s.lat)&&isFinite(s.lng));
  S.forEach((s,i)=>s.i=i);
  applyDisc();
  brands=Object.entries(S.reduce((o,s)=>(o[s.marca]=(o[s.marca]||0)+1,o),{})).sort((a,b)=>b[1]-a[1]);
- $('cnt').textContent=S.length.toLocaleString('pt-PT');$('fuelName').textContent=curFuel;if(ready)renderDisc();
+ if(ready)renderDisc();
  if(ready){if(typeof route!=='undefined'&&route)route.det={};if(typeof saved!=='undefined')saved.forEach(r=>r.det={});brandLabel();refresh(false)}}
 const $=id=>document.getElementById(id);
 const fmtP=p=>p.toFixed(3).replace('.',',')+' €';
@@ -997,7 +1009,16 @@ $('bAll').onclick=()=>{const q=$('brandQ').value.trim().toLowerCase();brands.for
 $('bNone').onclick=()=>{const q=$('brandQ').value.trim().toLowerCase();brands.forEach(([m])=>{if(!q||m.toLowerCase().includes(q))offB.add(m)});renderBrands();brandChanged()};
 $('showBrand').onchange=()=>{saveSt();refresh(false)};
 brandLabel();
-const ok=s=>!($('noAE').checked&&s.tipo==='A')&&!offB.has(s.marca);
+let thr=Infinity;
+const ok0=s=>!($('noAE').checked&&s.tipo==='A')&&!offB.has(s.marca);
+const ok=s=>ok0(s)&&s.p<=thr+1e-9;
+const pctNow=()=>{const v=$('pct').value;return v==='c'?Math.min(100,Math.max(1,+$('pctVal').value||10)):+v};
+const quant=(a,q)=>{if(!a.length)return Infinity;const b=a.map(s=>s.p).sort((x,y)=>x-y);return b[Math.min(b.length-1,Math.max(0,Math.ceil(q/100*b.length)-1))]};
+function zone(){ // postos da zona visível (antes do filtro de preço)
+ if(mode==='near'){if(!me)return S.filter(ok0);const R=+$('rad').value;return S.filter(s=>ok0(s)&&hav(me[0],me[1],s.lat,s.lng)<=R)}
+ if(mode==='route'){const mk=+$('corr').value;if(multi){const m=new Map();multi.forEach(r=>corridor(r.pts,mk).list.forEach(s=>m.set(s.i,s)));return[...m.values()]}if(route)return corridor(route.pts,mk).list;return S.filter(ok0)}
+ return S.filter(ok0)}
+const pctTxt=()=>{const p=pctNow();return p>=100?'':` · só os ${p}% mais baratos (≤ ${fmtP(thr)})`};
 const median=a=>{if(!a.length)return 0;const b=a.map(s=>s.p).sort((x,y)=>x-y),m=b.length>>1;return b.length%2?b[m]:(b[m-1]+b[m])/2};
 function setStatus(t,err){const e=$('status');e.textContent=t;e.className=err?'err':''}
 
@@ -1005,7 +1026,11 @@ function setStatus(t,err){const e=$('status');e.textContent=t;e.className=err?'e
 const map=L.map('map',{preferCanvas:true}).setView([39.6,-8.1],7);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
 const gAll=L.layerGroup().addTo(map),gLab=L.layerGroup().addTo(map),gRoute=L.layerGroup().addTo(map);
-function popup(s){return`<b>${esc(s.nome)}</b><br>${bTag(s.marca)} ${esc(s.marca)}<br>${esc(s.morada)}, ${esc(s.loc)}<br><b style="font-size:1.1em">${fmtP(s.p)}</b>${s.disc?` <s style="opacity:.6">${fmtP(s.p0)}</s><span class="dtag">${esc(s.disc.n)}</span>`:''}${s.info?' · '+s.info:''}<br><small>Atualizado ${s.data}${s.tipo==='A'?' · Auto-estrada':''}</small><br><a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}">Direções ↗</a> · <a href="#" data-an="${s.i}">📈 Evolução</a>`}
+function popup(s){return`<b>${esc(s.nome)}</b><br>${bTag(s.marca)} ${esc(s.marca)}<br>${esc(s.morada)}, ${esc(s.loc)}<br><b style="font-size:1.1em">${fmtP(s.p)}</b>${s.disc?` <s style="opacity:.6">${fmtP(s.p0)}</s><span class="dtag">${esc(s.disc.n)}</span>`:''}${s.info?' · '+s.info:''}<br><small>Atualizado ${s.data}${s.tipo==='A'?' · Auto-estrada':''}</small><br>${popActs(s)}<a href="#" data-an="${s.i}">📈 Evolução</a>`}
+function curRouteFor(s){if(mode!=='route')return null;if(s.r)return s.r;if(multi){let b=null,bd=Infinity;multi.forEach(r=>{const d=Math.min(...r.pts.filter((_,k)=>k%5===0).map(p=>hav(p[0],p[1],s.lat,s.lng)));if(d<bd){bd=d;b=r}});return b}return route&&!route.approx?route:(route||null)}
+function popActs(s){const r=curRouteFor(s),ll=`${s.lat},${s.lng}`,wz=`<a class="wz" target="_blank" rel="noopener" href="https://waze.com/ul?ll=${ll}&navigate=yes">Waze ↗</a>`;
+ if(r&&r.A&&r.B)return`<div class="pop-acts"><a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&origin=${r.A[0]},${r.A[1]}&destination=${r.B[0]},${r.B[1]}&waypoints=${ll}&travelmode=driving" title="Origem → este posto → destino">⛽ Incluir na rota (Maps) ↗</a>${wz}</div><small style="color:#5f6b7a">${r.nome?esc(r.nome)+' · ':''}O Waze só aceita um destino: vai direto ao posto.</small><br>`;
+ return`<div class="pop-acts"><a class="gh" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${ll}&travelmode=driving">Google Maps ↗</a>${wz}</div>`}
 function drawAll(){gAll.clearLayers();S.forEach(s=>{if(!ok(s))return;L.circleMarker([s.lat,s.lng],{radius:4,weight:1,color:'#fff',fillColor:col((s.p-gmin)/(gmax-gmin)),fillOpacity:.85}).bindPopup(()=>popup(s)).addTo(gAll)})}
 function priceLabels(list){const lo=list.length?Math.min(...list.map(s=>s.p)):gmin,hi=list.length?Math.max(...list.map(s=>s.p)):gmax;$('lmin').textContent=fmtP(lo);$('lmax').textContent=fmtP(hi);
  list.forEach(s=>{const c=col(hi>lo?(s.p-lo)/(hi-lo):0);L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',html:`<span class="price-ic" style="--c:${c}">${$('showBrand').checked?bTag(s.marca):''}${s.p.toFixed(3).replace('.',',')}</span>`,iconSize:[0,0]}),zIndexOffset:Math.round((hi-s.p)*1000)}).bindPopup(()=>popup(s)).addTo(gLab)})}
@@ -1023,6 +1048,7 @@ function setMode(m){mode=m;document.querySelectorAll('.tab').forEach(t=>t.classL
  if(m==='an'){setPick(null);updAn();return}
  setPick(null);refresh(true)}
 function refresh(fit){if(mode==='an'){updAn();return}
+ thr=Infinity;if(pctNow()<100)thr=quant(zone(),pctNow());
  gLab.clearLayers();gRoute.clearLayers();gStar.clearLayers();if(circ){map.removeLayer(circ);circ=null}
  [meM,aM,bM].forEach(x=>x&&map.removeLayer(x));drawAll();
  if(mode==='near')updNear(fit);else updRoute(fit)}
@@ -1079,7 +1105,7 @@ function updNear(fit){
  const inR=S.filter(s=>ok(s)&&s.d<=R);
  $('cheapSub').textContent=R>=9999?'(país)':`(até ${R} km)`;
  if(R<9999)circ=L.circle(me,{radius:R*1000,color:'#0b6bcb',weight:1,fillOpacity:.04,interactive:false}).addTo(map);
- $('legTxt').textContent='· preço no raio';
+ $('legTxt').textContent='· preço no raio'+pctTxt();
  priceLabels([...inR].sort((a,b)=>a.d-b.d).slice(0,60));
  const cheapest=[...inR].sort((a,b)=>a.p-b.p||a.d-b.d).slice(0,5);
  $('tCheap').innerHTML=cheapest.length?tbl(cheapest,'dist'):'<div class="empty">Nenhum posto neste raio.</div>';
@@ -1117,7 +1143,7 @@ function corridor(pts,maxKm){
  return {list:out,total:cum[cum.length-1]}}
 
 function updRoute(fit){
- $('legTxt').textContent='· preço no percurso';
+ $('legTxt').textContent='· preço no percurso'+pctTxt();
  $('multiBar').classList.toggle('hid',!multi);
  $('hBest').textContent=multi?'⭐ Recomendados nos percursos recorrentes':'⭐ Recomendados no percurso';$('hCheapR').textContent=multi?'💶 5 mais baratos nos percursos recorrentes':'💶 5 mais baratos no percurso';
  if(multi)return updMulti(fit);
@@ -1429,6 +1455,9 @@ async function loadPF(){if(!session){$('pfSync').textContent='Entra na conta par
 function setProf(id){const p=PF.lista.find(x=>x.id===id);if(!p)return;prof=p;renderProf();savePF();applyDisc();
  if(prof.combustivel&&prof.combustivel!==curFuel)loadFuel(prof.combustivel);else refresh(false)}
 $('pfSel').onchange=()=>setProf($('pfSel').value);
+const setMin=m=>{$('boxRef').classList.toggle('min',m);try{localStorage.setItem('gas.pfmin',m?'1':'')}catch(e){}};
+$('pfMin').onclick=()=>setMin(!$('boxRef').classList.contains('min'));
+try{if(localStorage.getItem('gas.pfmin'))$('boxRef').classList.add('min')}catch(e){}
 $('pfNew').onclick=()=>{const n=prompt('Nome do novo perfil (ex.: Carro da empresa)','');if(!n||!n.trim())return;const p=Object.assign(JSON.parse(JSON.stringify(prof)),{id:Date.now().toString(36),nome:n.trim().slice(0,40),veiculo:''});PF.lista.push(p);setProf(p.id)};
 $('pfRen').onclick=()=>{const n=prompt('Nome do perfil',prof.nome);if(!n||!n.trim())return;prof.nome=n.trim().slice(0,40);renderProf();pfChanged(false)};
 $('pfDel').onclick=()=>{if(PF.lista.length<2)return;if(!confirm('Apagar o perfil “'+prof.nome+'”?'))return;PF.lista=PF.lista.filter(p=>p!==prof);setProf(PF.lista[0].id)};
@@ -1443,6 +1472,9 @@ $('discList').addEventListener('click',e=>{const b=e.target.closest('[data-del]'
 $('discList').addEventListener('change',e=>{const f=e.target.dataset.f,row=e.target.closest('.drow');if(!f||!row)return;const d=prof.descontos[+row.dataset.k];
  d[f]=f==='valor'?Math.max(0,parseFloat(e.target.value)||0):e.target.value.trim();pfChanged(f!=='nome')});
 $('useDisc').onchange=()=>{applyDisc();refresh(false)};
+$('pct').onchange=()=>{$('pctCustom').classList.toggle('hid',$('pct').value!=='c');try{localStorage.setItem('gas.pct',$('pct').value+'|'+$('pctVal').value)}catch(e){}refresh(false)};
+$('pctVal').onchange=()=>{$('pctVal').value=Math.min(100,Math.max(1,Math.round(+$('pctVal').value||10)));$('pct').onchange()};
+try{const [a,b]=(localStorage.getItem('gas.pct')||'').split('|');if(a){$('pct').value=a;if(b)$('pctVal').value=b;$('pctCustom').classList.toggle('hid',a!=='c')}}catch(e){}
 // painel lateral (telemóvel)
 const sideOpen=o=>{$('side').classList.toggle('open',o);$('sideBg').classList.toggle('open',o)};
 $('bSide').onclick=()=>sideOpen(true);$('bSideX').onclick=()=>sideOpen(false);$('sideBg').onclick=()=>sideOpen(false);

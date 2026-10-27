@@ -39,3 +39,10 @@
 - Tabelas "Perto" mostram o custo de abastecer os litros do perfil.
 - Telemóvel: as caixas abrem num painel lateral pelo botão ⚙️.
 - Afastamento, litros e consumo saíram da aba Percurso (agora no perfil), com um resumo do perfil ativo.
+
+## 0.2b — 2026-10-27
+- Caixa "Valores de referência" minimizável (▾): fica só o combo do perfil e o botão ＋; o estado é lembrado.
+- Caixa Geral: filtro "Preços a mostrar" — Todos, 75%, 50% (abaixo da mediana), 25% mais baratos ou personalizado; calculado nos postos da zona visível (raio em "Perto", corredor do percurso em "Percurso").
+- Popup do posto com percurso ativo: "⛽ Incluir na rota (Maps) ↗" (Google Maps origem → posto → destino) e "Waze ↗" (direto ao posto). Sem percurso: "Google Maps ↗" e "Waze ↗".
+- Removido o texto por baixo do título.
+- Rodapé com link para o site da DGEG.
