@@ -787,7 +787,7 @@ tbody tr{cursor:pointer}tbody tr:hover{background:rgba(127,127,127,.08)}
 <div class="card"><h2>📏 5 mais próximos</h2><div id="tNear"></div></div>
 </div>
 <div class="grid hid" id="gRoute">
-<div class="card"><h2>⭐ Recomendados no percurso</h2><p class="sum" id="rSum"></p><div id="tBest"></div><p class="note">Custo = abastecimento + combustível gasto no desvio (ida e volta à rota). Poupança comparada com o preço mediano dos postos no percurso.</p></div>
+<div class="card"><h2>⭐ Recomendados no percurso</h2><p class="sum" id="rSum"></p><div id="tBest"></div><p class="note">Desvio = tempo e km a mais em relação ao percurso original (A → posto → B). ≈ = estimativa enquanto calcula ou sem ligação. Custo = abastecimento + combustível gasto no desvio. Poupança comparada com o preço mediano dos postos no percurso.</p></div>
 <div class="card"><h2>💶 5 mais baratos no percurso</h2><div id="tRCheap"></div></div>
 </div>
 <p class="note" style="margin-bottom:24px">Mapa © OpenStreetMap · pesquisa Nominatim · rotas OSRM. A pesquisa e as rotas precisam de internet.</p>
@@ -828,7 +828,7 @@ function setMode(m){mode=m;document.querySelectorAll('.tab').forEach(t=>t.classL
  $('pNear').classList.toggle('hid',m!=='near');$('pRoute').classList.toggle('hid',m!=='route');
  $('gNear').classList.toggle('hid',m!=='near');$('gRoute').classList.toggle('hid',m!=='route');
  setPick(null);refresh(true)}
-function refresh(fit){gLab.clearLayers();gRoute.clearLayers();if(circ){map.removeLayer(circ);circ=null}
+function refresh(fit){gLab.clearLayers();gRoute.clearLayers();gStar.clearLayers();if(circ){map.removeLayer(circ);circ=null}
  [meM,aM,bM].forEach(x=>x&&map.removeLayer(x));drawAll();
  if(mode==='near')updNear(fit);else updRoute(fit)}
 
@@ -900,8 +900,8 @@ $('bRoute').onclick=async()=>{if(!A&&$('qA').value.trim())await goA();if(!B&&$('
 async function calcRoute(){setStatus('A calcular percurso…');
  try{const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${A[1]},${A[0]};${B[1]},${B[0]}?overview=full&geometries=geojson`);
   const j=await r.json();if(j.code!=='Ok'||!j.routes.length)throw new Error(j.message||j.code);
-  const rt=j.routes[0];route={pts:rt.geometry.coordinates.map(c=>[c[1],c[0]]),km:rt.distance/1000,min:rt.duration/60,approx:false}
- }catch(e){route={pts:[A,B],km:hav(A[0],A[1],B[0],B[1]),min:null,approx:true}}
+  const rt=j.routes[0];route={pts:rt.geometry.coordinates.map(c=>[c[1],c[0]]),km:rt.distance/1000,min:rt.duration/60,approx:false,det:{}}
+ }catch(e){route={pts:[A,B],km:hav(A[0],A[1],B[0],B[1]),min:null,approx:true,det:{}}}
  refresh(true)}
 
 // distância de cada posto à rota + km ao longo da rota (projeção local em km)
@@ -929,26 +929,49 @@ function updRoute(fit){
  const line=L.polyline(route.pts,{color:'#0b6bcb',weight:5,opacity:.8,dashArray:route.approx?'8 8':null}).addTo(gRoute);
  const {list}=corridor(route.pts,maxKm);
  const med=median(list);
- list.forEach(s=>{s.det=2*s.off*1.3;s.cost=s.p*Lt+s.det*cons/100*s.p;s.save=med*Lt-s.cost;s.info=`a ${fmtD(s.off)} da rota · km ${Math.round(s.along)}`});
+ const calc=s=>{const r=route.det[s.i];if(r){s.det=Math.max(0,r.km);s.dMin=Math.max(0,r.min);s.real=true}else{s.det=2*s.off*1.3;s.dMin=s.det/50*60;s.real=false}
+  s.cost=s.p*Lt+s.det*cons/100*s.p;s.save=med*Lt-s.cost;s.info=`a ${fmtD(s.off)} da rota · km ${Math.round(s.along)} · desvio ${s.real?'':'≈'}+${fmtMin(s.dMin)}`};
+ list.forEach(calc);
  const best=[...list].sort((a,b)=>a.cost-b.cost||a.along-b.along).slice(0,5);
  const cheap=[...list].sort((a,b)=>a.p-b.p||a.off-b.off).slice(0,5);
- const bestIds=new Set(best.map(s=>s.i));
+ const bestIds=new Set([...list].sort((a,b)=>a.cost-b.cost).slice(0,12).map(s=>s.i));
  priceLabels([...list].filter(s=>!bestIds.has(s.i)).sort((a,b)=>a.p-b.p).slice(0,80));
- best.forEach((s,k)=>L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',html:`<span class="star-ic">★${k+1} ${s.p.toFixed(3).replace('.',',')}</span>`,iconSize:[0,0]}),zIndexOffset:20000-k}).bindPopup(()=>popup(s)).addTo(gRoute));
+ gStar.clearLayers();drawBest(best);
  const dur=route.min!=null?` · ${route.min>=60?Math.floor(route.min/60)+' h '+Math.round(route.min%60)+' min':Math.round(route.min)+' min'}`:'';
  $('rSum').textContent=`${fmtD(route.km)}${dur} · ${list.length} postos até ${String(maxKm).replace('.',',')} km da rota · mediana ${list.length?fmtP(med):'—'}`;
  setStatus(route.approx?'Não foi possível obter a rota por estrada (sem internet?) — a usar linha reta aproximada.':'Percurso calculado. Arrasta A ou B para ajustar.',route.approx);
- $('tBest').innerHTML=best.length?tbl(best,'route'):'<div class="empty">Nenhum posto perto da rota. Aumenta o afastamento máximo.</div>';
+ if(!best.length)$('tBest').innerHTML='<div class="empty">Nenhum posto perto da rota. Aumenta o afastamento máximo.</div>';
+ if(best.length&&!route.approx)refineDetours(list,calc);
  $('tRCheap').innerHTML=cheap.length?tbl(cheap,'route2'):'<div class="empty">—</div>';
  if(fit)map.fitBounds(line.getBounds(),{padding:[20,20]})}
 
+const fmtMin=m=>m<1?'<1 min':m<60?Math.round(m)+' min':Math.floor(m/60)+' h '+Math.round(m%60)+' min';
+const gStar=L.layerGroup().addTo(map);
+function drawBest(best){gStar.clearLayers();
+ best.forEach((s,k)=>L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',html:`<span class="star-ic">★${k+1} ${s.p.toFixed(3).replace('.',',')}</span>`,iconSize:[0,0]}),zIndexOffset:20000-k}).bindPopup(()=>popup(s)).addTo(gStar));
+ $('tBest').innerHTML=tbl(best,'route')}
+let detTok=0;
+// Desvio real: rota A → posto → B comparada com A → B (OSRM). Avalia os 10 melhores candidatos e reordena.
+async function refineDetours(list,calc){const tok=++detTok,rt=route;
+ let cands=[...list].sort((a,b)=>a.cost-b.cost).slice(0,10).filter(s=>!rt.det[s.i]);
+ const done=()=>{if(tok!==detTok||rt!==route)return false;list.forEach(calc);drawBest([...list].sort((a,b)=>a.cost-b.cost||a.along-b.along).slice(0,5));return true};
+ if(!cands.length){done();return}
+const sum0=$('rSum').textContent;$('rSum').textContent=sum0+' · a calcular desvios…';
+ for(let i=0;i<cands.length;i+=2){const part=cands.slice(i,i+2);
+  await Promise.all(part.map(async s=>{try{const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${A[1]},${A[0]};${s.lng},${s.lat};${B[1]},${B[0]}?overview=false`);const j=await r.json();
+   if(j.code==='Ok'){const x=j.routes[0];rt.det[s.i]={km:x.distance/1000-rt.km,min:(x.duration/60)-rt.min}}}catch(e){}}));
+  if(tok!==detTok||rt!==route)return;
+  const more=[...list].map(s=>(calc(s),s)).sort((a,b)=>a.cost-b.cost).slice(0,10).filter(s=>!rt.det[s.i]&&!cands.includes(s));cands.push(...more.slice(0,4));
+  if(cands.length>16)cands.length=16}
+ if(done())$('rSum').textContent=sum0}
+
 /* ---------- TABELAS ---------- */
 function tbl(a,kind){
- const head={simple:'<th class="n">Preço</th>',dist:'<th class="n">Preço</th><th class="n">Dist.</th>',route:'<th class="n">Preço</th><th class="n">Custo</th>',route2:'<th class="n">Preço</th><th class="n">Afast.</th>'}[kind];
+ const head={simple:'<th class="n">Preço</th>',dist:'<th class="n">Preço</th><th class="n">Dist.</th>',route:'<th class="n">Preço</th><th class="n">Desvio</th><th class="n">Custo</th>',route2:'<th class="n">Preço</th><th class="n">Afast.</th>'}[kind];
  return`<table><thead><tr><th>Posto</th>${head}</tr></thead><tbody>${a.map((s,k)=>{
   const nm=`<td><div class="nm">${kind==='route'?`<span class="rk">${k+1}</span>`:''}${esc(s.nome)}</div><div class="ad">${esc(s.marca)} · ${esc(s.loc||s.mun)}${kind.startsWith('route')?` · km ${Math.round(s.along)}`:''}</div></td>`;
   const p=`<td class="n pr">${fmtP(s.p)}</td>`;
-  const x=kind==='dist'?`<td class="n">${fmtD(s.d)}</td>`:kind==='route'?`<td class="n">${fmtE(s.cost)}<div class="sv${s.save<0?' neg':''}">${s.save>=0?'poupa ':'+'}${fmtE(Math.abs(s.save))}</div><div class="ad">desvio ${fmtD(s.det)}</div></td>`:kind==='route2'?`<td class="n">${fmtD(s.off)}</td>`:'';
+  const x=kind==='dist'?`<td class="n">${fmtD(s.d)}</td>`:kind==='route'?`<td class="n"><b>${s.real?'':'≈'}+${fmtMin(s.dMin)}</b><div class="ad">+${fmtD(s.det)}</div></td><td class="n">${fmtE(s.cost)}<div class="sv${s.save<0?' neg':''}">${s.save>=0?'poupa ':'+'}${fmtE(Math.abs(s.save))}</div></td>`:kind==='route2'?`<td class="n">${fmtD(s.off)}</td>`:'';
   return`<tr data-i="${s.i}">${nm}${p}${x}</tr>`}).join('')}</tbody></table>`}
 document.querySelectorAll('.grid').forEach(g=>g.addEventListener('click',e=>{const tr=e.target.closest('tr[data-i]');if(!tr)return;const s=S[+tr.dataset.i];map.setView([s.lat,s.lng],15);L.popup().setLatLng([s.lat,s.lng]).setContent(popup(s)).openOn(map);$('map').scrollIntoView({behavior:'smooth',block:'center'})}));
 $('noAE').onchange=()=>refresh(false);
