@@ -119,6 +119,8 @@
   .col-head .column-title { margin: 0; }
   .col-head button { padding: 5px 12px; font-size: 0.85rem; }
   .resp { font-size: 0.9rem; color: var(--muted); }
+  .notas { font-size: 0.9rem; color: var(--muted); line-height: 1.4; margin-top: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .plink { display: block; margin-top: 6px; font-size: 0.85rem; color: var(--accent); overflow-wrap: anywhere; position: relative; z-index: 1; }
   .resp b { color: var(--text); font-weight: 600; }
   .col .grid { overflow-y: auto; flex: 1; min-height: 0; padding: 2px 6px 16px 2px; overscroll-behavior: contain; }
   .column-title {
@@ -269,6 +271,12 @@
     <label>Responsável
       <input id="pResp" type="text" maxlength="80" autocomplete="off">
     </label>
+    <label>Link (opcional)
+      <input id="pLink" type="text" inputmode="url" maxlength="500" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://…">
+    </label>
+    <label>Notas
+      <textarea id="pNotas" rows="4" maxlength="2000"></textarea>
+    </label>
     <p class="err" id="projErr" role="alert"></p>
     <div class="actions">
       <button type="button" class="danger" id="pDel" hidden>Apagar</button>
@@ -297,7 +305,7 @@
   </form>
 </dialog>
 
-<footer>v2.4</footer>
+<footer>v2.5</footer>
 
 <script>
 (() => {
@@ -391,7 +399,7 @@
     projetos = [];
     if (!projOk) return;
     try {
-      const r = await api("/rest/v1/hub_projetos?select=*&order=created_at.asc");
+      const r = await api("/rest/v1/hub_projetos?select=*&order=ordem.asc,created_at.asc");
       if (r.ok) projetos = await r.json();
     } catch (e) {}
   }
@@ -453,9 +461,11 @@
   const byOrdem = (a, b) => (a.ordem - b.ordem) || String(a.created_at || "").localeCompare(String(b.created_at || ""));
 
   let moving = false;
-  async function move(item, dir) {
+  const move = (item, dir) => reorder(itens.filter((x) => x.categoria === item.categoria), item, dir, "hub_itens", load, () => store.set(LS_CACHE, itens));
+  const moveProj = (item, dir) => reorder(projetos, item, dir, "hub_projetos", async () => { await loadProj(); render(); }, () => {});
+  async function reorder(all, item, dir, table, reload, persistLocal) {
     if (moving) return;
-    const list = itens.filter((x) => x.categoria === item.categoria).sort(byOrdem);
+    const list = all.slice().sort(byOrdem);
     const from = list.findIndex((x) => x.id === item.id);
     const to = from + dir;
     if (from < 0 || to < 0 || to >= list.length) return;
@@ -465,19 +475,19 @@
       const o = (idx + 1) * 10;
       if (x.ordem !== o) { x.ordem = o; changed.push(x); }
     });
-    store.set(LS_CACHE, itens);
+    persistLocal();
     render();
     moving = true;
     try {
       const rs = await Promise.all(changed.map((x) =>
-        api("/rest/v1/hub_itens?id=eq." + encodeURIComponent(x.id), {
+        api("/rest/v1/" + table + "?id=eq." + encodeURIComponent(x.id), {
           method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ ordem: x.ordem })
         }).then(async (r) => r.ok && (await r.json()).length > 0)
       ));
       if (rs.some((ok) => !ok)) throw new Error("save");
       setStatus("");
     } catch (e) {
-      await load();
+      await reload();
       setStatus("Não foi possível guardar a nova ordem.");
     } finally {
       moving = false;
@@ -494,9 +504,27 @@
     r.append("Responsável: ");
     r.append(el("b", null, p.responsavel || "—"));
     c.append(r);
+    if (p.notas) c.append(el("div", "notas", p.notas));
+    if (p.link && URL_RE.test(p.link)) {
+      const a = el("a", "plink", "🔗 " + p.link.replace(/^https?:\/\//, ""));
+      a.href = p.link;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      c.append(a);
+    }
     wrap.append(c);
     wrap.classList.add("has-tools");
     const tools = el("div", "tools");
+    if (!searching()) {
+      for (const [txt, dir, lbl] of [["▲", -1, "Subir"], ["▼", 1, "Descer"]]) {
+        const m = el("button", "mv", txt);
+        m.type = "button";
+        m.title = lbl;
+        m.setAttribute("aria-label", lbl + " " + p.titulo);
+        m.addEventListener("click", () => moveProj(p, dir));
+        tools.append(m);
+      }
+    }
     const b = el("button", "edit", "✎");
     b.type = "button";
     b.title = "Editar";
@@ -543,7 +571,8 @@
       const grid = $("projGrid");
       grid.replaceChildren();
       projetos
-        .filter((p) => !nq || norm(p.titulo).includes(nq) || norm(p.responsavel).includes(nq))
+        .filter((p) => !nq || norm(p.titulo).includes(nq) || norm(p.responsavel).includes(nq) || norm(p.notas).includes(nq) || norm(p.link).includes(nq))
+        .sort(byOrdem)
         .forEach((p) => grid.append(projCard(p)));
       if (!grid.children.length) grid.append(el("div", "empty", nq ? "Sem resultados." : "Ainda não há projetos."));
     }
@@ -674,6 +703,8 @@
     $("projDlgTitle").textContent = p ? "Editar projeto" : "Novo projeto";
     $("pTitulo").value = p ? p.titulo : "";
     $("pResp").value = p ? p.responsavel || "" : "";
+    $("pLink").value = p ? p.link || "" : "";
+    $("pNotas").value = p ? p.notas || "" : "";
     $("projErr").textContent = "";
     $("pDel").hidden = !p;
     $("projDlg").showModal();
@@ -685,10 +716,13 @@
     const err = $("projErr");
     const titulo = $("pTitulo").value.trim();
     const responsavel = $("pResp").value.trim();
+    const link = normUrl($("pLink").value);
+    const notas = $("pNotas").value.trim();
     if (!titulo) { err.textContent = "Indica o título."; return; }
+    if (link && (!URL_RE.test(link) || link.length > 500)) { err.textContent = "Link inválido. Usa https://… ou deixa em branco."; return; }
     $("pSave").disabled = true;
     try {
-      const body = { titulo, responsavel };
+      const body = { titulo, responsavel, link, notas };
       let r;
       if (editingProj) {
         body.updated_at = new Date().toISOString();
@@ -696,6 +730,7 @@
           method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(body)
         });
       } else {
+        body.ordem = (projetos.length ? Math.max(...projetos.map((x) => x.ordem || 0)) : 0) + 10;
         r = await api("/rest/v1/hub_projetos", {
           method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(body)
         });
