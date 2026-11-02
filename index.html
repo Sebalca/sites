@@ -85,18 +85,41 @@
     border: 1px solid var(--border); background: var(--card-bg); color: var(--text);
   }
   .search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .tabs { max-width: 1080px; width: 100%; margin: 0 auto 10px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .tabs[hidden] { display: none; }
+  .tabs button { padding: 5px 12px; font-size: 0.8rem; border-radius: 999px; color: var(--muted); }
+  .tabs button.on { border-color: var(--accent); color: var(--accent); font-weight: 600; }
   .columns {
     max-width: 1080px; width: 100%;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    display: flex;
+    gap: 20px;
     flex: 1; min-height: 0;
+    overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
   }
+  .col { flex: 0 0 min(100%, 480px); scroll-snap-align: start; display: flex; flex-direction: column; min-height: 0; }
+  .columns { justify-content: safe center; }
   @media (max-width: 720px) {
-    .columns { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; gap: 14px; }
+    /* com login: caixas lado a lado; a terceira vê-se a deslizar */
+    .columns.multi { gap: 10px; }
+    .columns.multi .col { flex-basis: calc(50% - 5px); }
+    .columns.multi .column-title { font-size: 0.8rem; }
+    .columns.multi .card-title { padding-right: 0; font-size: 1rem; }
+    .columns.multi .card { padding: 12px 12px; }
+    .columns.multi .has-tools .card { padding-bottom: 50px; }
+    .columns.multi .tools { top: auto; bottom: 8px; right: 8px; }
+    .columns.multi .col-head button { padding: 4px 8px; font-size: 0.75rem; }
   }
-  .col { display: flex; flex-direction: column; min-height: 0; }
+  .col[hidden] { display: none; }
+  .col-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 10px 4px; flex: none; min-height: 34px; }
+  .col-head .column-title { margin: 0; }
+  .col-head button { padding: 5px 12px; font-size: 0.85rem; }
+  .resp { font-size: 0.9rem; color: var(--muted); }
+  .resp b { color: var(--text); font-weight: 600; }
   .col .grid { overflow-y: auto; flex: 1; min-height: 0; padding: 2px 6px 16px 2px; overscroll-behavior: contain; }
   .column-title {
     font-size: 1rem;
@@ -111,7 +134,7 @@
   .empty { color: var(--muted); font-size: 0.9rem; padding: 6px 4px; }
 
   .card-wrap { position: relative; }
-  a.card {
+  .card {
     display: block;
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -191,14 +214,20 @@
 
 <div class="search"><input id="q" type="search" placeholder="Pesquisar por título ou notas…" aria-label="Pesquisar" autocomplete="off"></div>
 
-<div class="columns">
-  <div class="col">
-    <div class="column-title">Sites</div>
+<div class="tabs" id="tabs" hidden></div>
+
+<div class="columns" id="columns">
+  <div class="col" id="colCur">
+    <div class="col-head"><div class="column-title">Curiosidades</div></div>
+    <div class="grid curiosidades" id="curiosidadesGrid"></div>
+  </div>
+  <div class="col" id="colSites" hidden>
+    <div class="col-head"><div class="column-title">Sites</div></div>
     <div class="grid" id="siteGrid"></div>
   </div>
-  <div class="col">
-    <div class="column-title">Curiosidades</div>
-    <div class="grid curiosidades" id="curiosidadesGrid"></div>
+  <div class="col" id="colProj" hidden>
+    <div class="col-head"><div class="column-title">Projetos</div><button type="button" class="primary" id="btnAddProj">+ projeto</button></div>
+    <div class="grid projetos" id="projGrid"></div>
   </div>
 </div>
 
@@ -231,6 +260,25 @@
   </form>
 </dialog>
 
+<dialog id="projDlg" aria-labelledby="projDlgTitle">
+  <form id="projForm" novalidate>
+    <h2 id="projDlgTitle">Novo projeto</h2>
+    <label>Título
+      <input id="pTitulo" type="text" maxlength="120" autocomplete="off" required>
+    </label>
+    <label>Responsável
+      <input id="pResp" type="text" maxlength="80" autocomplete="off">
+    </label>
+    <p class="err" id="projErr" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="danger" id="pDel" hidden>Apagar</button>
+      <span class="spacer"></span>
+      <button type="button" id="pCancel">Cancelar</button>
+      <button type="submit" class="primary" id="pSave">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="loginDlg" aria-labelledby="loginDlgTitle">
   <form id="loginForm">
     <h2 id="loginDlgTitle">Entrar</h2>
@@ -249,7 +297,7 @@
   </form>
 </dialog>
 
-<footer>v2.2</footer>
+<footer>v2.4</footer>
 
 <script>
 (() => {
@@ -261,12 +309,6 @@
 
   // Lista de reserva: usada se a base de dados não responder e ainda não houver cópia guardada.
   const SEED = [
-    { categoria: "site", ordem: 10, titulo: "Achievements", url: "https://achievements.frisk.pt", descricao: "Checklist de conquistas de vida por categorias — viagens, leitura, carreira e mais." },
-    { categoria: "site", ordem: 20, titulo: "Gestor de Impressão 3D", url: "https://3dprint.frisk.pt", descricao: "Calculadora de custo real e preço de venda para peças de impressão 3D." },
-    { categoria: "site", ordem: 30, titulo: "Parkncharge", url: "https://parkncharge.frisk.pt", descricao: "Plataforma tipo \"Airbnb de estacionamento\"." },
-    { categoria: "site", ordem: 40, titulo: "Promoção Imobiliária", url: "https://promocao-imobiliaria.frisk.pt", descricao: "Site de promoção imobiliária." },
-    { categoria: "site", ordem: 50, titulo: "Finanças Pessoais", url: "https://financas.frisk.pt", descricao: "Simulador salarial e outras ferramentas de finanças pessoais." },
-    { categoria: "site", ordem: 60, titulo: "Habitação & Construção", url: "https://habitacao.frisk.pt", descricao: "Preços de casas por distrito e freguesia, estatísticas e previsões, e notícias do setor — atualizado semanalmente." },
     { categoria: "curiosidade", ordem: 10, titulo: "Quântica", url: "quantica.html", descricao: "Notas e explicações sobre mecânica quântica." },
     { categoria: "curiosidade", ordem: 20, titulo: "Relatividade", url: "relatividade.html", descricao: "Notas e explicações sobre a teoria da relatividade." },
     { categoria: "curiosidade", ordem: 30, titulo: "Criptografia", url: "criptografia.html", descricao: "Notas e explicações sobre criptografia." },
@@ -286,6 +328,9 @@
 
   let session = store.get(LS_SESSION);
   let isAdmin = false;
+  let projOk = false; // conta autorizada a ver/gerir Projetos (confirmado pelo servidor)
+  let projetos = [];
+  let editingProj = null;
   let itens = store.get(LS_CACHE) || SEED;
   let editing = null;
 
@@ -333,6 +378,24 @@
     } catch (e) {}
   }
 
+  async function checkProj() {
+    projOk = false;
+    if (!session) return;
+    try {
+      const r = await api("/rest/v1/rpc/e_hub_projetos", { method: "POST", body: "{}" });
+      projOk = r.ok && (await r.json()) === true;
+    } catch (e) {}
+  }
+
+  async function loadProj() {
+    projetos = [];
+    if (!projOk) return;
+    try {
+      const r = await api("/rest/v1/hub_projetos?select=*&order=created_at.asc");
+      if (r.ok) projetos = await r.json();
+    } catch (e) {}
+  }
+
   async function load() {
     try {
       const r = await api("/rest/v1/hub_itens?select=*&order=ordem.asc,created_at.asc");
@@ -343,6 +406,7 @@
     } catch (e) {
       setStatus("Sem ligação à base de dados — a mostrar a última lista guardada.");
     }
+    await loadProj();
     render();
   }
 
@@ -362,6 +426,7 @@
     a.append(el("div", "card-title", i.titulo), el("div", "card-desc", i.descricao || ""));
     wrap.append(a);
     if (isAdmin && i.id) {
+      wrap.classList.add("has-tools");
       const tools = el("div", "tools");
       if (!searching()) {
         for (const [txt, dir, lbl] of [["▲", -1, "Subir"], ["▼", 1, "Descer"]]) {
@@ -419,13 +484,73 @@
     }
   }
 
+  const norm = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  function projCard(p) {
+    const wrap = el("div", "card-wrap");
+    const c = el("div", "card");
+    c.append(el("div", "card-title", p.titulo));
+    const r = el("div", "resp");
+    r.append("Responsável: ");
+    r.append(el("b", null, p.responsavel || "—"));
+    c.append(r);
+    wrap.append(c);
+    wrap.classList.add("has-tools");
+    const tools = el("div", "tools");
+    const b = el("button", "edit", "✎");
+    b.type = "button";
+    b.title = "Editar";
+    b.setAttribute("aria-label", "Editar " + p.titulo);
+    b.addEventListener("click", () => openProj(p));
+    tools.append(b);
+    wrap.append(tools);
+    return wrap;
+  }
+
+  function renderTabs() {
+    const cols = [["colCur", "Curiosidades"], ["colSites", "Sites"], ["colProj", "Projetos"]].filter(([id]) => !$(id).hidden);
+    const tabs = $("tabs");
+    tabs.replaceChildren();
+    tabs.hidden = cols.length < 2;
+    $("columns").classList.toggle("multi", cols.length > 1);
+    for (const [id, label] of cols) {
+      const b = el("button", null, label);
+      b.type = "button";
+      b.dataset.col = id;
+      b.addEventListener("click", () => $(id).scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" }));
+      tabs.append(b);
+    }
+    markTab();
+  }
+  function markTab() {
+    const box = $("columns");
+    const x = box.getBoundingClientRect().left;
+    let best = null, bd = Infinity;
+    for (const c of box.children) {
+      if (c.hidden) continue;
+      const d = Math.abs(c.getBoundingClientRect().left - x);
+      if (d < bd) { bd = d; best = c.id; }
+    }
+    for (const b of $("tabs").children) b.classList.toggle("on", b.dataset.col === best);
+  }
+
   function render() {
+    $("colSites").hidden = !session;
+    $("colProj").hidden = !(session && projOk);
+    renderTabs();
+    const nq = norm(($("q").value || "").trim());
+    {
+      const grid = $("projGrid");
+      grid.replaceChildren();
+      projetos
+        .filter((p) => !nq || norm(p.titulo).includes(nq) || norm(p.responsavel).includes(nq))
+        .forEach((p) => grid.append(projCard(p)));
+      if (!grid.children.length) grid.append(el("div", "empty", nq ? "Sem resultados." : "Ainda não há projetos."));
+    }
     for (const [cat, gridId] of [["site", "siteGrid"], ["curiosidade", "curiosidadesGrid"]]) {
+      if (cat === "site" && !session) continue;
       const grid = $(gridId);
       grid.replaceChildren();
-      const q = ($("q").value || "").trim().toLowerCase();
-      const norm = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const nq = norm(q);
       itens
         .filter((i) => i.categoria === cat)
         .filter((i) => !nq || norm(i.titulo).includes(nq) || norm(i.descricao).includes(nq))
@@ -543,6 +668,66 @@
     }
   }
 
+  /* ---------- Projetos ---------- */
+  function openProj(p) {
+    editingProj = p;
+    $("projDlgTitle").textContent = p ? "Editar projeto" : "Novo projeto";
+    $("pTitulo").value = p ? p.titulo : "";
+    $("pResp").value = p ? p.responsavel || "" : "";
+    $("projErr").textContent = "";
+    $("pDel").hidden = !p;
+    $("projDlg").showModal();
+    $("pTitulo").focus();
+  }
+
+  async function saveProj(ev) {
+    ev.preventDefault();
+    const err = $("projErr");
+    const titulo = $("pTitulo").value.trim();
+    const responsavel = $("pResp").value.trim();
+    if (!titulo) { err.textContent = "Indica o título."; return; }
+    $("pSave").disabled = true;
+    try {
+      const body = { titulo, responsavel };
+      let r;
+      if (editingProj) {
+        body.updated_at = new Date().toISOString();
+        r = await api("/rest/v1/hub_projetos?id=eq." + encodeURIComponent(editingProj.id), {
+          method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(body)
+        });
+      } else {
+        r = await api("/rest/v1/hub_projetos", {
+          method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(body)
+        });
+      }
+      const rows = r.ok ? await r.json() : [];
+      if (!r.ok || !rows.length) { err.textContent = "Não foi possível guardar (sem permissão?)."; return; }
+      $("projDlg").close();
+      await loadProj();
+      render();
+    } catch (e) {
+      err.textContent = "Sem ligação. Tenta outra vez.";
+    } finally {
+      $("pSave").disabled = false;
+    }
+  }
+
+  async function deleteProj() {
+    if (!editingProj || !confirm('Apagar "' + editingProj.titulo + '"?')) return;
+    try {
+      const r = await api("/rest/v1/hub_projetos?id=eq." + encodeURIComponent(editingProj.id), {
+        method: "DELETE", headers: { Prefer: "return=representation" }
+      });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) { $("projErr").textContent = "Não foi possível apagar (sem permissão?)."; return; }
+      $("projDlg").close();
+      await loadProj();
+      render();
+    } catch (e) {
+      $("projErr").textContent = "Sem ligação. Tenta outra vez.";
+    }
+  }
+
   /* ---------- Login ---------- */
   async function doLogin(ev) {
     ev.preventDefault();
@@ -566,9 +751,9 @@
       setSession(d, email);
       $("lPass").value = "";
       $("loginDlg").close();
-      await checkAdmin();
-      setStatus(isAdmin ? "" : "Sessão iniciada, mas esta conta não tem permissão para editar o hub.");
-      render();
+      await Promise.all([checkAdmin(), checkProj()]);
+      setStatus("");
+      await load();
     } catch (e) {
       err.textContent = "Sem ligação. Tenta outra vez.";
     } finally {
@@ -579,8 +764,14 @@
   function logout() {
     setSession(null);
     isAdmin = false;
+    projOk = false;
+    projetos = [];
+    itens = itens.filter((i) => i.categoria === "curiosidade"); // não deixar sites em memória/cache
+    store.set(LS_CACHE, itens);
     setStatus("");
+    $("columns").scrollTo({ left: 0, behavior: "auto" });
     render();
+    load();
   }
 
   /* ---------- Eventos ---------- */
@@ -588,14 +779,19 @@
   $("btnCancel").addEventListener("click", () => $("itemDlg").close());
   $("btnDel").addEventListener("click", deleteItem);
   $("loginForm").addEventListener("submit", doLogin);
+  $("projForm").addEventListener("submit", saveProj);
+  $("btnAddProj").addEventListener("click", () => openProj(null));
+  $("pCancel").addEventListener("click", () => $("projDlg").close());
+  $("pDel").addEventListener("click", deleteProj);
+  $("columns").addEventListener("scroll", () => { clearTimeout(markTab.t); markTab.t = setTimeout(markTab, 60); }, { passive: true });
   $("btnLoginCancel").addEventListener("click", () => $("loginDlg").close());
-  for (const id of ["itemDlg", "loginDlg"]) {
+  for (const id of ["itemDlg", "loginDlg", "projDlg"]) {
     $(id).addEventListener("click", (e) => { if (e.target === $(id)) $(id).close(); });
   }
 
   render(); // mostra já a última lista guardada
   (async () => {
-    await checkAdmin();
+    await Promise.all([checkAdmin(), checkProj()]);
     await load();
   })();
 })();
