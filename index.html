@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Frisk">
+<meta name="apple-mobile-web-app-title" content="Sites">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121316" media="(prefers-color-scheme: dark)">
@@ -106,6 +106,20 @@
   .view[hidden] { display: none; }
   .ptools { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 8px; flex: none; }
   .ptools .count { color: var(--muted); font-size: 0.85rem; }
+  .ptools { flex-wrap: wrap; }
+  .ptools .btns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+  .ptools .btns button { white-space: nowrap; }
+  .ptools .hint { color: var(--muted); font-size: 0.8rem; }
+  .pt td.h, .pt th.h { width: 36px; padding-right: 0; }
+  .grip { cursor: grab; touch-action: none; user-select: none; color: var(--muted); font-size: 1.1rem; line-height: 1; padding: 6px 8px; display: inline-block; border-radius: 8px; }
+  .grip:active { cursor: grabbing; }
+  .pt tr.dragging { position: relative; z-index: 3; background: var(--card-bg); box-shadow: 0 6px 18px var(--shadow); opacity: .95; }
+  .pt tr.drop-before td { box-shadow: inset 0 3px 0 var(--accent); }
+  .pt tr.drop-after td { box-shadow: inset 0 -3px 0 var(--accent); }
+  .estwrap { position: relative; display: inline-block; }
+  .estwrap::after { content: "▾"; position: absolute; right: 9px; top: 50%; transform: translateY(-52%); font-size: .7rem; pointer-events: none; }
+  .estsel { min-width: 10.5rem; appearance: none; -webkit-appearance: none; font: inherit; font-size: 0.78rem; font-weight: 600; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 999px; padding: 3px 24px 3px 10px; cursor: pointer; }
+  .estsel option { color: var(--text); background: var(--card-bg); }
   .twrap { flex: 1; min-height: 0; overflow: auto; border: 1px solid var(--border); border-radius: 14px; background: var(--card-bg); -webkit-overflow-scrolling: touch; }
   table.pt { width: 100%; border-collapse: collapse; min-width: 820px; font-size: 0.92rem; }
   .pt th, .pt td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
@@ -278,7 +292,11 @@
 <div class="view" id="viewProj" hidden>
   <div class="ptools">
     <span class="count" id="pCount"></span>
-    <button type="button" class="primary" id="btnAddProj">+ projeto</button>
+    <div class="btns">
+      <span class="hint" id="pHint"></span>
+      <button type="button" id="btnAddProj" class="primary">+ projeto</button>
+      <button type="button" id="btnEditProj">Editar</button>
+    </div>
   </div>
   <div class="twrap">
     <table class="pt">
@@ -329,6 +347,9 @@
     <label>Responsável
       <input id="pResp" type="text" maxlength="80" autocomplete="off">
     </label>
+    <label>Pessoas envolvidas
+      <input id="pPessoas" type="text" maxlength="200" autocomplete="off" placeholder="Nomes separados por vírgula">
+    </label>
     <label>Link (opcional)
       <input id="pLink" type="text" inputmode="url" maxlength="500" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://…">
     </label>
@@ -363,7 +384,7 @@
   </form>
 </dialog>
 
-<footer>v2.6</footer>
+<footer>v2.8</footer>
 
 <script>
 (() => {
@@ -396,6 +417,7 @@
   let isAdmin = false;
   let view = "home"; // "home" | "proj"
   let psort = { key: null, dir: 1 };
+  let editMode = false;
   const ESTADOS = [
     ["ideia", "Ideia"], ["planeamento", "Planeamento"], ["desenvolvimento", "Em desenvolvimento"],
     ["testes", "Fase de testes"], ["producao", "Em produção"], ["standby", "Standby"],
@@ -529,7 +551,6 @@
 
   let moving = false;
   const move = (item, dir) => reorder(itens.filter((x) => x.categoria === item.categoria), item, dir, "hub_itens", load, () => store.set(LS_CACHE, itens));
-  const moveProj = (item, dir) => reorder(projetos, item, dir, "hub_projetos", async () => { await loadProj(); render(); }, () => {});
   async function reorder(all, item, dir, table, reload, persistLocal) {
     if (moving) return;
     const list = all.slice().sort(byOrdem);
@@ -564,7 +585,8 @@
   const norm = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
   const PCOLS = [
-    ["titulo", "Título"], ["estado", "Estado"], ["responsavel", "Responsável"], ["notas", "Notas"], ["link", "Link"]
+    ["titulo", "Título"], ["estado", "Estado"], ["responsavel", "Responsável"],
+    ["pessoas", "Pessoas envolvidas"], ["notas", "Notas"], ["link", "Link"]
   ];
 
   function pCompare(a, b) {
@@ -575,9 +597,10 @@
     return r * psort.dir || byOrdem(a, b);
   }
 
-  function renderProjHead() {
+  function renderProjHead(canDrag) {
     const tr = $("pHead");
     tr.replaceChildren();
+    if (canDrag) tr.append(el("th", "h"));
     for (const [k, label] of PCOLS) {
       const th = el("th");
       th.setAttribute("aria-sort", psort.key === k ? (psort.dir === 1 ? "ascending" : "descending") : "none");
@@ -597,13 +620,51 @@
     tr.append(el("th"));
   }
 
-  function projRow(p, canMove) {
+  async function changeEstado(p, sel) {
+    const old = p.estado;
+    p.estado = sel.value;
+    sel.parentNode.className = "estwrap st-" + p.estado;
+    try {
+      const r = await api("/rest/v1/hub_projetos?id=eq." + encodeURIComponent(p.id), {
+        method: "PATCH", headers: { Prefer: "return=representation" },
+        body: JSON.stringify({ estado: p.estado, updated_at: new Date().toISOString() })
+      });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) throw new Error("save");
+      setStatus("");
+      if (psort.key === "estado") render();
+    } catch (e) {
+      p.estado = old;
+      setStatus("Não foi possível alterar o estado.");
+      render();
+    }
+  }
+
+  function projRow(p, canDrag) {
     const tr = el("tr");
+    tr.dataset.id = p.id;
+    if (canDrag) {
+      const h = el("td", "h");
+      const g = el("span", "grip", "☰");
+      g.title = "Arrastar para mudar a ordem";
+      g.setAttribute("aria-label", "Arrastar " + p.titulo);
+      g.addEventListener("pointerdown", (e) => startDrag(e, tr, g));
+      h.append(g);
+      tr.append(h);
+    }
     tr.append(el("td", "t", p.titulo));
     const st = el("td");
-    st.append(el("span", "badge st-" + (p.estado || "desenvolvimento"), estLabel(p.estado)));
+    const wrap = el("span", "estwrap st-" + (p.estado || "desenvolvimento"));
+    const sel = el("select", "estsel");
+    sel.setAttribute("aria-label", "Estado de " + p.titulo);
+    for (const [k, label] of ESTADOS) { const o = el("option", null, label); o.value = k; sel.append(o); }
+    sel.value = p.estado || "desenvolvimento";
+    sel.addEventListener("change", () => changeEstado(p, sel));
+    wrap.append(sel);
+    st.append(wrap);
     tr.append(st);
     tr.append(el("td", null, p.responsavel || "—"));
+    tr.append(el("td", null, p.pessoas || ""));
     tr.append(el("td", "n", p.notas || ""));
     const l = el("td", "l");
     if (p.link && URL_RE.test(p.link)) {
@@ -613,15 +674,6 @@
     }
     tr.append(l);
     const ac = el("td", "a");
-    if (canMove) {
-      for (const [txt, dir, lbl] of [["▲", -1, "Subir"], ["▼", 1, "Descer"]]) {
-        const m = el("button", "mv", txt);
-        m.type = "button"; m.title = lbl;
-        m.setAttribute("aria-label", lbl + " " + p.titulo);
-        m.addEventListener("click", () => moveProj(p, dir));
-        ac.append(m);
-      }
-    }
     const b = el("button", "edit", "✎");
     b.type = "button"; b.title = "Editar";
     b.setAttribute("aria-label", "Editar " + p.titulo);
@@ -632,19 +684,107 @@
   }
 
   function renderProj(nq) {
-    renderProjHead();
+    const canDrag = editMode && !psort.key && !nq;
+    renderProjHead(canDrag);
     const body = $("pBody");
     body.replaceChildren();
     const rows = projetos
-      .filter((p) => !nq || [p.titulo, p.responsavel, p.notas, p.link, estLabel(p.estado)].some((t) => norm(t).includes(nq)))
+      .filter((p) => !nq || [p.titulo, p.responsavel, p.pessoas, p.notas, p.link, estLabel(p.estado)].some((t) => norm(t).includes(nq)))
       .sort(psort.key ? pCompare : byOrdem);
-    const canMove = !psort.key && !nq;
-    rows.forEach((p) => body.append(projRow(p, canMove)));
+    rows.forEach((p) => body.append(projRow(p, canDrag)));
     if (!rows.length) {
       const tr = el("tr"); const td = el("td", "n", nq ? "Sem resultados." : "Ainda não há projetos.");
       td.colSpan = PCOLS.length + 1; tr.append(td); body.append(tr);
     }
     $("pCount").textContent = rows.length + (rows.length === 1 ? " projeto" : " projetos");
+    const eb = $("btnEditProj");
+    eb.textContent = editMode ? "Concluir" : "Editar";
+    eb.classList.toggle("primary", editMode);
+    $("btnAddProj").classList.toggle("primary", !editMode);
+    $("pHint").textContent = editMode
+      ? (canDrag ? "Arrasta ☰ para mudar a ordem." : "Limpa a pesquisa e a ordenação das colunas para arrastar.")
+      : "";
+  }
+
+  /* Arrastar linhas (rato e toque): a linha segue o dedo, o resto não se mexe até largares. */
+  function startDrag(e, tr, grip) {
+    if (e.button != null && e.button !== 0) return;
+    e.preventDefault();
+    const body = $("pBody"), wrap = body.closest(".twrap");
+    const others = [...body.children].filter((x) => x !== tr);
+    const startY = e.clientY, startScroll = wrap.scrollTop;
+    const h = tr.offsetHeight, top0 = tr.offsetTop;
+    let target = others.indexOf(tr), dy = 0, lastY = startY, raf = 0;
+    tr.classList.add("dragging");
+    try { grip.setPointerCapture(e.pointerId); } catch (err) {}
+
+    const centers = others.map((r) => r.offsetTop + r.offsetHeight / 2);
+    function update() {
+      dy = (lastY - startY) + (wrap.scrollTop - startScroll);
+      tr.style.transform = "translateY(" + dy + "px)";
+      const c = top0 + h / 2 + dy;
+      target = centers.filter((x) => x < c).length; // posição entre as outras linhas
+      others.forEach((r, i) => {
+        r.classList.toggle("drop-before", i === target);
+        r.classList.toggle("drop-after", i === others.length - 1 && target === others.length);
+      });
+    }
+    function tick() {
+      const r = wrap.getBoundingClientRect();
+      if (lastY < r.top + 50) wrap.scrollTop -= 10;
+      else if (lastY > r.bottom - 50) wrap.scrollTop += 10;
+      update();
+      raf = requestAnimationFrame(tick);
+    }
+    function onMove(ev) { lastY = ev.clientY; }
+    function end(ev, cancel) {
+      cancelAnimationFrame(raf);
+      grip.removeEventListener("pointermove", onMove);
+      grip.removeEventListener("pointerup", onUp);
+      grip.removeEventListener("pointercancel", onCancel);
+      tr.classList.remove("dragging");
+      tr.style.transform = "";
+      others.forEach((r) => r.classList.remove("drop-before", "drop-after"));
+      if (cancel) return;
+      const ref = others[target] || null;
+      if (ref === tr.nextSibling || (!ref && !tr.nextSibling)) return; // mesma posição
+      body.insertBefore(tr, ref);
+      persistOrder([...body.children].map((r) => r.dataset.id));
+    }
+    const onUp = (ev) => end(ev, false);
+    const onCancel = (ev) => end(ev, true);
+    grip.addEventListener("pointermove", onMove);
+    grip.addEventListener("pointerup", onUp);
+    grip.addEventListener("pointercancel", onCancel);
+    raf = requestAnimationFrame(tick);
+  }
+
+  async function persistOrder(ids) {
+    if (moving) return;
+    const byId = new Map(projetos.map((x) => [x.id, x]));
+    const changed = [];
+    ids.forEach((id, idx) => {
+      const x = byId.get(id), o = (idx + 1) * 10;
+      if (x && x.ordem !== o) { x.ordem = o; changed.push(x); }
+    });
+    render();
+    if (!changed.length) return;
+    moving = true;
+    try {
+      const rs = await Promise.all(changed.map((x) =>
+        api("/rest/v1/hub_projetos?id=eq." + encodeURIComponent(x.id), {
+          method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ ordem: x.ordem })
+        }).then(async (r) => r.ok && (await r.json()).length > 0)
+      ));
+      if (rs.some((ok) => !ok)) throw new Error("save");
+      setStatus("");
+    } catch (e) {
+      await loadProj();
+      render();
+      setStatus("Não foi possível guardar a nova ordem.");
+    } finally {
+      moving = false;
+    }
   }
 
   function setView(v) { view = v; render(); }
@@ -681,6 +821,12 @@
       add.type = "button";
       add.addEventListener("click", () => openItem(null));
       tb.append(add);
+    }
+    if (!isStandalone() && (installEv || isIOS())) {
+      const ins = el("button", "ghost", "Instalar app");
+      ins.type = "button";
+      ins.addEventListener("click", installApp);
+      tb.append(ins);
     }
     if (session) {
       const out = el("button", "ghost", "Sair");
@@ -791,6 +937,7 @@
     $("pTitulo").value = p ? p.titulo : "";
     $("pEstado").value = p ? p.estado || "desenvolvimento" : "ideia";
     $("pResp").value = p ? p.responsavel || "" : "";
+    $("pPessoas").value = p ? p.pessoas || "" : "";
     $("pLink").value = p ? p.link || "" : "";
     $("pNotas").value = p ? p.notas || "" : "";
     $("projErr").textContent = "";
@@ -804,13 +951,14 @@
     const err = $("projErr");
     const titulo = $("pTitulo").value.trim();
     const responsavel = $("pResp").value.trim();
+    const pessoas = $("pPessoas").value.trim();
     const link = normUrl($("pLink").value);
     const notas = $("pNotas").value.trim();
     if (!titulo) { err.textContent = "Indica o título."; return; }
     if (link && (!URL_RE.test(link) || link.length > 500)) { err.textContent = "Link inválido. Usa https://… ou deixa em branco."; return; }
     $("pSave").disabled = true;
     try {
-      const body = { titulo, responsavel, link, notas, estado: $("pEstado").value };
+      const body = { titulo, responsavel, pessoas, link, notas, estado: $("pEstado").value };
       let r;
       if (editingProj) {
         body.updated_at = new Date().toISOString();
@@ -849,6 +997,26 @@
     } catch (e) {
       $("projErr").textContent = "Sem ligação. Tenta outra vez.";
     }
+  }
+
+  /* ---------- Instalar como app (PWA) ---------- */
+  let installEv = null;
+  const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEv = e; render(); });
+  window.addEventListener("appinstalled", () => { installEv = null; setStatus(""); render(); });
+  async function installApp() {
+    if (installEv) {
+      installEv.prompt();
+      try { await installEv.userChoice; } catch (e) {}
+      installEv = null;
+      render();
+    } else if (isIOS()) {
+      setStatus("No iPhone/iPad: toca em Partilhar (□↑) e depois em \"Adicionar ao ecrã principal\".");
+    }
+  }
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
   }
 
   /* ---------- Login ---------- */
@@ -890,6 +1058,7 @@
     projOk = false;
     projetos = [];
     view = "home";
+    editMode = false;
     itens = itens.filter((i) => i.categoria === "curiosidade"); // não deixar sites em memória/cache
     store.set(LS_CACHE, itens);
     setStatus("");
@@ -908,6 +1077,11 @@
   $("pCancel").addEventListener("click", () => $("projDlg").close());
   $("pDel").addEventListener("click", deleteProj);
   for (const [k, label] of ESTADOS) { const o = el("option", null, label); o.value = k; $("pEstado").append(o); }
+  $("btnEditProj").addEventListener("click", () => {
+    editMode = !editMode;
+    if (editMode) psort = { key: null, dir: 1 };
+    render();
+  });
   $("vtHome").addEventListener("click", () => setView("home"));
   $("vtProj").addEventListener("click", () => setView("proj"));
   $("btnLoginCancel").addEventListener("click", () => $("loginDlg").close());
