@@ -1,0 +1,1582 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Anatomia do Tempo</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{margin:0}
+
+/* Layout: um mostrador de relógio que se abre em capítulos — hero com relógio vivo, depois laboratórios e o catálogo de teorias numa só coluna larga */
+:root{
+  --bg:#ECEFF1; --surface:#F8F9FA; --sunk:#E2E6EA; --ink:#17202D; --muted:#596473; --line:#CDD3DA;
+  --brass:#94661A; --brass-soft:#EFE3CB;
+  --fis:#1C6873; --fis-soft:#D5E8EA;
+  --filo:#94661A; --filo-soft:#EFE3CB;
+  --mente:#7A4579; --mente-soft:#EBDDEA;
+  --ok:#2F7A45; --kah:#2E6E9E; --nie:#A2462F; --dop:#4F7A2E; --tie:#7A4579; --tau:#596473;
+  --f-display:"Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --f-body:"Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F151E; --surface:#161E2A; --sunk:#1C2634; --ink:#E5E9EE; --muted:#9AA4B2; --line:#2A3546;
+  --brass:#D9AA52; --brass-soft:#3A2F1C;
+  --fis:#68BCC6; --fis-soft:#183238;
+  --filo:#D9AA52; --filo-soft:#3A2F1C;
+  --mente:#C792C6; --mente-soft:#36243A;
+  --ok:#6CC488; --kah:#79B2DE; --nie:#E48F78; --dop:#9CC772; --tie:#C792C6; --tau:#9AA4B2; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0F151E; --surface:#161E2A; --sunk:#1C2634; --ink:#E5E9EE; --muted:#9AA4B2; --line:#2A3546;
+  --brass:#D9AA52; --brass-soft:#3A2F1C;
+  --fis:#68BCC6; --fis-soft:#183238;
+  --filo:#D9AA52; --filo-soft:#3A2F1C;
+  --mente:#C792C6; --mente-soft:#36243A;
+  --ok:#6CC488; --kah:#79B2DE; --nie:#E48F78; --dop:#9CC772; --tie:#C792C6; --tau:#9AA4B2; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:1080px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0;line-height:1.05}
+h1{font-size:clamp(3rem,9vw,5.6rem);letter-spacing:-.01em}
+h1 em{color:var(--brass)}
+h2{font-size:clamp(2rem,5vw,2.9rem)}
+h3{font-size:1.55rem}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.lede{font-size:1.08rem;color:var(--muted);max-width:60ch}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+/* HERO */
+.hero{display:grid;gap:28px;padding-block:40px 28px;align-items:center}
+@media(min-width:820px){.hero{grid-template-columns:1.1fr .9fr;gap:40px;padding-block:64px 36px}}
+.hero-text{display:grid;gap:18px;min-width:0}
+.quote{border-left:2px solid var(--brass);padding-left:14px;font-family:var(--f-display);font-style:italic;font-size:1.3rem;line-height:1.3;max-width:42ch}
+.quote cite{display:block;font-family:var(--f-mono);font-style:normal;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.dial-box{display:grid;gap:14px;justify-items:center;min-width:0}
+#dial{width:min(100%,380px);aspect-ratio:1;max-width:100%}
+.readouts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden;width:100%;max-width:420px}
+.ro{background:var(--surface);padding:10px 12px;min-width:0}
+.ro .k{font-size:.72rem;color:var(--muted);letter-spacing:.04em}
+.ro .v{font-family:var(--f-mono);font-size:.92rem;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ro.wide{grid-column:1/-1}
+
+nav.toc{display:flex;flex-wrap:wrap;gap:8px;padding-block:6px 10px;border-bottom:1px solid var(--line)}
+nav.toc a{font-size:.88rem;text-decoration:none;color:var(--ink);padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+nav.toc a:hover{border-color:var(--brass)}
+
+section{padding-block:52px 8px;display:grid;gap:20px}
+.sec-head{display:grid;gap:10px}
+
+/* Chips & buttons */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 13px;font-size:.88rem;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn{border:1px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:6px;padding:9px 15px;font-weight:600;font-size:.92rem;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:hover{filter:brightness(1.1)}
+
+/* Theory cards */
+.cards{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1000px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+details.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;min-width:0;scroll-margin-top:20px}
+details.card[open]{border-color:var(--c)}
+details.card summary{list-style:none;cursor:pointer;padding:16px 16px 14px;display:grid;gap:6px}
+details.card summary::-webkit-details-marker{display:none}
+.card .meta{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.tag{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--c);background:var(--cs);padding:2px 7px;border-radius:3px}
+.yr{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.card h3{font-size:1.45rem}
+.card .who{font-size:.85rem;color:var(--muted)}
+.card .thesis{font-size:.95rem}
+.card .more{font-size:.8rem;color:var(--c);font-weight:600}
+details.card[open] .more{display:none}
+.card .body{padding:0 16px 16px;display:grid;gap:10px;font-size:.93rem;border-top:1px dashed var(--line);padding-top:12px;margin-inline:0}
+.card .body b{font-family:var(--f-mono);font-weight:500;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block}
+.flash{animation:flash 1.2s ease}
+@keyframes flash{0%{box-shadow:0 0 0 3px var(--c)}100%{box-shadow:0 0 0 0 transparent}}
+
+/* Timeline */
+.timeline{position:relative;display:grid;gap:0;padding-left:0}
+.tl-row{display:grid;grid-template-columns:86px 18px minmax(0,1fr);align-items:start;gap:10px;cursor:pointer;padding-block:6px;background:none;border:0;text-align:left;width:100%}
+.tl-row:hover .tl-name{text-decoration:underline}
+.tl-yr{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);text-align:right;padding-top:2px;font-variant-numeric:tabular-nums}
+.tl-dot{position:relative;height:100%}
+.tl-dot::before{content:"";position:absolute;left:8px;top:0;bottom:-12px;width:1px;background:var(--line)}
+.tl-dot::after{content:"";position:absolute;left:4px;top:7px;width:9px;height:9px;border-radius:50%;background:var(--c);border:2px solid var(--bg)}
+.tl-row:last-child .tl-dot::before{display:none}
+.tl-name{font-weight:600}
+.tl-who{color:var(--muted);font-size:.86rem}
+.tl-gap{font-family:var(--f-mono);font-size:.7rem;color:var(--muted);padding:4px 0 4px 114px;letter-spacing:.06em}
+
+/* Panels */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:16px;min-width:0}
+.two{display:grid;gap:16px}
+@media(min-width:860px){.two{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--sunk);border-radius:6px;padding:10px 12px;min-width:0}
+.stat .k{font-size:.74rem;color:var(--muted)}
+.stat .v{font-family:var(--f-mono);font-size:1.15rem;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+label.lab{display:grid;gap:6px;font-size:.88rem;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--brass)}
+select{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+.clocks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.clock{display:grid;justify-items:center;gap:4px;text-align:center}
+.clock canvas{width:100%;max-width:170px;aspect-ratio:1}
+.clock .cn{font-size:.8rem;color:var(--muted)}
+.clock .cv{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.note{font-size:.88rem;color:var(--muted)}
+.big-answer{font-family:var(--f-display);font-size:1.6rem;line-height:1.2}
+.big-answer span{color:var(--brass)}
+
+#gas{width:100%;aspect-ratio:2/1;border-radius:6px;background:var(--sunk);display:block}
+#entropy{width:100%;height:70px;display:block}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.check{display:flex;gap:6px;align-items:center;font-size:.88rem}
+
+/* Quiz */
+.q{display:grid;gap:10px}
+.q p{font-weight:600}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 12px;cursor:pointer;font-size:.93rem}
+.opt[aria-pressed="true"]{border-color:var(--brass);background:var(--brass-soft)}
+.result{border:1px solid var(--brass);border-radius:8px;padding:16px;display:grid;gap:8px}
+.bar{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brass)}
+.bars{display:grid;gap:6px;font-size:.84rem}
+.bars div.r{display:grid;grid-template-columns:120px 1fr 34px;gap:8px;align-items:center}
+
+/* Estimation */
+.est-big{font-family:var(--f-mono);font-size:2.4rem;font-variant-numeric:tabular-nums}
+.hist{display:flex;flex-wrap:wrap;gap:6px}
+.hist span{font-family:var(--f-mono);font-size:.8rem;background:var(--sunk);padding:3px 8px;border-radius:4px}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;padding-top:16px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:10px 4px;margin-right:18px;font-size:.98rem;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--brass)}
+.tab small{font-family:var(--f-mono);font-weight:400;font-size:.7rem;margin-right:6px;color:var(--brass)}
+
+/* Tab 2 */
+.hero2{padding-block:40px 20px;display:grid;gap:18px}
+@media(min-width:820px){.hero2{padding-block:60px 28px}}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.facts .ro{padding:12px 14px}
+.dots{display:inline-flex;gap:3px;vertical-align:middle}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--brass)}
+.mlist{display:grid;gap:8px}
+.mbtn{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 12px;cursor:pointer}
+.mbtn[aria-pressed="true"]{border-color:var(--fis);background:var(--fis-soft)}
+.mbtn .lv{font-family:var(--f-mono);font-size:.75rem;color:var(--fis)}
+#mv-svg{width:100%;max-width:320px;justify-self:center;display:block}
+#mv-svg circle{cursor:pointer}
+.mdetail{display:grid;gap:10px;font-size:.94rem}
+.mdetail b{font-family:var(--f-mono);font-weight:500;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block}
+#tree{width:100%;height:260px;display:block;background:var(--sunk);border-radius:6px}
+.seq{font-family:var(--f-mono);font-size:1.1rem;letter-spacing:.15em;min-height:1.5em}
+#para-svg{width:100%;height:auto;display:block;background:var(--sunk);border-radius:6px}
+.outcome{font-size:1rem;border-left:2px solid var(--brass);padding-left:12px}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.92rem;background:var(--surface)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-weight:500;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:var(--sunk)}
+tr:last-child td{border-bottom:0}
+td.y{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted)}
+.pill{display:inline-block;font-size:.75rem;padding:2px 8px;border-radius:999px;background:var(--cs);color:var(--c);white-space:nowrap}
+
+/* Tab 3 · Dark */
+.spoil{display:grid;gap:10px;background:var(--surface);border:1px solid var(--brass);border-radius:10px;padding:14px 16px}
+.lock{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;background:repeating-linear-gradient(135deg,var(--sunk) 0 8px,var(--surface) 8px 16px);border:1px dashed var(--line);border-radius:6px;padding:10px 12px;font-size:.86rem;color:var(--muted)}
+.lock button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:.8rem;cursor:pointer}
+.seasons{display:flex;gap:8px;flex-wrap:wrap}
+.season-meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.theory{display:grid;gap:14px}
+.theory h4{margin:0;font-family:var(--f-display);font-weight:400;font-size:1.35rem}
+.theory .blk{display:grid;gap:6px}
+.ruler{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;padding-top:8px}
+.ruler::before{content:"";position:absolute;left:8%;right:8%;top:26px;height:2px;background:var(--line)}
+.era{position:relative;background:none;border:0;cursor:pointer;display:grid;justify-items:center;gap:6px;padding:4px 0;color:var(--muted);min-width:0}
+.era i{width:16px;height:16px;border-radius:50%;background:var(--surface);border:2px solid var(--line);position:relative;z-index:1;margin-top:3px}
+.era span{font-family:var(--f-mono);font-size:.82rem;font-variant-numeric:tabular-nums}
+.era[aria-pressed="true"]{color:var(--ink)}
+.era[aria-pressed="true"] i{background:var(--brass);border-color:var(--brass)}
+.gap33{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin-inline:8.3%;font-family:var(--f-mono);font-size:.68rem;color:var(--muted);text-align:center}
+.era-list{display:grid;gap:10px;font-size:.95rem}
+.era-list .it{display:grid;gap:4px;border-left:2px solid var(--line);padding-left:12px}
+.era-list .it small{font-family:var(--f-mono);font-size:.7rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.who-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.who-card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;gap:8px;align-content:start;min-width:0}
+.who-card h4{margin:0;font-family:var(--f-display);font-weight:400;font-size:1.3rem}
+.who-card .rev{font-size:.93rem}
+.who-card .tg{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+#triq{width:100%;max-width:300px;justify-self:center;display:block}
+#triq circle{cursor:pointer}
+.gloss{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.gloss .g{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:4px;font-size:.93rem;min-width:0}
+.gloss .g strong{font-family:var(--f-display);font-weight:400;font-size:1.2rem}
+
+/* Árvore das famílias */
+.tree-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+#fam-svg{display:block;width:100%;min-width:900px;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.82rem;color:var(--muted);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:24px;border-top:2px solid var(--muted)}
+.legend i.loop{border-top:2px dashed var(--brass)}
+.legend i.adopt{border-top:2px dotted var(--muted)}
+.legend i.pair{border-top:2px dashed var(--mente)}
+.node{cursor:pointer}
+.node:focus{outline:none}
+.node:focus-visible rect{stroke-width:3.5}
+.fam-chip{--c:var(--muted)}
+.fam-chip::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:6px;vertical-align:1px}
+.rel{display:grid;gap:6px}
+.rel .chips{gap:6px}
+.rel .chip{font-size:.82rem;padding:4px 10px}
+.loop-txt{font-size:.93rem}
+
+footer{margin-top:56px;border-top:1px solid var(--line);padding-top:16px;font-size:.85rem;color:var(--muted)}
+@media (prefers-reduced-motion: reduce){.flash{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tabs" role="tablist" aria-label="Abas">
+    <button class="tab" role="tab" id="t-tempo" aria-controls="tab-tempo" aria-selected="true"><small>I</small>Teorias do tempo</button>
+    <button class="tab" role="tab" id="t-viagens" aria-controls="tab-viagens" aria-selected="false"><small>II</small>Viagens no tempo e multiversos</button>
+    <button class="tab" role="tab" id="t-dark" aria-controls="tab-dark" aria-selected="false"><small>III</small>Dark</button>
+  </div>
+  <div id="tab-tempo" role="tabpanel" aria-labelledby="t-tempo">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="eyebrow">Física · Filosofia · Mente</span>
+      <h1>Anatomia do <em>Tempo</em></h1>
+      <p class="lede">Um rio que flui, uma dimensão como o espaço, uma ilusão da consciência ou algo que nem sequer existe ao nível fundamental? Vinte e cinco séculos de respostas, com laboratórios para experimentar.</p>
+      <blockquote class="quote">«O que é, pois, o tempo? Se ninguém mo pergunta, sei; se quero explicá-lo a quem mo pergunta, já não sei.»<cite>Santo Agostinho · Confissões, XI</cite></blockquote>
+    </div>
+    <div class="dial-box">
+      <canvas id="dial" aria-label="Relógio com anel de 24 horas e progresso do ano"></canvas>
+      <div class="readouts" aria-live="off">
+        <div class="ro"><div class="k">Hora local</div><div class="v" id="r-local">—</div></div>
+        <div class="ro"><div class="k">Tempo Unix (s)</div><div class="v" id="r-unix">—</div></div>
+        <div class="ro"><div class="k">Data juliana</div><div class="v" id="r-jd">—</div></div>
+        <div class="ro"><div class="k">Ano decorrido</div><div class="v" id="r-year">—</div></div>
+        <div class="ro wide"><div class="k">Segundos desde o Big Bang (≈ 13,787 mil milhões de anos)</div><div class="v" id="r-bb">—</div></div>
+        <div class="ro wide"><div class="k">Segundos desde que abriste esta página</div><div class="v" id="r-open">0</div></div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Secções">
+    <a href="#teorias">Teorias</a>
+    <a href="#cronologia">Cronologia</a>
+    <a href="#relatividade">Relatividade</a>
+    <a href="#seta">Seta do tempo</a>
+    <a href="#perceber">Tempo percebido</a>
+    <a href="#tua">Qual é a tua?</a>
+  </nav>
+
+  <section id="teorias">
+    <div class="sec-head">
+      <span class="eyebrow">Capítulo I</span>
+      <h2>As teorias</h2>
+      <p class="lede">Toca num cartão para ler a ideia central e a principal objeção. Filtra por área.</p>
+    </div>
+    <div class="chips" id="filters" role="group" aria-label="Filtrar por área">
+      <button class="chip" data-f="all" aria-pressed="true">Todas</button>
+      <button class="chip" data-f="fis" aria-pressed="false">Física</button>
+      <button class="chip" data-f="filo" aria-pressed="false">Filosofia</button>
+      <button class="chip" data-f="mente" aria-pressed="false">Mente</button>
+      <button class="chip" data-f="sort" aria-pressed="false">Ordenar por data</button>
+    </div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section id="cronologia">
+    <div class="sec-head">
+      <span class="eyebrow">Capítulo II</span>
+      <h2>Cronologia das ideias</h2>
+      <p class="lede">A mesma lista, ordenada no tempo. Toca numa entrada para abrir o cartão.</p>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <section id="relatividade">
+    <div class="sec-head">
+      <span class="eyebrow">Capítulo III · laboratório</span>
+      <h2>O tempo estica</h2>
+      <p class="lede">Pela relatividade, um relógio que se move ou que está perto de uma grande massa anda mais devagar. Não é ilusão nem defeito do relógio: o próprio tempo passa a outro ritmo.</p>
+    </div>
+    <div class="two">
+      <div class="panel">
+        <h3>Velocidade <span class="note">· relatividade restrita</span></h3>
+        <div class="chips" id="presets"></div>
+        <label class="lab" for="vslider">Velocidade: <strong id="vlabel" style="color:var(--ink)"></strong>
+          <input type="range" id="vslider" min="0" max="1000" value="700">
+        </label>
+        <div class="clocks">
+          <div class="clock"><canvas id="ck-earth"></canvas><div class="cn">Na Terra</div><div class="cv" id="cv-earth">0,0 anos</div></div>
+          <div class="clock"><canvas id="ck-ship"></canvas><div class="cn">Na nave</div><div class="cv" id="cv-ship">0,0 anos</div></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat"><div class="k">Fator de Lorentz γ</div><div class="v" id="o-gamma">—</div></div>
+          <div class="stat"><div class="k">Atraso por dia</div><div class="v" id="o-day">—</div></div>
+        </div>
+        <label class="lab" for="trip">Viagem de ida e volta, medida na Terra: <strong id="tripl" style="color:var(--ink)"></strong>
+          <input type="range" id="trip" min="1" max="100" value="20">
+        </label>
+        <p class="big-answer" id="twin"></p>
+        <p class="note">Paradoxo dos gémeos: o gémeo que viaja acelera e muda de referencial, por isso a situação não é simétrica e é ele quem regressa mais novo.</p>
+      </div>
+      <div class="panel">
+        <h3>Gravidade <span class="note">· relatividade geral</span></h3>
+        <label class="lab" for="body">Onde está o relógio?
+          <select id="body">
+            <option value="earth">Superfície da Terra</option>
+            <option value="sun">Superfície do Sol</option>
+            <option value="wd">Superfície de uma anã branca (Sirius B)</option>
+            <option value="ns">Superfície de uma estrela de neutrões</option>
+            <option value="bh" selected>Perto de um buraco negro</option>
+          </select>
+        </label>
+        <label class="lab" for="rslider" id="rwrap">Distância ao centro: <strong id="rlabel" style="color:var(--ink)"></strong>
+          <input type="range" id="rslider" min="0" max="1000" value="250">
+        </label>
+        <div class="stat-row">
+          <div class="stat"><div class="k">Ritmo face a um relógio distante</div><div class="v" id="g-rate">—</div></div>
+          <div class="stat"><div class="k">Perde por dia</div><div class="v" id="g-day">—</div></div>
+        </div>
+        <p class="big-answer" id="g-hour"></p>
+        <div class="stat" style="display:grid;gap:6px">
+          <div class="k">Caso real: satélites GPS (órbita a 20 200 km)</div>
+          <div style="font-family:var(--f-mono);font-size:.9rem;font-variant-numeric:tabular-nums">velocidade −7 µs/dia · gravidade +45 µs/dia · <strong>total +38 µs/dia</strong></div>
+          <div class="note">Sem esta correção, o erro de posição cresceria cerca de 11 km por dia.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="seta">
+    <div class="sec-head">
+      <span class="eyebrow">Capítulo IV · laboratório</span>
+      <h2>A seta do tempo</h2>
+      <p class="lede">As leis do movimento não distinguem passado de futuro. Então porque é que o fumo se espalha e nunca volta ao cigarro? Começa com o gás concentrado à esquerda, deixa-o espalhar, depois inverte todas as velocidades.</p>
+    </div>
+    <div class="panel">
+      <canvas id="gas" aria-label="Simulação de partículas de gás"></canvas>
+      <div>
+        <div class="eyebrow" style="display:flex;justify-content:space-between"><span>Entropia (desordem)</span><span id="s-val">0%</span></div>
+        <canvas id="entropy" aria-label="Gráfico da entropia ao longo da simulação"></canvas>
+      </div>
+      <div class="ctrl">
+        <button class="btn" id="g-play">Pausar</button>
+        <button class="btn ghost" id="g-rev">Inverter o tempo</button>
+        <button class="btn ghost" id="g-reset">Recomeçar</button>
+        <label class="check"><input type="checkbox" id="g-noise"> Perturbar ligeiramente ao inverter</label>
+        <span class="note" id="g-dir"></span>
+      </div>
+      <p class="note">Sem perturbação, o gás regressa ao canto: a física microscópica é reversível. Com um desvio mínimo, já não volta. Num gás real há biliões de partículas e colisões que amplificam qualquer erro, por isso o regresso é praticamente impossível. A entropia cresce porque há muitíssimos mais estados desordenados do que ordenados, e o universo começou num estado muito ordenado.</p>
+    </div>
+  </section>
+
+  <section id="perceber">
+    <div class="sec-head">
+      <span class="eyebrow">Capítulo V · experiência</span>
+      <h2>Quanto dura um momento?</h2>
+      <p class="lede">O cérebro não tem um órgão do tempo; estima-o. Testa o teu relógio interno: carrega em Começar, conta de cabeça sem olhar e carrega em Parar quando achares que passou o intervalo.</p>
+    </div>
+    <div class="panel">
+      <div class="chips" id="targets" role="group" aria-label="Intervalo alvo">
+        <button class="chip" data-t="3" aria-pressed="false">3 s</button>
+        <button class="chip" data-t="10" aria-pressed="true">10 s</button>
+        <button class="chip" data-t="30" aria-pressed="false">30 s</button>
+      </div>
+      <div class="est-big" id="est-display">? s</div>
+      <div class="ctrl"><button class="btn" id="est-btn">Começar</button><span class="note" id="est-msg">O contador fica escondido enquanto contas.</span></div>
+      <div class="hist" id="est-hist"></div>
+      <p class="note">Lei de Vierordt (1868): tendemos a sobrestimar intervalos curtos e a subestimar os longos. Atenção, emoção, cafeína e febre também aceleram ou travam o relógio interno.</p>
+    </div>
+  </section>
+
+  <section id="tua">
+    <div class="sec-head">
+      <span class="eyebrow">Capítulo VI</span>
+      <h2>Qual é a tua teoria?</h2>
+      <p class="lede">Quatro perguntas sobre o que te parece real. Não há respostas certas, só compromissos diferentes.</p>
+    </div>
+    <div class="panel" id="quiz"></div>
+  </section>
+  </div>
+
+  <div id="tab-viagens" role="tabpanel" aria-labelledby="t-viagens" hidden>
+    <header class="hero2">
+      <span class="eyebrow">Relatividade · Mecânica quântica · Cosmologia</span>
+      <h1>Viagens no tempo <em>e multiversos</em></h1>
+      <p class="lede">Viajar para o futuro é física comprovada. Viajar para o passado é permitido por algumas soluções das equações de Einstein, mas com exigências extremas. E se a mecânica quântica estiver certa numa das suas leituras, cada medição divide a realidade em mundos paralelos.</p>
+      <div class="facts">
+        <div class="ro"><div class="k">Maior viagem ao futuro já feita</div><div class="v">≈ 27 ms · Oleg Kononenko, 1111 dias no espaço</div></div>
+        <div class="ro"><div class="k">Festa para viajantes do tempo</div><div class="v">28/06/2009 · Stephen Hawking · 0 convidados</div></div>
+        <div class="ro"><div class="k">Cópia idêntica de ti (multiverso nível I)</div><div class="v">a ≈ 10^(10^28) metros</div></div>
+      </div>
+      <nav class="toc" aria-label="Secções da aba">
+        <a href="#futuro">Para o futuro</a>
+        <a href="#passado">Para o passado</a>
+        <a href="#paradoxos">Paradoxos</a>
+        <a href="#multiversos">Multiversos</a>
+        <a href="#muitos-mundos">Muitos mundos</a>
+        <a href="#ficcao">Na ficção</a>
+      </nav>
+    </header>
+
+    <section id="futuro">
+      <div class="sec-head">
+        <span class="eyebrow">Capítulo VII · laboratório</span>
+        <h2>Viajar para o futuro já acontece</h2>
+        <p class="lede">Quem está na Estação Espacial Internacional move-se a 7,66 km/s. A velocidade abranda o seu relógio cerca de 28 µs por dia; a gravidade mais fraca acelera-o cerca de 4 µs. Saldo: regressa à Terra ligeiramente no futuro.</p>
+      </div>
+      <div class="panel">
+        <div class="chips" id="iss-presets">
+          <button class="chip" data-d="182" aria-pressed="false">Missão de 6 meses</button>
+          <button class="chip" data-d="340" aria-pressed="false">Scott Kelly · 340 dias</button>
+          <button class="chip" data-d="803" aria-pressed="false">Krikalev · 803 dias</button>
+          <button class="chip" data-d="1111" aria-pressed="true">Kononenko · 1111 dias</button>
+        </div>
+        <label class="lab" for="iss-days">Tempo total em órbita: <strong id="iss-dl" style="color:var(--ink)"></strong>
+          <input type="range" id="iss-days" min="1" max="1500" value="1111">
+        </label>
+        <p class="big-answer" id="iss-out"></p>
+        <p class="note">Para saltar anos para o futuro é preciso muito mais: a 99,5 % da velocidade da luz, cada ano a bordo equivale a 10 anos na Terra. O laboratório de relatividade na aba I calcula estes casos.</p>
+      </div>
+    </section>
+
+    <section id="passado">
+      <div class="sec-head">
+        <span class="eyebrow">Capítulo VIII</span>
+        <h2>Caminhos para o passado</h2>
+        <p class="lede">As equações da relatividade geral admitem «curvas temporais fechadas»: trajetórias que regressam ao próprio passado. Todas as soluções conhecidas exigem algo que nunca observámos ou que talvez não possa existir. Os pontos indicam a plausibilidade física, segundo o consenso atual.</p>
+      </div>
+      <div class="cards" id="machines"></div>
+      <p class="note">Em 1992, Stephen Hawking propôs a conjetura da proteção da cronologia: alguma lei física, provavelmente efeitos quânticos, destruiria qualquer máquina do tempo no instante em que se formasse. Ainda não está demonstrada.</p>
+    </section>
+
+    <section id="paradoxos">
+      <div class="sec-head">
+        <span class="eyebrow">Capítulo IX · explorador</span>
+        <h2>Paradoxos e como escapar-lhes</h2>
+        <p class="lede">Escolhe um paradoxo e uma regra para o universo. O diagrama mostra a linha do tempo resultante.</p>
+      </div>
+      <div class="two">
+        <div class="panel">
+          <div class="eyebrow">Paradoxo</div>
+          <div class="chips" id="px-p"></div>
+          <p id="px-desc"></p>
+          <div class="eyebrow">Regra do universo</div>
+          <div class="chips" id="px-m"></div>
+          <p class="note" id="px-mdesc"></p>
+        </div>
+        <div class="panel">
+          <svg id="para-svg" viewBox="0 0 400 220" role="img" aria-label="Diagrama da linha do tempo"></svg>
+          <p class="outcome" id="px-out" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="multiversos">
+      <div class="sec-head">
+        <span class="eyebrow">Capítulo X</span>
+        <h2>Os quatro níveis do multiverso</h2>
+        <p class="lede">Max Tegmark (2003) organizou as várias ideias de universos paralelos em quatro níveis, cada um contendo o anterior. Toca num anel ou num nível.</p>
+      </div>
+      <div class="two">
+        <div class="panel">
+          <svg id="mv-svg" viewBox="0 0 300 300" role="img" aria-label="Anéis concêntricos dos quatro níveis do multiverso"></svg>
+          <div class="mlist" id="mv-list"></div>
+        </div>
+        <div class="panel mdetail" id="mv-detail" aria-live="polite"></div>
+      </div>
+      <h3 style="margin-top:12px">Outras propostas</h3>
+      <div class="cards" id="mv-others"></div>
+    </section>
+
+    <section id="muitos-mundos">
+      <div class="sec-head">
+        <span class="eyebrow">Capítulo XI · simulação</span>
+        <h2>O divisor de mundos</h2>
+        <p class="lede">Na interpretação de muitos mundos (Hugh Everett, 1957), uma medição quântica não escolhe um resultado: todos acontecem, cada um num ramo da realidade. Mede o spin de um eletrão e vê a árvore crescer. O teu ramo está a dourado.</p>
+      </div>
+      <div class="panel">
+        <canvas id="tree" aria-label="Árvore de ramos da realidade"></canvas>
+        <div class="ctrl">
+          <button class="btn" id="tr-measure">Medir o spin</button>
+          <button class="btn ghost" id="tr-reset">Recomeçar</button>
+          <span class="seq" id="tr-seq" aria-live="polite"></span>
+        </div>
+        <p class="big-answer" id="tr-out"></p>
+        <p class="note">Os ramos não comunicam entre si, por isso esta interpretação faz exatamente as mesmas previsões que as outras. O grande problema em aberto é explicar porque é que as probabilidades da regra de Born se aplicam, se todos os resultados acontecem.</p>
+      </div>
+    </section>
+
+    <section id="ficcao">
+      <div class="sec-head">
+        <span class="eyebrow">Capítulo XII</span>
+        <h2>Que regras segue cada história?</h2>
+        <p class="lede">A ficção raramente é coerente, mas a maioria das histórias escolhe um dos modelos do capítulo IX.</p>
+      </div>
+      <div class="chips" id="fic-f" role="group" aria-label="Filtrar por modelo"></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Obra</th><th>Ano</th><th>Modelo</th><th>Porquê</th></tr></thead>
+        <tbody id="fic-body"></tbody>
+      </table></div>
+    </section>
+  </div>
+
+  <div id="tab-dark" role="tabpanel" aria-labelledby="t-dark" hidden>
+    <header class="hero2">
+      <span class="eyebrow">Netflix · 2017–2020 · Baran bo Odar e Jantje Friese</span>
+      <h1>Dark <em>· o nó de Winden</em></h1>
+      <p class="lede">Em Winden, uma pequena cidade alemã com uma floresta, umas grutas e uma central nuclear, desaparece uma criança. A investigação revela que quatro famílias estão presas num laço temporal que se repete a cada 33 anos. Este guia explica quem é quem, o que acontece em cada época e a física e a filosofia por trás de cada temporada.</p>
+      <div class="spoil" role="group" aria-labelledby="sp-lab">
+        <div class="eyebrow" id="sp-lab">Até onde já viste?</div>
+        <div class="chips" id="sp-chips">
+          <button class="chip" data-s="0" aria-pressed="true">Ainda não vi</button>
+          <button class="chip" data-s="1" aria-pressed="false">Temporada 1</button>
+          <button class="chip" data-s="2" aria-pressed="false">Temporada 2</button>
+          <button class="chip" data-s="3" aria-pressed="false">Vi tudo</button>
+        </div>
+        <p class="note" id="sp-note"></p>
+      </div>
+      <nav class="toc" aria-label="Secções da aba Dark">
+        <a href="#dk-temporadas">Temporadas</a>
+        <a href="#dk-epocas">Épocas</a>
+        <a href="#dk-quem">Quem é quem</a>
+        <a href="#dk-arvore">Árvore das famílias</a>
+        <a href="#dk-mundos">Os mundos</a>
+        <a href="#dk-glossario">Glossário</a>
+      </nav>
+    </header>
+
+    <section id="dk-temporadas">
+      <div class="sec-head">
+        <span class="eyebrow">Capítulo XIII</span>
+        <h2>A teoria por trás de cada temporada</h2>
+        <p class="lede">Cada temporada usa um modelo diferente de viagem no tempo, e a série vai trocando de regras à medida que se descobre mais.</p>
+      </div>
+      <div class="seasons chips" id="dk-sel"></div>
+      <div class="panel theory" id="dk-theory" aria-live="polite"></div>
+    </section>
+
+    <section id="dk-epocas">
+      <div class="sec-head">
+        <span class="eyebrow">Capítulo XIV · explorador</span>
+        <h2>Saltos de 33 anos</h2>
+        <p class="lede">A passagem nas grutas liga sempre épocas separadas por 33 anos. Toca numa data para ver o que lá acontece.</p>
+      </div>
+      <div class="panel">
+        <div class="ruler" id="dk-ruler"></div>
+        <div class="gap33" aria-hidden="true"><span>+33</span><span>+33</span><span>+33</span><span>+33</span><span>+33</span></div>
+        <div class="era-list" id="dk-era" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section id="dk-quem">
+      <div class="sec-head">
+        <span class="eyebrow">Capítulo XV</span>
+        <h2>Quem é quem</h2>
+        <p class="lede">Em Dark, a mesma pessoa aparece em várias idades, muitas vezes com outro nome. Toca em «Revelar» para descobrir.</p>
+      </div>
+      <div class="who-grid" id="dk-who"></div>
+    </section>
+
+    <section id="dk-arvore">
+      <div class="sec-head">
+        <span class="eyebrow">Capítulo XV-B · diagrama</span>
+        <h2>A árvore impossível</h2>
+        <p class="lede">As quatro famílias de Winden, dispostas pelo ano em que cada pessoa nasce. Numa família normal, as ligações descem sempre. Em Dark, algumas sobem: são filhos que nascem antes dos pais. Toca numa pessoa, numa família ou num dos laços.</p>
+      </div>
+      <div class="chips" id="fam-chips" role="group" aria-label="Destacar família"></div>
+      <div class="tree-wrap"><svg id="fam-svg" viewBox="0 0 1336 935" role="img" aria-label="Árvore genealógica das famílias de Winden por ano de nascimento"></svg></div>
+      <div class="legend">
+        <span><i></i>pai ou mãe</span>
+        <span><i class="loop"></i>laço: o filho nasce antes do pai ou da mãe</span>
+        <span><i class="adopt"></i>adoção</span>
+        <span><i class="pair"></i>casal ou caso (ao selecionar)</span>
+        <span id="fam-hidden"></span>
+      </div>
+      <div class="two">
+        <div class="panel mdetail" id="fam-detail" aria-live="polite"></div>
+        <div class="panel">
+          <h3>Os laços da família</h3>
+          <div class="mlist" id="fam-loops"></div>
+          <p class="loop-txt" id="fam-loop-txt"></p>
+        </div>
+      </div>
+      <p class="note">Anos de nascimento aproximados, deduzidos das idades que as personagens têm em cada época.</p>
+    </section>
+
+    <section id="dk-mundos">
+      <div class="sec-head">
+        <span class="eyebrow">Capítulo XVI</span>
+        <h2>A triqueta: três mundos</h2>
+        <p class="lede">O símbolo dos três arcos entrelaçados aparece desde o genérico. Primeiro lê-se como passado, presente e futuro. No fim, ganha outro sentido.</p>
+      </div>
+      <div class="two">
+        <div class="panel"><svg id="triq" viewBox="0 0 300 290" role="img" aria-label="Triqueta com três mundos"></svg></div>
+        <div class="panel mdetail" id="dk-world" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section id="dk-glossario">
+      <div class="sec-head">
+        <span class="eyebrow">Capítulo XVII</span>
+        <h2>Glossário de Winden</h2>
+      </div>
+      <div class="gloss" id="dk-gloss"></div>
+    </section>
+  </div>
+
+  <footer>Anatomia do Tempo · síntese de divulgação. Datas indicam a obra ou formulação mais conhecida de cada ideia.</footer>
+</div>
+
+<script>
+(function(){
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const nf = (x,d=0)=> x.toLocaleString('pt-PT',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+function fitCanvas(c){
+  const dpr = Math.min(window.devicePixelRatio||1,2);
+  const r = c.getBoundingClientRect();
+  const w = Math.max(1,Math.round(r.width*dpr)), h = Math.max(1,Math.round(r.height*dpr));
+  if(c.width!==w||c.height!==h){c.width=w;c.height=h;}
+  const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx,w:r.width,h:r.height};
+}
+
+/* ---------- DATA ---------- */
+const CAT = {fis:'Física',filo:'Filosofia',mente:'Mente'};
+const T = [
+ {id:'heraclito',cat:'filo',nome:'Tudo flui',autor:'Heráclito',ano:-500,anoTxt:'c. 500 a.C.',
+  tese:'A realidade é mudança contínua; o tempo é o próprio devir.',
+  ideia:'Para Heráclito nada permanece igual: não se entra duas vezes no mesmo rio, porque a água já é outra e nós também. O tempo não é um palco onde as coisas mudam; é a mudança.',
+  obj:'Se tudo muda, o que garante que uma coisa continua a ser a mesma ao longo do tempo?'},
+ {id:'parmenides',cat:'filo',nome:'O ser não muda',autor:'Parménides e Zenão',ano:-475,anoTxt:'c. 475 a.C.',
+  tese:'A mudança e a passagem do tempo são ilusões dos sentidos.',
+  ideia:'O que é, é; o que não é, não pode ser. Como a mudança exigiria que algo passasse a não ser, Parménides conclui que o real é uno e imóvel. Zenão defendeu-o com os paradoxos de Aquiles e da flecha.',
+  obj:'Contraria toda a experiência, e a matemática do infinito do séc. XIX desfaz boa parte dos paradoxos de Zenão.'},
+ {id:'aristoteles',cat:'filo',nome:'Número do movimento',autor:'Aristóteles',ano:-350,anoTxt:'c. 350 a.C.',
+  tese:'O tempo é a medida do movimento segundo o antes e o depois.',
+  ideia:'Na Física (livro IV), Aristóteles liga o tempo à mudança: se nada mudasse, não haveria tempo. Mas o tempo não é a mudança em si; é aquilo que nela se pode contar. Chega a perguntar se haveria tempo sem uma alma que contasse.',
+  obj:'Faz o tempo depender de algo que se move e, em parte, de quem mede.'},
+ {id:'agostinho',cat:'mente',nome:'O tempo da alma',autor:'Santo Agostinho',ano:400,anoTxt:'c. 400',
+  tese:'Passado e futuro só existem na mente, como memória e expectativa.',
+  ideia:'Nas Confissões, o tempo é uma «distensão da alma». Há um presente do passado (a memória), um presente do presente (a atenção) e um presente do futuro (a expectativa). Medimos o tempo dentro de nós.',
+  obj:'Torna o tempo subjetivo: como explicar a idade de uma rocha que ninguém observou?'},
+ {id:'newton',cat:'fis',nome:'Tempo absoluto',autor:'Isaac Newton',ano:1687,anoTxt:'1687',
+  tese:'O tempo flui uniformemente por si, igual em todo o universo, independente de tudo.',
+  ideia:'Nos Principia, Newton distingue o tempo absoluto, verdadeiro e matemático, do tempo relativo que medimos com relógios. É um rio cósmico com um único «agora» partilhado por todo o universo. Funcionou na perfeição durante dois séculos.',
+  obj:'A relatividade mostrou que não há relógio universal: a simultaneidade depende do observador.'},
+ {id:'leibniz',cat:'filo',nome:'Tempo relacional',autor:'Gottfried Leibniz',ano:1715,anoTxt:'1715–16',
+  tese:'O tempo não é uma coisa; é a ordem das sucessões entre acontecimentos.',
+  ideia:'Na correspondência com Samuel Clarke, porta-voz de Newton, Leibniz argumenta que um tempo vazio, sem acontecimentos, seria indistinguível e portanto sem sentido. O tempo é uma rede de relações «antes/depois», não um recipiente.',
+  obj:'Newton respondia que a inércia e a aceleração parecem exigir um referencial absoluto.'},
+ {id:'kant',cat:'filo',nome:'Forma da intuição',autor:'Immanuel Kant',ano:1781,anoTxt:'1781',
+  tese:'O tempo não está nas coisas: é uma forma que a mente impõe à experiência.',
+  ideia:'Na Crítica da Razão Pura, espaço e tempo são formas a priori da sensibilidade, lentes que não conseguimos tirar. Não sabemos se as coisas em si são temporais; sabemos apenas que tudo o que experienciamos nos aparece em sucessão.',
+  obj:'Se o tempo é só da mente, porque é que a física o mede com tanta precisão e independência de nós?'},
+ {id:'boltzmann',cat:'fis',nome:'Seta termodinâmica',autor:'Ludwig Boltzmann',ano:1877,anoTxt:'1872–77',
+  tese:'A direção do tempo vem do aumento da entropia, da ordem para a desordem.',
+  ideia:'As leis da mecânica funcionam igual para a frente e para trás. Boltzmann mostrou que a irreversibilidade é estatística: há muitíssimos mais estados desordenados do que ordenados. O ovo parte-se e não se recompõe porque o universo começou com entropia muito baixa (a «hipótese do passado»).',
+  obj:'Porque começou o universo tão ordenado? O mistério passa para o Big Bang.'},
+ {id:'nietzsche',cat:'filo',nome:'Eterno retorno',autor:'Estoicos, Nietzsche',ano:1882,anoTxt:'Antiguidade · 1882',
+  tese:'O tempo é circular: tudo o que acontece voltará a acontecer, infinitas vezes.',
+  ideia:'Várias cosmologias antigas, como a estoica e a hindu (com os seus kalpas), viam o tempo como ciclo. Em A Gaia Ciência, Nietzsche usa o eterno retorno como teste: aceitarias viver esta vida outra vez, igual, para sempre?',
+  obj:'Num universo onde a entropia cresce, um retorno exato exigiria tempos inimaginavelmente longos.'},
+ {id:'bergson',cat:'mente',nome:'Duração vivida',autor:'Henri Bergson',ano:1889,anoTxt:'1889',
+  tese:'O tempo real é a duração vivida, não o tempo espacializado dos relógios.',
+  ideia:'Bergson separa o tempo da física, feito de instantes iguais dispostos como pontos numa linha, da durée: o fluir contínuo da consciência, em que cada momento contém os anteriores, como as notas de uma melodia. Debateu publicamente com Einstein em 1922.',
+  obj:'Difícil de testar; os físicos acusaram-no de não compreender a relatividade.'},
+ {id:'james',cat:'mente',nome:'Presente especioso',autor:'William James',ano:1890,anoTxt:'1890',
+  tese:'O «agora» que vivemos não é um instante, mas uma janela de alguns segundos.',
+  ideia:'Nos Princípios de Psicologia, James retoma uma ideia de E. R. Clay: ouvimos uma frase ou uma melodia como um todo presente, não nota a nota. A investigação atual estima uma janela de integração de cerca de 2 a 3 segundos.',
+  obj:'A duração varia com a tarefa e a pessoa; talvez haja várias janelas e não uma só.'},
+ {id:'restrita',cat:'fis',nome:'Relatividade restrita',autor:'Albert Einstein',ano:1905,anoTxt:'1905',
+  tese:'Espaço e tempo misturam-se; relógios em movimento andam mais devagar.',
+  ideia:'Se a velocidade da luz é igual para todos os observadores, o tempo não pode ser. Dois acontecimentos simultâneos para ti podem não o ser para alguém em movimento. Confirma-se todos os dias: os muões criados na alta atmosfera chegam ao solo porque o seu tempo abranda.',
+  obj:'Sem falhas experimentais conhecidas, mas obriga a abandonar o «agora» universal.'},
+ {id:'bloco',cat:'fis',nome:'Universo-bloco',autor:'Hermann Minkowski',ano:1908,anoTxt:'1908',
+  tese:'Passado, presente e futuro existem todos, num bloco de espaço-tempo a quatro dimensões.',
+  ideia:'Minkowski deu à relatividade forma geométrica: um único espaço-tempo onde cada acontecimento tem um lugar fixo. Sem simultaneidade absoluta, não há um «agora» privilegiado e o futuro é tão real como o passado. É a base do eternalismo, formalizada no argumento Rietdijk–Putnam (1966–67).',
+  obj:'Não explica porque sentimos o tempo a passar, nem deixa espaço evidente para um futuro aberto.'},
+ {id:'mctaggart',cat:'filo',nome:'Séries A e B',autor:'J. M. E. McTaggart',ano:1908,anoTxt:'1908',
+  tese:'O tempo é irreal, porque as suas duas descrições possíveis falham.',
+  ideia:'A série A ordena acontecimentos em passado, presente e futuro, e está sempre a mudar. A série B ordena-os em antes e depois, e nunca muda. McTaggart argumenta que a B sozinha não tem mudança e que a A é contraditória. A distinção ainda organiza todo o debate.',
+  obj:'Os defensores da série A respondem que um acontecimento é presente, foi futuro e será passado, nunca tudo ao mesmo tempo.'},
+ {id:'geral',cat:'fis',nome:'Relatividade geral',autor:'Albert Einstein',ano:1915,anoTxt:'1915',
+  tese:'A gravidade curva o tempo: perto de grandes massas, os relógios andam mais devagar.',
+  ideia:'O espaço-tempo é dinâmico, deformado pela matéria e pela energia. Junto ao horizonte de um buraco negro, o tempo parece quase parar para quem observa de longe. Os satélites GPS corrigem cerca de 38 µs por dia por causa disto.',
+  obj:'É incompatível com a mecânica quântica, que trata o tempo como um parâmetro externo e fixo.'},
+ {id:'broad',cat:'filo',nome:'Bloco crescente',autor:'C. D. Broad',ano:1923,anoTxt:'1923',
+  tese:'Passado e presente existem; o futuro ainda não. O universo cresce a cada instante.',
+  ideia:'Uma posição intermédia: o bloco do espaço-tempo vai sendo acrescentado, como uma parede tijolo a tijolo. Mantém um futuro aberto e uma diferença real entre o que já aconteceu e o que não. Michael Tooley defendeu uma versão moderna em 1997.',
+  obj:'Como sabemos que estamos na borda do bloco e não num passado que se julga presente?'},
+ {id:'heidegger',cat:'filo',nome:'Ser e tempo',autor:'Martin Heidegger',ano:1927,anoTxt:'1927',
+  tese:'Não estamos no tempo: somos tempo, voltados para o futuro e para a própria finitude.',
+  ideia:'Em Ser e Tempo, o tempo dos relógios deriva de algo mais fundo: a forma como a existência humana se projeta em possibilidades, carrega o seu passado e age no presente. O futuro tem primazia.',
+  obj:'Descreve bem a experiência humana, mas diz pouco sobre o tempo do universo antes de nós.'},
+ {id:'godel',cat:'fis',nome:'Universo em rotação',autor:'Kurt Gödel',ano:1949,anoTxt:'1949',
+  tese:'A relatividade admite universos onde é possível viajar ao próprio passado.',
+  ideia:'Oferecida a Einstein no seu 70.º aniversário, a solução de Gödel descreve um universo em rotação com curvas temporais fechadas. Gödel concluiu que, se isso é possível, o tempo que passa não é uma característica objetiva do mundo.',
+  obj:'O nosso universo não parece rodar; a solução é válida mas não descreve o cosmos real.'},
+ {id:'presentismo',cat:'filo',nome:'Presentismo',autor:'Arthur Prior e outros',ano:1957,anoTxt:'1957',
+  tese:'Só o presente existe. O passado já não é; o futuro ainda não é.',
+  ideia:'É a posição do senso comum: os dinossauros não existem, existiram. Arthur Prior criou a lógica temporal para dar rigor a esta visão, tratando «foi» e «será» como operadores, não como lugares.',
+  obj:'Choca com a relatividade (o presente de quem?) e com a pergunta sobre o que torna verdadeiras as frases sobre o passado.'},
+ {id:'relogio',cat:'mente',nome:'Relógio interno',autor:'Psicologia e neurociência',ano:1963,anoTxt:'1868–hoje',
+  tese:'O cérebro não sente o tempo diretamente; reconstrói-o com vários mecanismos.',
+  ideia:'O modelo de Treisman (1963) propõe um marcapasso e um acumulador. Hoje sabe-se que dopamina, atenção e emoção alteram a perceção: o medo dilata o tempo e a rotina comprime-o. Escalas diferentes (milissegundos, segundos, dias) parecem usar circuitos diferentes.',
+  obj:'Não existe um órgão único do tempo, e os modelos explicam bem só partes do fenómeno.'},
+ {id:'wdw',cat:'fis',nome:'O problema do tempo',autor:'Bryce DeWitt e John Wheeler',ano:1967,anoTxt:'1967',
+  tese:'Na equação quântica do universo inteiro, a variável tempo desaparece.',
+  ideia:'Ao aplicar a mecânica quântica à relatividade geral, a equação de Wheeler–DeWitt descreve o estado do universo sem qualquer t. Visto de fora, o universo não evolui. É o chamado problema do tempo na gravidade quântica.',
+  obj:'Se nada evolui, de onde vem a mudança que observamos? As propostas seguintes tentam responder.'},
+ {id:'pagewootters',cat:'fis',nome:'Tempo do entrelaçamento',autor:'Don Page e William Wootters',ano:1983,anoTxt:'1983',
+  tese:'O tempo emerge das correlações quânticas entre um «relógio» e o resto do universo.',
+  ideia:'Um universo estático no todo pode parecer dinâmico por dentro: se uma parte serve de relógio e está entrelaçada com o resto, quem lá está vê mudança. Em 2013–14, uma equipa em Turim reproduziu o efeito com pares de fotões.',
+  obj:'Fica por esclarecer o que conta como relógio e como recuperar toda a dinâmica habitual.'},
+ {id:'termico',cat:'fis',nome:'Tempo térmico',autor:'Alain Connes e Carlo Rovelli',ano:1994,anoTxt:'1994',
+  tese:'O fluir do tempo nasce da descrição estatística e incompleta que fazemos do mundo.',
+  ideia:'Ao nível fundamental não há variável tempo preferida. Mas um sistema descrito estatisticamente, como fazemos sempre por desconhecer os detalhes, define por si um fluxo: o tempo térmico. Rovelli liga isto à gravidade quântica em laços e à entropia.',
+  obj:'Faz a direção do tempo depender da perspetiva, o que alguns críticos consideram arbitrário.'},
+ {id:'barbour',cat:'fis',nome:'O fim do tempo',autor:'Julian Barbour',ano:1999,anoTxt:'1999',
+  tese:'O tempo não existe: só existem «agoras», configurações estáticas do universo.',
+  ideia:'Barbour imagina o espaço de todas as configurações possíveis do universo, a que chama Platonia. Cada instante é uma configuração completa; algumas contêm registos (memórias, fósseis) que sugerem um passado e criam a ilusão de uma história.',
+  obj:'Continua difícil explicar porque sentimos sequência se não há sequência real.'},
+ {id:'penrose',cat:'fis',nome:'Cosmologia cíclica conformal',autor:'Roger Penrose',ano:2010,anoTxt:'2010',
+  tese:'O fim remoto de um universo torna-se o Big Bang do seguinte, em éons sucessivos.',
+  ideia:'Quando toda a matéria se tiver dissolvido em radiação, deixa de haver massa e, sem massa, não há relógios nem escala. Penrose propõe que esse futuro se identifica geometricamente com um novo Big Bang, e procurou marcas disso na radiação cósmica de fundo.',
+  obj:'Os sinais apontados são contestados pela maioria dos cosmólogos.'}
+];
+const byId = Object.fromEntries(T.map(t=>[t.id,t]));
+const catVars = c => `--c:var(--${c});--cs:var(--${c}-soft)`;
+
+/* ---------- CARDS ---------- */
+const cardsEl = document.getElementById('cards');
+let filter='all', sorted=false;
+function renderCards(){
+  const list = (sorted ? [...T].sort((a,b)=>a.ano-b.ano) : T).filter(t=>filter==='all'||t.cat===filter);
+  cardsEl.innerHTML = list.map(t=>`
+   <details class="card" id="c-${t.id}" style="${catVars(t.cat)}">
+     <summary>
+       <div class="meta"><span class="tag">${CAT[t.cat]}</span><span class="yr">${t.anoTxt}</span></div>
+       <h3>${t.nome}</h3>
+       <div class="who">${t.autor}</div>
+       <p class="thesis">${t.tese}</p>
+       <span class="more">Ler mais</span>
+     </summary>
+     <div class="body">
+       <div><b>Ideia central</b>${t.ideia}</div>
+       <div><b>Objeção</b>${t.obj}</div>
+     </div>
+   </details>`).join('');
+}
+document.getElementById('filters').addEventListener('click',e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  if(b.dataset.f==='sort'){sorted=!sorted;b.setAttribute('aria-pressed',sorted);}
+  else{filter=b.dataset.f;document.querySelectorAll('#filters .chip:not([data-f=sort])').forEach(x=>x.setAttribute('aria-pressed',x===b));}
+  renderCards();
+});
+renderCards();
+function openCard(id){
+  const t=byId[id]; if(!t) return;
+  if(filter!=='all'&&filter!==t.cat){filter='all';document.querySelectorAll('#filters .chip:not([data-f=sort])').forEach(x=>x.setAttribute('aria-pressed',x.dataset.f==='all'));renderCards();}
+  const el=document.getElementById('c-'+id); if(!el) return;
+  el.open=true; el.scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+}
+
+/* ---------- TIMELINE ---------- */
+(function(){
+  const tl=document.getElementById('timeline');
+  const s=[...T].sort((a,b)=>a.ano-b.ano);
+  let html='', prev=null;
+  s.forEach(t=>{
+    if(prev!==null && t.ano-prev>500) html+=`<div class="tl-gap">· · · ${nf(t.ano-prev)} anos depois · · ·</div>`;
+    html+=`<button class="tl-row" data-id="${t.id}" style="${catVars(t.cat)}"><span class="tl-yr">${t.anoTxt}</span><span class="tl-dot"></span><span><div class="tl-name">${t.nome}</div><div class="tl-who">${t.autor} · ${CAT[t.cat]}</div></span></button>`;
+    prev=t.ano;
+  });
+  tl.innerHTML=html;
+  tl.addEventListener('click',e=>{const r=e.target.closest('.tl-row'); if(r) openCard(r.dataset.id);});
+})();
+
+/* ---------- HERO DIAL & READOUTS ---------- */
+const dial=document.getElementById('dial');
+const openedAt=performance.now();
+const BB_BASE = 435089000000000000n; // ≈ 13,787 mil milhões de anos em segundos, ancorado em 2020
+const ANCHOR = Date.UTC(2020,0,1)/1000;
+function drawDial(){
+  const {ctx,w}=fitCanvas(dial); const R=w/2, cx=R, cy=R;
+  const ink=css('--ink'), muted=css('--muted'), line=css('--line'), brass=css('--brass'), surf=css('--surface'), fis=css('--fis');
+  ctx.clearRect(0,0,w,w);
+  const now=new Date();
+  const h=now.getHours(), m=now.getMinutes(), s=now.getSeconds()+now.getMilliseconds()/1000;
+  // face
+  ctx.beginPath();ctx.arc(cx,cy,R*0.98,0,7);ctx.fillStyle=surf;ctx.fill();ctx.strokeStyle=line;ctx.lineWidth=1;ctx.stroke();
+  // year progress ring
+  const y0=new Date(now.getFullYear(),0,1), y1=new Date(now.getFullYear()+1,0,1);
+  const yp=(now-y0)/(y1-y0);
+  ctx.beginPath();ctx.arc(cx,cy,R*0.93,-Math.PI/2,-Math.PI/2+yp*Math.PI*2);ctx.strokeStyle=brass;ctx.lineWidth=R*0.025;ctx.lineCap='round';ctx.stroke();ctx.lineCap='butt';
+  // 24h ring with night shading (approx 20h-7h)
+  const ang24 = hr => -Math.PI/2 + hr/24*Math.PI*2;
+  ctx.beginPath();ctx.arc(cx,cy,R*0.84,ang24(20),ang24(31));ctx.strokeStyle=css('--sunk');ctx.lineWidth=R*0.08;ctx.stroke();
+  ctx.font=`${Math.max(9,R*0.055)}px ${css('--f-mono')}`;ctx.fillStyle=muted;ctx.textAlign='center';ctx.textBaseline='middle';
+  for(let i=0;i<24;i+=3){const a=ang24(i);ctx.fillText(String(i).padStart(2,'0'),cx+Math.cos(a)*R*0.84,cy+Math.sin(a)*R*0.84);}
+  const dayFrac=h+m/60+s/3600, as=ang24(dayFrac);
+  ctx.beginPath();ctx.arc(cx+Math.cos(as)*R*0.84,cy+Math.sin(as)*R*0.84,R*0.035,0,7);ctx.fillStyle=brass;ctx.fill();
+  // minute ticks
+  for(let i=0;i<60;i++){const a=i/60*Math.PI*2-Math.PI/2, big=i%5===0;
+    ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*R*0.74,cy+Math.sin(a)*R*0.74);ctx.lineTo(cx+Math.cos(a)*R*(big?0.66:0.71),cy+Math.sin(a)*R*(big?0.66:0.71));
+    ctx.strokeStyle=big?ink:line;ctx.lineWidth=big?2:1;ctx.stroke();}
+  ctx.font=`italic ${R*0.17}px ${css('--f-display')}`;ctx.fillStyle=ink;
+  [['XII',0],['III',3],['VI',6],['IX',9]].forEach(([t,i])=>{const a=i/12*Math.PI*2-Math.PI/2;ctx.fillText(t,cx+Math.cos(a)*R*0.53,cy+Math.sin(a)*R*0.53+R*0.01);});
+  const hand=(frac,len,wid,col)=>{const a=frac*Math.PI*2-Math.PI/2;ctx.beginPath();ctx.moveTo(cx-Math.cos(a)*R*0.08,cy-Math.sin(a)*R*0.08);ctx.lineTo(cx+Math.cos(a)*R*len,cy+Math.sin(a)*R*len);ctx.strokeStyle=col;ctx.lineWidth=wid;ctx.lineCap='round';ctx.stroke();ctx.lineCap='butt';};
+  hand(((h%12)+m/60)/12,0.4,R*0.035,ink);
+  hand((m+s/60)/60,0.62,R*0.022,ink);
+  hand((reduce?Math.floor(s):s)/60,0.68,1.5,fis);
+  ctx.beginPath();ctx.arc(cx,cy,R*0.03,0,7);ctx.fillStyle=brass;ctx.fill();
+}
+function readouts(){
+  const now=new Date(), unix=Date.now()/1000;
+  document.getElementById('r-local').textContent=now.toLocaleTimeString('pt-PT');
+  document.getElementById('r-unix').textContent=nf(Math.floor(unix));
+  document.getElementById('r-jd').textContent=nf(unix/86400+2440587.5,5);
+  const y0=new Date(now.getFullYear(),0,1), y1=new Date(now.getFullYear()+1,0,1);
+  document.getElementById('r-year').textContent=nf((now-y0)/(y1-y0)*100,4)+' %';
+  const bb=BB_BASE+BigInt(Math.floor(unix-ANCHOR));
+  document.getElementById('r-bb').textContent=bb.toLocaleString('pt-PT');
+  document.getElementById('r-open').textContent=nf(Math.floor((performance.now()-openedAt)/1000));
+}
+readouts(); setInterval(readouts,1000);
+
+/* ---------- RELATIVIDADE ---------- */
+const C=299792.458; // km/s
+const PRESETS=[['Carro · 120 km/h',120/3600/C],['Avião · 900 km/h',900/3600/C],['ISS · 7,66 km/s',7.66/C],['Sonda Parker · 192 km/s',192/C],['50 % c',0.5],['Muão · 99,8 % c',0.998],['99,99 % c',0.9999]];
+const vs=document.getElementById('vslider'), tripEl=document.getElementById('trip');
+let beta=0.9;
+function sliderToBeta(p){p/=1000; return p<=0.6? p/0.6*0.9 : 1-0.1*Math.pow(10,-3*(p-0.6)/0.4);}
+function betaToSlider(b){ if(b<=0.9) return b/0.9*0.6*1000; return (0.6+(-Math.log10((1-b)/0.1))*0.4/3)*1000;}
+const lagFrac = b => (b*b)/(1+Math.sqrt(1-b*b)); // 1-1/γ, estável para b pequeno
+const gammaOf = b => 1/Math.sqrt(1-b*b);
+function fmtDur(sec){
+  const a=Math.abs(sec);
+  if(a===0) return '0 s';
+  if(a<1e-6) return nf(sec*1e9,a*1e9<10?2:1)+' ns';
+  if(a<1e-3) return nf(sec*1e6,a*1e6<10?2:1)+' µs';
+  if(a<1) return nf(sec*1e3,a*1e3<10?2:1)+' ms';
+  if(a<60) return nf(sec,a<10?2:1)+' s';
+  if(a<3600) return nf(sec/60,1)+' min';
+  if(a<86400*2) return nf(sec/3600,1)+' h';
+  if(a<86400*365.25*2) return nf(sec/86400,1)+' dias';
+  return nf(sec/31557600,1)+' anos';
+}
+const pc = document.getElementById('presets');
+pc.innerHTML=PRESETS.map((p,i)=>`<button class="chip" data-i="${i}" aria-pressed="false">${p[0]}</button>`).join('');
+pc.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;beta=PRESETS[+b.dataset.i][1];vs.value=Math.round(betaToSlider(beta));pc.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===b));updRel();});
+vs.addEventListener('input',()=>{beta=sliderToBeta(+vs.value);pc.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed','false'));updRel();});
+tripEl.addEventListener('input',updRel);
+function updRel(){
+  const g=gammaOf(beta), lag=lagFrac(beta);
+  const kms=beta*C;
+  document.getElementById('vlabel').textContent = (kms<1? nf(kms*3600,0)+' km/h' : nf(kms,kms<100?2:0)+' km/s')+' · '+(beta<0.001? nf(beta*100,5): beta>0.999? nf(beta*100,3): nf(beta*100,1))+' % c';
+  document.getElementById('o-gamma').textContent = g<1.0001 ? '1 + '+ (lag).toExponential(2).replace('.',',') : nf(g,g<10?4:2);
+  document.getElementById('o-day').textContent = fmtDur(lag*86400);
+  const yrs=+tripEl.value; document.getElementById('tripl').textContent=yrs+(yrs===1?' ano':' anos');
+  const trav=yrs/g;
+  document.getElementById('twin').innerHTML = beta<0.01
+   ? `O viajante regressa <span>${fmtDur(yrs*31557600*lag)}</span> mais novo do que o irmão gémeo.`
+   : `Passam ${yrs} anos na Terra; o viajante envelhece <span>${nf(trav,trav<1?2:1)} anos</span>.`;
+}
+updRel();
+const ckE=document.getElementById('ck-earth'), ckS=document.getElementById('ck-ship');
+let tEarth=0, lastT=null;
+function drawMini(c,yrsVal,col){
+  const {ctx,w}=fitCanvas(c); const R=w/2;
+  ctx.clearRect(0,0,w,w);
+  ctx.beginPath();ctx.arc(R,R,R*0.95,0,7);ctx.fillStyle=css('--sunk');ctx.fill();
+  for(let i=0;i<12;i++){const a=i/12*Math.PI*2;ctx.beginPath();ctx.moveTo(R+Math.cos(a)*R*0.8,R+Math.sin(a)*R*0.8);ctx.lineTo(R+Math.cos(a)*R*0.9,R+Math.sin(a)*R*0.9);ctx.strokeStyle=css('--muted');ctx.lineWidth=1.5;ctx.stroke();}
+  const a=(yrsVal%1)*Math.PI*2-Math.PI/2;
+  ctx.beginPath();ctx.moveTo(R,R);ctx.lineTo(R+Math.cos(a)*R*0.78,R+Math.sin(a)*R*0.78);ctx.strokeStyle=col;ctx.lineWidth=3;ctx.lineCap='round';ctx.stroke();
+  ctx.beginPath();ctx.arc(R,R,4,0,7);ctx.fillStyle=col;ctx.fill();
+}
+function relFrame(dt){
+  tEarth+=dt/3; // 1 ano na Terra = 3 s de animação
+  const tShip=tEarth/gammaOf(beta);
+  drawMini(ckE,tEarth,css('--ink')); drawMini(ckS,tShip,css('--fis'));
+  document.getElementById('cv-earth').textContent=nf(tEarth,1)+' anos';
+  document.getElementById('cv-ship').textContent=nf(tShip,1)+' anos';
+}
+
+/* Gravidade */
+const bodySel=document.getElementById('body'), rs=document.getElementById('rslider');
+const COMPACT={earth:1.39e-9,sun:4.24e-6,wd:5.1e-4,ns:0.345};
+const NAMES={earth:'na superfície da Terra',sun:'na superfície do Sol',wd:'em Sirius B',ns:'numa estrela de neutrões'};
+function rFromSlider(p){p/=1000; return 1+0.001*Math.pow(10000,p);} // 1,001 a 11 rs
+function updGrav(){
+  const b=bodySel.value; let k, where;
+  document.getElementById('rwrap').hidden = b!=='bh';
+  if(b==='bh'){const x=rFromSlider(+rs.value); k=1/x; document.getElementById('rlabel').textContent=nf(x,x<1.1?3:2)+' × raio do horizonte'; where='a '+nf(x,x<1.1?3:2)+' raios do horizonte';}
+  else{k=COMPACT[b]; where=NAMES[b];}
+  const rate=Math.sqrt(1-k), lag=k/(1+rate);
+  document.getElementById('g-rate').textContent = lag<1e-4 ? '1 − '+lag.toExponential(2).replace('.',',') : nf(rate,4)+' ×';
+  document.getElementById('g-day').textContent = fmtDur(lag*86400);
+  document.getElementById('g-hour').innerHTML = rate>0.999
+   ? `Uma vida de 80 anos ${where} dura <span>${fmtDur(80*31557600*lag)}</span> menos do que longe de qualquer massa.`
+   : `1 hora ${where} corresponde a <span>${fmtDur(3600/rate)}</span> para quem está longe.`;
+}
+bodySel.addEventListener('change',updGrav); rs.addEventListener('input',updGrav); updGrav();
+
+/* ---------- SETA DO TEMPO ---------- */
+const gas=document.getElementById('gas'), ent=document.getElementById('entropy');
+const N=260, GX=10, GY=5; let P=[], hist=[], step=0, dir=1, running=!reduce;
+function resetGas(){
+  P=[]; for(let i=0;i<N;i++){const a=Math.random()*Math.PI*2, sp=0.0035+Math.random()*0.002;
+    P.push({x:0.02+Math.random()*0.2, y:0.04+Math.random()*0.92, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp*2});}
+  hist=[]; step=0; dir=1; updDir();
+}
+function entropy(){
+  const cnt=new Array(GX*GY).fill(0);
+  P.forEach(p=>{const i=Math.min(GX-1,Math.floor(p.x*GX)), j=Math.min(GY-1,Math.floor(p.y*GY)); cnt[j*GX+i]++;});
+  let S=0; cnt.forEach(c=>{if(c){const q=c/N;S-=q*Math.log(q);}}); return S/Math.log(GX*GY);
+}
+function stepGas(){
+  for(const p of P){
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0){p.x=-p.x;p.vx=-p.vx;} if(p.x>1){p.x=2-p.x;p.vx=-p.vx;}
+    if(p.y<0){p.y=-p.y;p.vy=-p.vy;} if(p.y>1){p.y=2-p.y;p.vy=-p.vy;}
+  }
+  step+=dir; hist.push(entropy()); if(hist.length>600) hist.shift();
+}
+function drawGas(){
+  const {ctx,w,h}=fitCanvas(gas);
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle=css('--line');ctx.lineWidth=1;
+  for(let i=1;i<GX;i++){ctx.beginPath();ctx.moveTo(i*w/GX,0);ctx.lineTo(i*w/GX,h);ctx.stroke();}
+  for(let j=1;j<GY;j++){ctx.beginPath();ctx.moveTo(0,j*h/GY);ctx.lineTo(w,j*h/GY);ctx.stroke();}
+  ctx.fillStyle=dir>0?css('--fis'):css('--mente');
+  const r=Math.max(1.6,w/260);
+  for(const p of P){ctx.beginPath();ctx.arc(p.x*w,p.y*h,r,0,7);ctx.fill();}
+  const e=fitCanvas(ent); const c2=e.ctx;
+  c2.clearRect(0,0,e.w,e.h);
+  c2.strokeStyle=css('--line');c2.beginPath();c2.moveTo(0,e.h-1);c2.lineTo(e.w,e.h-1);c2.moveTo(0,4);c2.lineTo(e.w,4);c2.stroke();
+  c2.font=`10px ${css('--f-mono')}`;c2.fillStyle=css('--muted');c2.textBaseline='top';c2.fillText('máx.',4,6);
+  if(hist.length>1){
+    c2.beginPath(); hist.forEach((v,i)=>{const x=i/599*e.w, y=4+(1-v)*(e.h-6); i?c2.lineTo(x,y):c2.moveTo(x,y);});
+    c2.strokeStyle=css('--brass');c2.lineWidth=2;c2.stroke();
+  }
+  document.getElementById('s-val').textContent=nf((hist[hist.length-1]||entropy())*100,0)+' %';
+}
+function updDir(){document.getElementById('g-dir').textContent = dir>0?'Tempo a avançar':'Tempo invertido: as velocidades foram trocadas de sinal';}
+document.getElementById('g-play').onclick=e=>{running=!running;e.target.textContent=running?'Pausar':'Continuar';};
+document.getElementById('g-reset').onclick=()=>{resetGas();drawGas();};
+document.getElementById('g-rev').onclick=()=>{
+  const noise=document.getElementById('g-noise').checked;
+  P.forEach(p=>{p.vx=-p.vx;p.vy=-p.vy; if(noise){const a=(Math.random()-0.5)*0.12, c=Math.cos(a), s=Math.sin(a), vx=p.vx*c-p.vy*s; p.vy=p.vx*s+p.vy*c; p.vx=vx;}});
+  dir=-dir; updDir(); if(!running){running=true;document.getElementById('g-play').textContent='Pausar';}
+};
+resetGas(); document.getElementById('g-play').textContent=running?'Pausar':'Começar';
+
+/* ---------- ESTIMATIVA ---------- */
+let target=10, t0=null; const hist2=[];
+document.getElementById('targets').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b||t0)return;target=+b.dataset.t;document.querySelectorAll('#targets .chip').forEach(x=>x.setAttribute('aria-pressed',x===b));});
+document.getElementById('est-btn').addEventListener('click',e=>{
+  const disp=document.getElementById('est-display'), msg=document.getElementById('est-msg');
+  if(!t0){t0=performance.now();e.target.textContent='Parar';disp.textContent='a contar…';msg.textContent=`Carrega em Parar quando achares que passaram ${target} s.`;}
+  else{
+    const el=(performance.now()-t0)/1000; t0=null; e.target.textContent='Tentar outra vez';
+    const err=(el-target)/target*100;
+    disp.textContent=nf(el,2)+' s';
+    msg.textContent = Math.abs(err)<5 ? `Quase perfeito: ${err>0?'+':''}${nf(err,1)} %.` : (err>0?`Demoraste mais ${nf(err,0)} %: o teu relógio interno andou devagar.`:`Paraste ${nf(-err,0)} % antes: o teu relógio interno andou depressa.`);
+    hist2.unshift(`${target} s → ${nf(el,1)} s`); if(hist2.length>8) hist2.pop();
+    document.getElementById('est-hist').innerHTML=hist2.map(h=>`<span>${h}</span>`).join('');
+  }
+});
+
+/* ---------- QUIZ ---------- */
+const PROF={pres:{nome:'Presentista',id:'presentismo'},etern:{nome:'Eternalista',id:'bloco'},bloco:{nome:'Bloco crescente',id:'broad'},emerg:{nome:'Tempo emergente',id:'termico'}};
+const Q=[
+ {p:'Os dinossauros existem?',o:[['Não. Existiram, mas já não existem.',{pres:2,bloco:1}],['Sim, noutra região do espaço-tempo, tal como Lisboa existe noutro lugar.',{etern:2}],['O passado deles é real e fixo; o que não existe ainda é o futuro.',{bloco:2}],['A pergunta assume um tempo que talvez não seja fundamental.',{emerg:2}]]},
+ {p:'O dia de amanhã já está, de alguma forma, decidido?',o:[['Não. O futuro está aberto e ainda não é nada.',{pres:1,bloco:2}],['Sim. Já existe; só ainda não lá chegámos.',{etern:2}],['Depende do que se entende por «amanhã» ao nível fundamental.',{emerg:2}]]},
+ {p:'A sensação de que o tempo passa é…',o:[['A característica mais real do mundo.',{pres:2}],['Uma ilusão da consciência, como o movimento num filme.',{etern:2}],['Real: o mundo cresce literalmente a cada instante.',{bloco:2}],['Um efeito estatístico daquilo que não sabemos sobre o mundo.',{emerg:2}]]},
+ {p:'Se a física garantir que não há um «agora» universal, tu…',o:[['Mantenho o presente. A física descreve medições, não tudo o que é real.',{pres:2}],['Aceito: todos os momentos são igualmente reais.',{etern:2}],['Procuro um «agora» cósmico escondido, talvez ligado à expansão do universo.',{bloco:1,pres:1}],['Concluo que o tempo é uma aproximação de algo mais profundo.',{emerg:2}]]}
+];
+const ans=new Array(Q.length).fill(null);
+const quiz=document.getElementById('quiz');
+function renderQuiz(){
+  let h=Q.map((q,i)=>`<div class="q"><p>${i+1}. ${q.p}</p><div class="opts">${q.o.map((o,j)=>`<button class="opt" data-q="${i}" data-o="${j}" aria-pressed="${ans[i]===j}">${o[0]}</button>`).join('')}</div></div>`).join('');
+  const done=ans.every(a=>a!==null);
+  if(done){
+    const sc={pres:0,etern:0,bloco:0,emerg:0};
+    ans.forEach((a,i)=>{const w=Q[i].o[a][1];for(const k in w) sc[k]+=w[k];});
+    const tot=Object.values(sc).reduce((a,b)=>a+b,0)||1;
+    const top=Object.entries(sc).sort((a,b)=>b[1]-a[1])[0][0];
+    const th=byId[PROF[top].id];
+    h+=`<div class="result" aria-live="polite"><span class="eyebrow">O teu perfil</span><h3>${PROF[top].nome}</h3><p>${th.tese}</p>
+      <div class="bars">${Object.entries(sc).map(([k,v])=>`<div class="r"><span>${PROF[k].nome}</span><span class="bar"><i style="width:${v/tot*100}%"></i></span><span style="font-family:var(--f-mono)">${Math.round(v/tot*100)}%</span></div>`).join('')}</div>
+      <div class="ctrl"><button class="btn" data-open="${th.id}">Ler a teoria</button><button class="btn ghost" data-reset="1">Recomeçar</button></div></div>`;
+  } else h+=`<p class="note">Responde às ${Q.length} perguntas para ver o resultado.</p>`;
+  quiz.innerHTML=h;
+}
+quiz.addEventListener('click',e=>{
+  const o=e.target.closest('.opt'); if(o){ans[+o.dataset.q]=+o.dataset.o;renderQuiz();return;}
+  const op=e.target.closest('[data-open]'); if(op){openCard(op.dataset.open);return;}
+  if(e.target.closest('[data-reset]')){ans.fill(null);renderQuiz();}
+});
+renderQuiz();
+
+/* ---------- ABAS ---------- */
+let activeTab='tempo';
+function selectTab(name, scroll){
+  activeTab=name;
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected', b.id==='t-'+name));
+  TABS.forEach(t=>document.getElementById('tab-'+t).hidden = name!==t);
+  try{localStorage.setItem('tempo-tab',name);}catch(e){}
+  if(scroll) window.scrollTo({top:0,behavior:'auto'});
+}
+const TABS=['tempo','viagens','dark'];
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>selectTab(b.id.slice(2),true)));
+document.querySelector('[role=tablist]').addEventListener('keydown',e=>{
+  if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft') return;
+  const i=TABS.indexOf(activeTab), n=TABS[(i+(e.key==='ArrowRight'?1:TABS.length-1))%TABS.length];
+  selectTab(n,false); document.getElementById('t-'+n).focus();
+});
+function initTab(){
+  let start='tempo';
+  try{ const s=localStorage.getItem('tempo-tab'); if(TABS.includes(s)) start=s; }catch(e){}
+  const h=location.hash.slice(1);
+  if(TABS.includes(h)) start=h;
+  else if(h){const el=document.getElementById(h); TABS.forEach(t=>{if(el&&document.getElementById('tab-'+t).contains(el)) start=t;});}
+  selectTab(start,false);
+}
+
+/* ---------- VIAGEM AO FUTURO (ISS) ---------- */
+const ISS_NET_US = 24.7; // µs por dia: −28,2 (velocidade) + 3,5 (gravidade)
+const issR=document.getElementById('iss-days');
+function updISS(){
+  const d=+issR.value;
+  document.getElementById('iss-dl').textContent=nf(d)+(d===1?' dia':' dias');
+  const ms=d*ISS_NET_US/1000;
+  document.getElementById('iss-out').innerHTML=`Ao regressar, estás <span>${ms<1?nf(ms*1000,0)+' µs':nf(ms,1)+' ms'}</span> no futuro em relação a quem ficou na Terra.`;
+}
+issR.addEventListener('input',()=>{document.querySelectorAll('#iss-presets .chip').forEach(x=>x.setAttribute('aria-pressed','false'));updISS();});
+document.getElementById('iss-presets').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;issR.value=b.dataset.d;document.querySelectorAll('#iss-presets .chip').forEach(x=>x.setAttribute('aria-pressed',x===b));updISS();});
+updISS();
+
+/* ---------- MÁQUINAS DO TEMPO ---------- */
+const M=[
+ {nome:'Universo de Gödel',autor:'Kurt Gödel',ano:'1949',plaus:1,
+  ideia:'Um universo inteiro em rotação arrasta o espaço-tempo de tal forma que, viajando num grande círculo, se regressa ao ponto de partida antes de ter saído.',
+  exige:'Que todo o cosmos rode. As observações mostram que o nosso universo praticamente não roda.'},
+ {nome:'Cilindro rotativo',autor:'W. J. van Stockum, Frank Tipler',ano:'1937 · 1974',plaus:1,
+  ideia:'Um cilindro muito denso a girar quase à velocidade da luz inclina os cones de luz à sua volta. Orbitando-o no sentido certo, viaja-se para o passado.',
+  exige:'Um cilindro de comprimento infinito. Hawking mostrou em 1992 que uma versão finita precisaria de energia negativa.'},
+ {nome:'Buraco de minhoca transitável',autor:'Michael Morris, Kip Thorne, Ulvi Yurtsever',ano:'1988',plaus:2,
+  ideia:'Um atalho entre dois pontos do espaço-tempo. Se uma das bocas viajar perto da velocidade da luz e regressar, fica mais nova do que a outra: atravessar o túnel leva ao passado.',
+  exige:'«Matéria exótica» com energia negativa para manter o túnel aberto. O efeito Casimir mostra que existe energia negativa, mas em quantidades minúsculas.'},
+ {nome:'Buraco negro em rotação',autor:'Roy Kerr',ano:'1963',plaus:1,
+  ideia:'No interior de um buraco negro que roda, a singularidade tem forma de anel. Perto dele, a solução matemática contém curvas temporais fechadas.',
+  exige:'Sobreviver ao horizonte interior, que muito provavelmente é instável e se transforma numa singularidade destrutiva.'},
+ {nome:'Cordas cósmicas',autor:'J. Richard Gott',ano:'1991',plaus:1,
+  ideia:'Duas cordas cósmicas, defeitos finíssimos do espaço-tempo, a passarem uma pela outra a velocidades próximas da luz, criam uma região onde se pode dar a volta e chegar ao passado.',
+  exige:'Cordas cósmicas, nunca observadas, com comprimento infinito ou energia total que formaria um buraco negro à volta da máquina.'},
+ {nome:'Motor de dobra',autor:'Miguel Alcubierre',ano:'1994',plaus:1,
+  ideia:'Uma bolha que contrai o espaço à frente e o expande atrás permite viajar mais depressa do que a luz. Pela relatividade, qualquer viagem mais rápida do que a luz pode ser convertida numa viagem ao passado.',
+  exige:'Energia negativa em quantidades enormes; as primeiras estimativas apontavam para mais do que a massa de todo o universo observável.'}
+];
+document.getElementById('machines').innerHTML=M.map(m=>`
+ <details class="card" style="${catVars('fis')}">
+   <summary>
+     <div class="meta"><span class="dots" aria-label="Plausibilidade ${m.plaus} em 5">${[1,2,3,4,5].map(i=>`<i class="${i<=m.plaus?'on':''}"></i>`).join('')}</span><span class="yr">${m.ano}</span></div>
+     <h3>${m.nome}</h3><div class="who">${m.autor}</div>
+     <span class="more">Ler mais</span>
+   </summary>
+   <div class="body"><div><b>Como funciona</b>${m.ideia}</div><div><b>O que exige</b>${m.exige}</div></div>
+ </details>`).join('');
+
+/* ---------- PARADOXOS ---------- */
+const PX={
+ avo:{nome:'Paradoxo do avô',d:'Viajas ao passado e impedes que os teus avós se conheçam. Se nunca nasces, quem fez a viagem?'},
+ laco:{nome:'Laço causal',d:'Um desconhecido idoso dá-te os planos de uma máquina do tempo. Constróis a máquina, envelheces, voltas atrás e entregas os planos ao teu eu jovem. Quem os desenhou?'},
+ pred:{nome:'Predestinação',d:'Voltas atrás para impedir um incêndio que destruiu a tua cidade e descobres que foste tu a provocá-lo.'}
+};
+const MD={
+ novikov:{nome:'Autoconsistência',d:'Igor Novikov (anos 1980): só acontecem histórias globalmente consistentes. A probabilidade de um acontecimento que crie contradição é zero.'},
+ ramos:{nome:'Ramificação',d:'David Deutsch (1991): com a mecânica quântica de muitos mundos, quem chega ao passado entra noutro ramo da realidade.'},
+ mutavel:{nome:'Passado mutável',d:'O passado é reescrito e o futuro muda com ele. Exige um segundo tempo «por fora» do tempo. É o favorito da ficção, sem base física.'},
+ protecao:{nome:'Proteção da cronologia',d:'Stephen Hawking (1992): efeitos quânticos destroem qualquer máquina do tempo no instante em que se forma.'}
+};
+const OUT={
+ 'avo-novikov':'Tentas, mas algo falha sempre: escorregas, enganas-te na pessoa, chegas tarde. Nada te trava por magia; simplesmente nenhuma história consistente inclui o teu sucesso. Em 1991, Echeverria, Klinkhammer e Thorne estudaram uma versão com bolas de bilhar e encontraram sempre pelo menos uma solução consistente.',
+ 'avo-ramos':'Consegues, mas noutro ramo. Nesse mundo não chegas a nascer; no mundo de onde vieste, os teus avós conheceram-se e tu existes. Não há contradição, porque são duas histórias diferentes.',
+ 'avo-mutavel':'Consegues e começas a desaparecer. Mas se nunca nasceste, ninguém fez a viagem, os avós voltam a conhecer-se e tu voltas a existir. A história entra num ciclo sem resposta.',
+ 'avo-protecao':'Nunca chegas. No momento em que o laço temporal se forma, as flutuações quânticas de energia crescem sem limite e destroem a máquina.',
+ 'laco-novikov':'É permitido. Os planos existem num laço fechado sem origem. Não há contradição lógica, apenas um mistério: a informação nunca foi criada por ninguém.',
+ 'laco-ramos':'O mistério desaparece. No ramo onde recebeste os planos, eles vieram de um viajante de outro ramo, onde alguém os desenhou da forma normal. Cada ramo tem uma origem.',
+ 'laco-mutavel':'Os planos teriam de ter sido desenhados numa versão anterior da história, entretanto apagada. O modelo precisa de uma «história das histórias».',
+ 'laco-protecao':'O laço nunca se fecha. Se alguém quiser uma máquina do tempo, terá de desenhá-la de raiz, e ela nunca funcionará.',
+ 'pred-novikov':'É o caso típico desta regra: o teu esforço para impedir o incêndio é a causa do incêndio. Tudo encaixa e nada podia ter sido diferente.',
+ 'pred-ramos':'No novo ramo podes mesmo impedir o incêndio. No ramo de onde vieste, ele aconteceu e continua a ter acontecido.',
+ 'pred-mutavel':'Impedes o incêndio e o teu presente muda. Só que agora já não tinhas motivo para viajar, e a história volta a ficar incoerente.',
+ 'pred-protecao':'A máquina falha antes de partires. O incêndio fica no passado, onde sempre esteve.'
+};
+let px='avo', md='novikov';
+function chipRow(el,obj,cur){el.innerHTML=Object.entries(obj).map(([k,v])=>`<button class="chip" data-k="${k}" aria-pressed="${k===cur}">${v.nome}</button>`).join('');}
+function drawPara(){
+  const S='stroke-linecap="round" fill="none"';
+  const ink='var(--ink)', mu='var(--muted)', br='var(--brass)', fi='var(--fis)', me='var(--mente)';
+  const arrow=(x,y,col)=>`<path d="M${x+8} ${y-7} L${x} ${y} L${x+8} ${y+7}" style="stroke:${col}" stroke-width="2.5" ${S}/>`;
+  const dot=(x,y,col)=>`<circle cx="${x}" cy="${y}" r="5" style="fill:${col}"/>`;
+  const txt=(x,y,t,col,anchor='start')=>`<text x="${x}" y="${y}" text-anchor="${anchor}" style="fill:${col};font:12px var(--f-body)">${t}</text>`;
+  let g=`<line x1="20" y1="205" x2="380" y2="205" style="stroke:var(--line)" stroke-width="1"/>`+txt(380,198,'tempo →',mu,'end');
+  const loop=`<path d="M300 140 C 300 40, 120 40, 120 140" style="stroke:${br}" stroke-width="2.5" stroke-dasharray="6 5" ${S}/>`;
+  if(md==='novikov'){
+    g+=`<line x1="20" y1="150" x2="380" y2="150" style="stroke:${ink}" stroke-width="3" ${S}/>`+loop+`<path d="M113 132 L120 142 L127 132" style="stroke:${br}" stroke-width="2.5" ${S}/>`;
+    g+=dot(120,150,br)+dot(300,150,br)+txt(210,38,'laço fechado e consistente',br,'middle')+txt(20,175,'uma única história',mu);
+  } else if(md==='ramos'){
+    g+=`<line x1="20" y1="150" x2="380" y2="150" style="stroke:${ink}" stroke-width="3" ${S}/>`+loop+`<path d="M113 132 L120 142 L127 132" style="stroke:${br}" stroke-width="2.5" ${S}/>`;
+    g+=`<path d="M120 150 C 160 150, 170 190, 220 190 L380 190" style="stroke:${me}" stroke-width="3" ${S}/>`;
+    g+=dot(120,150,br)+dot(300,150,br)+txt(380,140,'ramo de origem',ink,'end')+txt(380,182,'novo ramo',me,'end');
+  } else if(md==='mutavel'){
+    g+=`<line x1="20" y1="150" x2="120" y2="150" style="stroke:${ink}" stroke-width="3" ${S}/>`;
+    g+=`<line x1="120" y1="150" x2="380" y2="150" style="stroke:${mu}" stroke-width="2" stroke-dasharray="3 6" ${S}/>`+loop+`<path d="M113 132 L120 142 L127 132" style="stroke:${br}" stroke-width="2.5" ${S}/>`;
+    g+=`<path d="M120 150 C 140 150, 150 178, 180 178 L380 178" style="stroke:${fi}" stroke-width="3" ${S}/>`;
+    g+=dot(120,150,br)+txt(380,142,'história apagada',mu,'end')+txt(380,170,'história reescrita',fi,'end');
+  } else {
+    g+=`<line x1="20" y1="150" x2="380" y2="150" style="stroke:${ink}" stroke-width="3" ${S}/>`;
+    g+=`<path d="M300 140 C 300 70, 240 52, 205 58" style="stroke:${br}" stroke-width="2.5" stroke-dasharray="6 5" ${S}/>`;
+    g+=`<path d="M193 46 L213 66 M213 46 L193 66" style="stroke:var(--mente)" stroke-width="3" ${S}/>`+dot(300,150,br);
+    g+=txt(210,90,'a máquina colapsa',me,'middle')+txt(20,175,'o passado fica intacto',mu);
+  }
+  document.getElementById('para-svg').innerHTML=g;
+}
+function updPara(){
+  chipRow(document.getElementById('px-p'),PX,px); chipRow(document.getElementById('px-m'),MD,md);
+  document.getElementById('px-desc').textContent=PX[px].d;
+  document.getElementById('px-mdesc').textContent=MD[md].d;
+  document.getElementById('px-out').textContent=OUT[px+'-'+md];
+  drawPara();
+}
+document.getElementById('px-p').addEventListener('click',e=>{const b=e.target.closest('.chip');if(b){px=b.dataset.k;updPara();}});
+document.getElementById('px-m').addEventListener('click',e=>{const b=e.target.closest('.chip');if(b){md=b.dataset.k;updPara();}});
+updPara();
+
+/* ---------- MULTIVERSOS ---------- */
+const LV=[
+ {n:'I',nome:'Para lá do horizonte',quem:'Consequência da cosmologia padrão',
+  ideia:'Só vemos até cerca de 46 mil milhões de anos-luz em cada direção. Se o espaço for infinito e uniforme, existem infinitas regiões do tamanho do nosso universo observável, com as mesmas leis mas outras disposições da matéria.',
+  teste:'Indireto. Depende de o espaço ser infinito: as medições de curvatura são compatíveis com isso, mas não o provam.',
+  tu:'Sim. Com regiões suficientes, todas as configurações se repetem. Tegmark estima uma cópia idêntica de ti a cerca de 10^(10^28) metros.'},
+ {n:'II',nome:'Bolhas da inflação',quem:'Alexander Vilenkin, Andrei Linde · anos 1980',
+  ideia:'Na inflação eterna, o espaço expande-se para sempre e, aqui e ali, formam-se bolhas que deixam de inflacionar. Cada bolha é um universo, e nelas as constantes físicas e até o número de dimensões podem ser diferentes.',
+  teste:'Talvez. Uma colisão antiga com outra bolha deixaria marcas circulares na radiação cósmica de fundo. Foram procuradas, sem resultado conclusivo.',
+  tu:'Só nas bolhas com física compatível com a vida. A ideia ajuda a explicar porque é que as nossas constantes parecem afinadas para a vida.'},
+ {n:'III',nome:'Muitos mundos',quem:'Hugh Everett · 1957',
+  ideia:'A função de onda nunca colapsa. Cada medição quântica divide a realidade em ramos que coexistem mas não interagem. É o que a simulação do capítulo XI mostra.',
+  teste:'Não diretamente: faz as mesmas previsões que a interpretação de Copenhaga. Quem a defende fá-lo pela simplicidade da matemática.',
+  tu:'Sim, a todo o momento: versões tuas em ramos onde cada resultado quântico foi diferente.'},
+ {n:'IV',nome:'Universo matemático',quem:'Max Tegmark · 2003',
+  ideia:'Toda a estrutura matemática consistente existe fisicamente, e o nosso universo é apenas uma delas. É a posição mais radical: a realidade é, no fundo, matemática.',
+  teste:'Muito difícil. Tegmark sugere que, se for verdade, a física deve continuar a revelar regularidades matemáticas cada vez mais profundas.',
+  tu:'Nas estruturas que contenham alguém como tu, sim. A maioria nem sequer tem espaço ou tempo.'}
+];
+let lv=0;
+function updMV(){
+  const cols=['var(--fis)','var(--filo)','var(--mente)','var(--ink)'];
+  let s=''; for(let i=3;i>=0;i--){const r=40+i*34, on=i===lv;
+    s+=`<circle cx="150" cy="150" r="${r}" data-l="${i}" style="fill:${on?'var(--brass-soft)':'var(--surface)'};stroke:${on?'var(--brass)':'var(--line)'}" stroke-width="${on?2.5:1.5}"/>`;}
+  for(let i=0;i<4;i++){const r=40+i*34; s+=`<text x="150" y="${150-r+(i?20:46)}" text-anchor="middle" pointer-events="none" style="fill:${i===lv?'var(--brass)':'var(--muted)'};font:${i?'500 13px':'28px'} ${i?'var(--f-mono)':'var(--f-display)'}">${LV[i].n}</text>`;}
+  document.getElementById('mv-svg').innerHTML=s;
+  document.getElementById('mv-list').innerHTML=LV.map((l,i)=>`<button class="mbtn" data-l="${i}" aria-pressed="${i===lv}"><span class="lv">Nível ${l.n}</span><span>${l.nome}</span></button>`).join('');
+  const L=LV[lv];
+  document.getElementById('mv-detail').innerHTML=`<span class="eyebrow">Nível ${L.n} · ${L.quem}</span><h3>${L.nome}</h3><div><b>A ideia</b>${L.ideia}</div><div><b>Pode ser testado?</b>${L.teste}</div><div><b>Existe outra versão de ti?</b>${L.tu}</div>`;
+}
+document.getElementById('mv-svg').addEventListener('click',e=>{const c=e.target.closest('circle');if(c){lv=+c.dataset.l;updMV();}});
+document.getElementById('mv-list').addEventListener('click',e=>{const b=e.target.closest('.mbtn');if(b){lv=+b.dataset.l;updMV();}});
+updMV();
+const OTH=[
+ {cat:'fis',nome:'Paisagem da teoria das cordas',autor:'Raphael Bousso, Joseph Polchinski, Leonard Susskind',ano:'2000–03',
+  tese:'A teoria das cordas admite talvez 10^500 soluções, cada uma com física diferente.',
+  ideia:'Cada solução (um «vácuo») descreve um universo com partículas e forças próprias. Combinada com a inflação eterna, a paisagem pode ser povoada por bolhas reais, uma para cada tipo de física.',
+  obj:'Com tantas possibilidades, a teoria parece incapaz de prever as propriedades do nosso universo.'},
+ {cat:'fis',nome:'Seleção natural cosmológica',autor:'Lee Smolin',ano:'1992',
+  tese:'Cada buraco negro dá origem a um novo universo, com constantes ligeiramente alteradas.',
+  ideia:'Os universos que produzem muitos buracos negros têm mais «descendentes», como na evolução biológica. Assim, o típico universo teria constantes que favorecem estrelas e buracos negros.',
+  obj:'Smolin previu um limite para a massa das estrelas de neutrões que observações de 2010 parecem ter ultrapassado.'},
+ {cat:'fis',nome:'Universo cíclico de branas',autor:'Paul Steinhardt, Neil Turok',ano:'2001–02',
+  tese:'O nosso universo é uma membrana que colide periodicamente com outra, e cada colisão é um Big Bang.',
+  ideia:'Duas branas separadas por uma dimensão extra aproximam-se e chocam. A energia do choque enche o espaço de matéria e radiação, num ciclo que se repete.',
+  obj:'Depende de dimensões extra nunca observadas e é difícil de distinguir da inflação com os dados atuais.'},
+ {cat:'filo',nome:'Hipótese da simulação',autor:'Nick Bostrom',ano:'2003',
+  tese:'Se civilizações avançadas correm muitas simulações, a maioria das mentes como a nossa seria simulada.',
+  ideia:'O argumento não afirma que vivemos numa simulação. Diz que pelo menos uma de três coisas é verdade: quase nenhuma civilização chega a esse nível, quase nenhuma quer simular os antepassados, ou quase certamente estamos numa simulação.',
+  obj:'Assume que a consciência pode ser simulada e que podemos raciocinar sobre o que civilizações muito superiores fariam.'}
+];
+document.getElementById('mv-others').innerHTML=OTH.map(t=>`
+ <details class="card" style="${catVars(t.cat)}"><summary>
+   <div class="meta"><span class="tag">${CAT[t.cat]}</span><span class="yr">${t.ano}</span></div>
+   <h3>${t.nome}</h3><div class="who">${t.autor}</div><p class="thesis">${t.tese}</p><span class="more">Ler mais</span></summary>
+   <div class="body"><div><b>Ideia central</b>${t.ideia}</div><div><b>Objeção</b>${t.obj}</div></div></details>`).join('');
+
+/* ---------- ÁRVORE DE MUITOS MUNDOS ---------- */
+const MAXL=6; let path=[];
+const treeC=document.getElementById('tree');
+function drawTree(){
+  const {ctx,w,h}=fitCanvas(treeC); ctx.clearRect(0,0,w,h);
+  const px0=24, px1=w-24, py=14, n=path.length;
+  const X=i=>px0+i*(px1-px0)/MAXL;
+  const Y=(i,j)=>py+(j+0.5)*(h-2*py)/Math.pow(2,i);
+  const line=css('--line'), br=css('--brass'), mu=css('--muted');
+  let mine=[0]; path.forEach(b=>mine.push(mine[mine.length-1]*2+b));
+  for(let i=0;i<n;i++){
+    const cnt=Math.pow(2,i);
+    for(let j=0;j<cnt;j++) for(const b of [0,1]){
+      const on=mine[i]===j && path[i]===b;
+      if(on) continue;
+      ctx.beginPath();ctx.moveTo(X(i),Y(i,j));ctx.lineTo(X(i+1),Y(i+1,2*j+b));ctx.strokeStyle=line;ctx.lineWidth=1.2;ctx.stroke();
+    }
+  }
+  ctx.beginPath();for(let i=0;i<=n;i++){i?ctx.lineTo(X(i),Y(i,mine[i])):ctx.moveTo(X(i),Y(i,mine[i]));}
+  ctx.strokeStyle=br;ctx.lineWidth=3;ctx.lineJoin='round';ctx.stroke();
+  for(let i=0;i<=n;i++){const cnt=Math.pow(2,i);
+    for(let j=0;j<cnt;j++){ctx.beginPath();ctx.arc(X(i),Y(i,j),i===n&&cnt>16?2:3.5,0,7);ctx.fillStyle=(mine[i]===j)?br:mu;ctx.fill();}}
+  if(n===0){ctx.font=`13px ${css('--f-body')}`;ctx.fillStyle=mu;ctx.textBaseline='middle';ctx.fillText('Um só mundo. Carrega em «Medir o spin».',X(0)+14,h/2);}
+}
+function updTree(){
+  const n=path.length, br=Math.pow(2,n);
+  document.getElementById('tr-seq').textContent=path.map(b=>b?'↓':'↑').join(' ');
+  document.getElementById('tr-out').innerHTML = n===0 ? 'Antes de medir, há <span>1</span> mundo.' :
+    `Há agora <span>${br}</span> ramos. Num deles estás tu, a ler ${path.map(b=>b?'↓':'↑').join('')}; nos outros ${br-1}, versões tuas viram outra sequência.`;
+  document.getElementById('tr-measure').disabled = n>=MAXL;
+  document.getElementById('tr-measure').textContent = n>=MAXL ? 'Árvore cheia (64 ramos)' : 'Medir o spin';
+}
+document.getElementById('tr-measure').onclick=()=>{if(path.length<MAXL){path.push(Math.random()<0.5?0:1);updTree();drawTree();}};
+document.getElementById('tr-reset').onclick=()=>{path=[];updTree();drawTree();};
+updTree();
+
+/* ---------- FICÇÃO ---------- */
+const FM={novikov:['Autoconsistente','fis'],ramos:['Ramificação','mente'],mutavel:['Passado mutável','filo'],dilatacao:['Dilatação real','fis']};
+const FIC=[
+ ['O Exterminador Implacável',1984,'novikov','Kyle Reese viaja ao passado e torna-se o pai de John Connor, a pessoa que o enviou.'],
+ ['Regresso ao Futuro',1985,'mutavel','Marty altera o passado dos pais e a fotografia da família começa a apagar-se.'],
+ ['12 Macacos',1995,'novikov','O protagonista assiste, em criança, à sua própria morte em adulto.'],
+ ['Harry Potter e o Prisioneiro de Azkaban',2004,'novikov','Harry vê ao longe o feitiço que salva todos: foi lançado pelo seu eu do futuro.'],
+ ['Looper',2012,'mutavel','As marcas feitas no assassino jovem aparecem logo como cicatrizes na versão mais velha.'],
+ ['Interstellar',2014,'dilatacao','Uma hora no planeta junto ao buraco negro equivale a sete anos na Terra. O final fecha um laço autoconsistente.'],
+ ['Dark',2017,'novikov','A série constrói-se sobre laços causais em que pessoas e objetos não têm uma origem.'],
+ ['Vingadores: Endgame',2019,'ramos','Mudar o passado não altera o presente de onde se partiu; cria uma nova linha temporal.'],
+ ['Tenet',2020,'novikov','Objetos com a entropia invertida andam para trás no tempo, e nada do que já aconteceu pode mudar.'],
+ ['Tudo em Todo o Lado ao Mesmo Tempo',2022,'ramos','Cada escolha gerou um universo, e a protagonista acede às capacidades das outras versões de si.']
+];
+let ff='all';
+function updFic(){
+  document.getElementById('fic-f').innerHTML=[['all','Todos'],...Object.entries(FM).map(([k,v])=>[k,v[0]])].map(([k,l])=>`<button class="chip" data-k="${k}" aria-pressed="${k===ff}">${l}</button>`).join('');
+  document.getElementById('fic-body').innerHTML=FIC.filter(f=>ff==='all'||f[2]===ff).map(f=>`<tr><td><strong>${f[0]}</strong></td><td class="y">${f[1]}</td><td><span class="pill" style="${catVars(FM[f[2]][1])}">${FM[f[2]][0]}</span></td><td>${f[3]}</td></tr>`).join('');
+}
+document.getElementById('fic-f').addEventListener('click',e=>{const b=e.target.closest('.chip');if(b){ff=b.dataset.k;updFic();}});
+updFic();
+
+/* ---------- DARK ---------- */
+let seen=0; const revealed=new Set();
+try{ const v=+localStorage.getItem('dark-seen'); if(v>=0&&v<=3) seen=v; }catch(e){}
+const SNAME=['','temporada 1','temporada 2','temporada 3'];
+function gate(id,s,html){
+  if(s<=seen||revealed.has(id)) return html;
+  return `<div class="lock"><span>Spoiler da ${SNAME[s]}</span><button data-reveal="${id}">Mostrar</button></div>`;
+}
+const SEASONS=[
+ {s:1,nome:'Temporada 1',ano:'2017',ep:10,anos:'1953 · 1986 · 2019 (e 2052)',titulo:'Tudo já aconteceu',
+  enredo:'Em novembro de 2019, Mikkel Nielsen desaparece na floresta. Jonas Kahnwald, cujo pai se suicidou meses antes, descobre que as grutas de Winden ligam 2019 a 1986 e a 1953. Ulrich Nielsen, pai de Mikkel, procura-o no passado. No fim, Jonas é atirado para um 2052 em ruínas.',
+  blocos:[
+   ['Laço autoconsistente','Jonas descobre que Mikkel, perdido em 1986, cresce com outro nome e se torna o seu próprio pai. Se Jonas o trouxesse de volta, deixaria de existir. É o modelo de Novikov da aba II: o passado não se muda, porque as tentativas de o mudar já fazem parte dele.'],
+   ['Um buraco de minhoca com intervalo fixo','A passagem nas grutas comporta-se como um buraco de minhoca de Morris e Thorne cujas bocas estão desfasadas no tempo: atravessá-lo leva sempre ao mesmo intervalo, aqui 33 anos. Na série, a energia vem da «matéria negra» da central, que não tem relação com a matéria escura real.'],
+   ['O ciclo de 33 anos','A série justifica o número com astronomia: a cada 33 anos, o calendário solar e o lunar voltam a alinhar-se (33 anos solares correspondem quase exatamente a 34 lunares). É um facto real, usado como ritmo da história.']
+  ]},
+ {s:2,nome:'Temporada 2',ano:'2019',ep:8,anos:'1921 · 1954 · 1987 · 2020 · 2053',titulo:'O início é o fim',
+  enredo:'Jonas regressa e tenta impedir o apocalipse de 27 de junho de 2020. Surge Adam, líder da sociedade secreta Sic Mundus, que quer destruir o nó do tempo. Claudia Tiedemann tenta contrariá-lo. Descobre-se que Adam é o próprio Jonas, muito mais velho. O apocalipse acontece e, no último instante, aparece uma Martha vinda de outro mundo.',
+  blocos:[
+   ['Paradoxo do laço causal','Charlotte Doppler e Elisabeth Doppler são mãe e filha uma da outra. A máquina do tempo de Tannhaus é construída a partir de uma que lhe trazem do futuro. Objetos e pessoas existem sem origem, presos num círculo fechado.'],
+   ['Determinismo e livre-arbítrio','A série cita Schopenhauer: podemos fazer o que queremos, mas não podemos escolher o que queremos. Cada personagem acha que está a decidir; o espectador vê que o laço já incluía essa decisão. É a pergunta da aba I sobre o universo-bloco: se o futuro já existe, há escolha?'],
+   ['Adam contra o laço','Adam aceita que nada se muda por dentro do laço e decide destruí-lo, mesmo que isso apague tudo. A Sic Mundus vai buscar o nome à Tábua de Esmeralda, um texto hermético sobre a criação do mundo.']
+  ]},
+ {s:3,nome:'Temporada 3',ano:'2020',ep:8,anos:'1888 · 1954 · 1987 · 2020 · 2053 · dois mundos',titulo:'Dois mundos e um erro',
+  enredo:'Jonas está no mundo de Martha, um espelho do seu, governado por Eva, que quer preservar o nó. Adam e Eva são Jonas e Martha velhos, em lados opostos. Claudia descobre que ambos os mundos nasceram de um terceiro, o mundo de origem, onde o relojoeiro Tannhaus tentou recuperar a família morta num acidente. Jonas e Martha impedem esse acidente e os dois mundos deixam de ter existido.',
+  blocos:[
+   ['O gato de Schrödinger','Tannhaus usa o gato que está vivo e morto ao mesmo tempo para explicar os dois mundos: são como os dois estados de uma superposição quântica, entrelaçados, onde o que acontece num tem reflexo no outro.'],
+   ['Sair do laço por fora','Dentro de um laço autoconsistente nada pode mudar. A saída só existe a partir de um mundo que está fora do laço: o de origem. Ao impedir a causa, desaparece toda a cadeia, incluindo Jonas e Martha, porque eram produtos do erro.'],
+   ['Eterno retorno','Adam e Eva viveram o ciclo vezes sem conta. É o eterno retorno de Nietzsche da aba I, com uma diferença: em Dark, o ciclo tem fim, e terminar é o único final feliz possível.']
+  ]}
+];
+let dkS=0;
+function renderSeasons(){
+  document.getElementById('dk-sel').innerHTML=SEASONS.map((x,i)=>`<button class="chip" data-i="${i}" aria-pressed="${i===dkS}">${x.nome}</button>`).join('');
+  const S=SEASONS[dkS];
+  const tie = S.s<3 ? `<div class="ctrl"><button class="btn ghost" data-goto="laco">Ver o laço causal no explorador de paradoxos</button></div>` : '';
+  document.getElementById('dk-theory').innerHTML=`
+   <div class="season-meta"><span>${S.ano}</span><span>${S.ep} episódios</span><span>${S.anos}</span></div>
+   <h3>${S.titulo}</h3>
+   ${gate('enr'+S.s,S.s,`<div class="blk"><b class="eyebrow">O que acontece</b><p>${S.enredo}</p></div>`)}
+   ${S.blocos.map((b,j)=>gate('b'+S.s+j,S.s,`<div class="blk"><h4>${b[0]}</h4><p>${b[1]}</p></div>`)).join('')}
+   ${tie}`;
+}
+const ERAS=[
+ {y:'1888',items:[[3,'A época mais antiga visitada. Winden ainda não tem central nuclear, e aqui ganham forma as origens das famílias e da própria Sic Mundus.']]},
+ {y:'1921',items:[[2,'Adam já lidera a Sic Mundus. Um jovem Noah junta-se ao grupo e começam as obras para controlar a passagem nas grutas.']]},
+ {y:'1953',items:[[1,'Ulrich chega à procura de Mikkel e ataca o jovem Helge Doppler. É preso e fica preso nesta época, envelhecendo longe da família.'],[1,'Os corpos de duas crianças vindas do futuro aparecem no estaleiro da futura central.']]},
+ {y:'1986',items:[[1,'Mikkel cai aqui ao atravessar a gruta. É acolhido pela enfermeira Ines Kahnwald e passa a chamar-se Michael.'],[1,'Claudia Tiedemann dirige a central nuclear, onde algo está escondido.']]},
+ {y:'2019',items:[[0,'Junho: Michael Kahnwald, pai de Jonas, põe termo à vida. Novembro: Mikkel Nielsen desaparece na floresta.'],[1,'Um estranho chega à cidade com um aparelho e muita informação sobre o que vai acontecer.']]},
+ {y:'2052',items:[[1,'Jonas chega a um mundo pós-apocalíptico: a central está em ruínas e há uma zona isolada.'],[2,'Os sobreviventes são liderados por uma Elisabeth Doppler adulta. A data do fim do mundo foi 27 de junho de 2020.']]}
+];
+let era=4;
+function renderEras(){
+  document.getElementById('dk-ruler').innerHTML=ERAS.map((e,i)=>`<button class="era" data-i="${i}" aria-pressed="${i===era}"><i></i><span>${e.y}</span></button>`).join('');
+  const E=ERAS[era];
+  document.getElementById('dk-era').innerHTML=`<h3>${E.y}</h3>`+E.items.map((it,j)=>gate('e'+era+j,it[0],`<div class="it"><small>${it[0]?'Temporada '+it[0]:'Premissa'}</small><span>${it[1]}</span></div>`)).join('');
+}
+const WHO=[
+ {n:'Mikkel Nielsen',t:'O menino desaparecido',s:1,r:'Cai em 1986, cresce com o nome Michael Kahnwald e torna-se o pai de Jonas.'},
+ {n:'O Estranho',t:'Chega a Winden em 2019',s:1,r:'É Jonas adulto, que voltou para tentar impedir o que aconteceu.'},
+ {n:'Noah',t:'O padre com a tatuagem nas costas',s:2,r:'O seu verdadeiro nome é Hanno Tauber. É o pai de Charlotte Doppler e trabalha para Adam.'},
+ {n:'Adam',t:'Líder da Sic Mundus',s:2,r:'É Jonas, muito mais velho e desfigurado, depois de séculos a tentar quebrar o laço.'},
+ {n:'Charlotte e Elisabeth Doppler',t:'Mãe e filha?',s:2,r:'Cada uma é mãe da outra. É o laço causal mais famoso da série.'},
+ {n:'Claudia Tiedemann',t:'Diretora da central',s:2,r:'É «o Diabo Branco», a única que joga contra Adam por conhecer o laço por dentro.'},
+ {n:'Eva',t:'Líder do outro mundo',s:3,r:'É Martha, mais velha, do mundo espelho. Quer manter o nó intacto.'},
+ {n:'O Desconhecido',t:'Três homens com o mesmo rosto',s:3,r:'É o filho de Jonas e da Martha do outro mundo, visto em três idades. A sua existência prende os dois mundos um ao outro.'},
+ {n:'H. G. Tannhaus',t:'O relojoeiro',s:3,r:'No mundo de origem, perde a família num acidente. A máquina com que tenta recuperá-la é o que divide a realidade em dois.'}
+];
+const whoOpen=new Set();
+function renderWho(){
+  document.getElementById('dk-who').innerHTML=WHO.map((w,i)=>`<div class="who-card"><span class="tg">${w.t}</span><h4>${w.n}</h4>${
+    whoOpen.has(i) ? gate('w'+i,w.s,`<p class="rev">${w.r}</p>`) : `<div><button class="btn ghost" data-who="${i}">Revelar</button></div>`}</div>`).join('');
+}
+const WORLDS=[
+ {k:'adam',nome:'Mundo de Jonas',s:2,cx:150,cy:108,txt:'O mundo das temporadas 1 e 2. Aqui, o velho Jonas, Adam, quer destruir o nó de qualquer maneira.'},
+ {k:'eva',nome:'Mundo de Martha',s:3,cx:108,cy:182,txt:'Um espelho do mundo de Jonas, com diferenças subtis (aqui, Jonas nunca nasceu). A velha Martha, Eva, quer preservar o nó porque é a única forma de o filho existir.'},
+ {k:'origem',nome:'Mundo de origem',s:3,cx:192,cy:182,txt:'O mundo real, sem viagens no tempo. Tannhaus perde o filho, a nora e a neta num acidente numa noite de tempestade e constrói uma máquina para as recuperar. A experiência falha e cria os outros dois mundos. Jonas e Martha impedem o acidente e tudo o que nasceu do erro desaparece.'}
+];
+let wsel=0;
+function renderWorlds(){
+  const g = WORLDS.map((w,i)=>`<circle cx="${w.cx}" cy="${w.cy}" r="74" data-w="${i}" style="fill:${i===wsel?'var(--brass-soft)':'transparent'};stroke:${i===wsel?'var(--brass)':'var(--ink)'}" stroke-width="${i===wsel?3:1.5}"/>`).join('');
+  const lab = WORLDS.map((w,i)=>{const dx=w.cx-150, dy=w.cy-157, L=Math.hypot(dx,dy)||1; const x=w.cx+dx/L*40, y=w.cy+dy/L*40+4;
+    return `<text x="${x}" y="${y}" text-anchor="middle" pointer-events="none" style="fill:${i===wsel?'var(--brass)':'var(--muted)'};font:600 12px var(--f-body)">${(w.s<=seen||revealed.has('wd'+i))?w.nome:'?'}</text>`;}).join('');
+  document.getElementById('triq').innerHTML=g+lab;
+  const W=WORLDS[wsel];
+  document.getElementById('dk-world').innerHTML=gate('wd'+wsel,W.s,`<h3>${W.nome}</h3><p>${W.txt}</p>`)+
+    `<div class="chips">${WORLDS.map((w,i)=>`<button class="chip" data-w="${i}" aria-pressed="${i===wsel}">${(w.s<=seen||revealed.has('wd'+i))?w.nome:'Mundo '+(i+1)}</button>`).join('')}</div>`;
+}
+const GLOSS=[
+ ['Winden',0,'Cidade fictícia alemã com uma floresta, um sistema de grutas e uma central nuclear prestes a ser desativada.'],
+ ['Ciclo de 33 anos',0,'Intervalo entre épocas ligadas pela passagem. Corresponde ao realinhamento real dos calendários solar e lunar.'],
+ ['Triqueta',0,'Três arcos entrelaçados. Aparece em portas, livros e no genérico. Representa passado, presente e futuro.'],
+ ['Ariadne',1,'Martha interpreta Ariadne numa peça da escola. No mito, o fio de Ariadne permite sair do labirinto, como Jonas procura sair do laço.'],
+ ['A passagem',1,'O túnel nas grutas que liga épocas separadas por 33 anos.'],
+ ['Matéria negra',1,'Substância fictícia guardada na central, capaz de abrir buracos no tempo. Não tem relação com a matéria escura da cosmologia.'],
+ ['Sic Mundus',2,'Sociedade secreta de viajantes no tempo. O nome vem da Tábua de Esmeralda: «assim foi criado o mundo».'],
+ ['Apocalipse',2,'27 de junho de 2020: a destruição de Winden. A Netflix estreou a temporada final exatamente nesse dia.'],
+ ['O nó',2,'O conjunto de laços que ata as famílias Kahnwald, Nielsen, Doppler e Tiedemann.'],
+ ['Diabo Branco',2,'Nome dado a Claudia Tiedemann, a inimiga de Adam.'],
+ ['Mundo de origem',3,'O mundo sem viagens no tempo onde tudo começou, e onde tudo acaba.']
+];
+function renderGloss(){
+  document.getElementById('dk-gloss').innerHTML=GLOSS.map((g,i)=>`<div class="g"><strong>${g[0]}</strong>${gate('g'+i,g[1],`<span>${g[2]}</span>`)}</div>`).join('');
+}
+/* ---------- ÁRVORE DAS FAMÍLIAS ---------- */
+const FAMN={kah:'Kahnwald',nie:'Nielsen',dop:'Doppler',tie:'Tiedemann',tau:'Outros'};
+const YR=y=>40+(y-1880)*5;
+const NW=128, NH=30;
+// d: [[texto, temporada]]  al: [[alias, temporada]]  y0/ys: ano mostrado antes do spoiler
+const FN=[
+ {id:'tannhaus',n:'H. G. Tannhaus',f:'tau',y:1902,x:110,s:1,d:[['Relojoeiro de Winden e autor de um livro sobre viagens no tempo. Repara o aparelho do Estranho.',1],['Cria Charlotte como se fosse sua neta, depois de Noah lha entregar em bebé.',2],['No mundo de origem, a morte da família leva-o a construir a máquina que divide a realidade.',3]]},
+ {id:'noah',n:'Noah',f:'tau',y:1890,x:110,s:1,al:[['Hanno Tauber',2]],d:[['Padre com a Tábua de Esmeralda tatuada nas costas. Usa crianças nas experiências com a máquina.',1],['É o pai de Charlotte, a filha que tem com Elisabeth Doppler.',2],['É filho de Bartosz e Silja, nascido no século XIX.',3]]},
+ {id:'bernd',n:'Bernd Doppler',f:'dop',y:1900,x:250,s:1,d:[['Fundador da central nuclear de Winden.',1]]},
+ {id:'greta',n:'Greta Doppler',f:'dop',y:1903,x:380,s:1,d:[['Mulher de Bernd, mãe dura e controladora de Helge.',1]]},
+ {id:'helge',n:'Helge Doppler',f:'dop',y:1943,x:315,s:1,d:[['Em criança é atacado por Ulrich em 1953. Em 1986 trabalha para Noah. Em 2019 vive num lar.',1]]},
+ {id:'peter',n:'Peter Doppler',f:'dop',y:1972,x:315,s:1,d:[['Psicoterapeuta, filho de Helge, casado com Charlotte.',1]]},
+ {id:'franziska',n:'Franziska Doppler',f:'dop',y:2003,x:250,s:1,d:[['Filha mais velha de Peter e Charlotte. Namora Magnus Nielsen.',1]]},
+ {id:'elisabeth',n:'Elisabeth Doppler',f:'dop',y:2010,x:380,s:1,d:[['Filha mais nova de Peter e Charlotte. É surda e comunica em língua gestual.',1],['Em 2052 lidera os sobreviventes. Tem uma filha com Noah: Charlotte, que é também a sua mãe.',2]]},
+ {id:'charlotte',n:'Charlotte Doppler',f:'dop',y:2041,y0:1971,ys:2,x:315,s:1,d:[['Chefe da polícia em 2019. Cresceu com Tannhaus, que julga ser o avô.',1],['Nasce em 2041, filha de Elisabeth e Noah, e é levada em bebé para 1971.',2]]},
+ {id:'egon',n:'Egon Tiedemann',f:'tie',y:1922,x:530,s:1,d:[['Polícia em 1953 e em 1986. Suspeita de Ulrich desde o primeiro dia.',1],['Em 1954 tem uma relação com Hannah, da qual nasce Silja.',3]]},
+ {id:'doris',n:'Doris Tiedemann',f:'tie',y:1925,x:660,s:1,d:[['Mulher de Egon e mãe de Claudia.',1]]},
+ {id:'claudia',n:'Claudia Tiedemann',f:'tie',y:1942,x:595,s:1,d:[['Diretora da central nuclear em 1986.',1],['Viaja no tempo e torna-se a grande adversária de Adam, o «Diabo Branco».',2],['Tem uma filha com Tronte Nielsen: Regina.',3]]},
+ {id:'silja',n:'Silja',f:'tie',y:1954,x:530,s:3,d:[['Filha de Hannah e Egon, nascida em 1954. Acaba no século XIX com Bartosz e tem dois filhos: Hanno (Noah) e Agnes.',3]]},
+ {id:'aleksander',n:'Aleksander Tiedemann',f:'tie',y:1965,x:530,s:1,al:[['Boris Niewald',2]],d:[['Diretor da central em 2019, casado com Regina.',1],['Chegou a Winden em 1986 em fuga, com uma identidade falsa.',2]]},
+ {id:'regina',n:'Regina Tiedemann',f:'tie',y:1971,x:660,s:1,d:[['Filha de Claudia, dona do hotel de Winden.',1],['O pai é Tronte Nielsen.',3]]},
+ {id:'bartosz',n:'Bartosz Tiedemann',f:'tie',y:2002,x:595,s:1,d:[['Melhor amigo de Jonas, recrutado em segredo por Noah.',1],['Fica no século XIX com Silja e é pai de Noah e de Agnes: antepassado de si mesmo.',3]]},
+ {id:'agnes',n:'Agnes Nielsen',f:'nie',y:1892,x:880,s:1,d:[['Chega a Winden em 1953 com o filho Tronte.',1],['É irmã de Noah.',2],['É filha de Bartosz e Silja. O pai de Tronte é o Desconhecido.',3]]},
+ {id:'tronte',n:'Tronte Nielsen',f:'nie',y:1930,x:830,s:1,d:[['Pai de Ulrich e de Mads, casado com Jana.',1],['O pai é o Desconhecido. Com Claudia, tem uma filha: Regina.',3]]},
+ {id:'jana',n:'Jana Nielsen',f:'nie',y:1932,x:960,s:1,d:[['Mulher de Tronte. Nunca superou o desaparecimento do filho Mads.',1]]},
+ {id:'ulrich',n:'Ulrich Nielsen',f:'nie',y:1970,x:800,s:1,d:[['Polícia, pai de Magnus, Martha e Mikkel. Tem um caso com Hannah.',1],['Viaja para 1953 à procura de Mikkel e fica lá preso.',1]]},
+ {id:'mads',n:'Mads Nielsen',f:'nie',y:1973,x:930,s:1,d:[['Irmão de Ulrich, desaparecido em 1986. Em 2019 aparece o corpo, ainda com roupa dos anos 80.',1]]},
+ {id:'katharina',n:'Katharina Nielsen',f:'nie',y:1971,x:1060,s:1,d:[['Diretora da escola, casada com Ulrich.',1],['Viaja a 1987 à procura dos filhos e não regressa.',3]]},
+ {id:'magnus',n:'Magnus Nielsen',f:'nie',y:2002,x:800,s:1,d:[['Filho mais velho de Ulrich e Katharina. Namora Franziska.',1]]},
+ {id:'martha',n:'Martha Nielsen',f:'nie',y:2002,x:930,s:1,al:[['Eva (a Martha do outro mundo, em velha)',3]],d:[['Filha de Ulrich e Katharina. Namora Jonas, que é na verdade seu sobrinho.',1],['Morre em 2020, às mãos de Adam.',2],['A Martha do outro mundo tem um filho com Jonas: o Desconhecido.',3]]},
+ {id:'mikkel',n:'Mikkel Nielsen',f:'nie',y:2009,x:1060,s:1,al:[['Michael Kahnwald',1]],d:[['Filho mais novo de Ulrich. Desaparece em 2019.',1],['Cai em 1986, é adotado por Ines e torna-se o pai de Jonas.',1]]},
+ {id:'unknown',n:'O Desconhecido',f:'tau',y:2021,x:865,s:3,d:[['Filho de Jonas e da Martha do outro mundo, visto em três idades. É o pai de Tronte e, por isso, ata os dois mundos.',3]]},
+ {id:'daniel',n:'Daniel Kahnwald',f:'kah',y:1910,x:1210,s:1,d:[['Chefe da polícia em 1953, pai de Ines.',1]]},
+ {id:'ines',n:'Ines Kahnwald',f:'kah',y:1940,x:1210,s:1,d:[['Enfermeira. Em 1986 acolhe um menino perdido e adota-o.',1]]},
+ {id:'hannah',n:'Hannah Kahnwald',f:'kah',y:1972,x:1210,s:1,d:[['Mãe de Jonas e viúva de Michael. Obcecada por Ulrich desde a adolescência.',1],['Viaja para 1954 e tem uma filha com Egon Tiedemann: Silja.',3]]},
+ {id:'jonas',n:'Jonas Kahnwald',f:'kah',y:2002,x:1210,s:1,al:[['O Estranho',1],['Adam',2]],d:[['Protagonista. Descobre a passagem nas grutas.',1],['Volta a Winden, adulto, como o Estranho.',1],['Em velho, é Adam, líder da Sic Mundus.',2],['Com a Martha do outro mundo, tem um filho: o Desconhecido.',3]]}
+];
+const FNB=Object.fromEntries(FN.map(n=>[n.id,n]));
+// [de, para, tipo, temporada]  tipo: p = pai/mãe → filho, a = adoção, c = casal, k = caso
+const FE=[
+ ['bernd','helge','p',1],['greta','helge','p',1],['helge','peter','p',1],
+ ['peter','franziska','p',1],['charlotte','franziska','p',1],['peter','elisabeth','p',1],['charlotte','elisabeth','p',1],
+ ['elisabeth','charlotte','p',2],['noah','charlotte','p',2],['tannhaus','charlotte','a',2],
+ ['egon','claudia','p',1],['doris','claudia','p',1],['claudia','regina','p',1],['tronte','regina','p',3],
+ ['regina','bartosz','p',1],['aleksander','bartosz','p',1],
+ ['hannah','silja','p',3],['egon','silja','p',3],
+ ['bartosz','noah','p',3],['silja','noah','p',3],['bartosz','agnes','p',3],['silja','agnes','p',3],
+ ['agnes','tronte','p',1],['unknown','tronte','p',3],
+ ['tronte','ulrich','p',1],['jana','ulrich','p',1],['tronte','mads','p',1],['jana','mads','p',1],
+ ['ulrich','magnus','p',1],['katharina','magnus','p',1],['ulrich','martha','p',1],['katharina','martha','p',1],['ulrich','mikkel','p',1],['katharina','mikkel','p',1],
+ ['daniel','ines','p',1],['ines','mikkel','a',1],
+ ['mikkel','jonas','p',1],['hannah','jonas','p',1],
+ ['jonas','unknown','p',3],['martha','unknown','p',3],
+ ['bernd','greta','c',1],['egon','doris','c',1],['tronte','jana','c',1],['ulrich','katharina','c',1],['peter','charlotte','c',1],
+ ['regina','aleksander','c',1],['mikkel','hannah','c',1],['jonas','martha','c',1],['franziska','magnus','c',1],
+ ['ulrich','hannah','k',1],['noah','elisabeth','c',2],['bartosz','silja','c',3],['agnes','unknown','c',3],['claudia','tronte','k',3],['hannah','egon','k',3]
+];
+const FLOOPS=[
+ {nome:'Mikkel é o pai de Jonas',s:1,ids:['mikkel','jonas','hannah','ines'],t:'Mikkel nasce em 2009, cai em 1986 e cresce como Michael Kahnwald. Em 2002 nasce o filho dele, Jonas. Se Jonas trouxer Mikkel de volta, deixa de existir.'},
+ {nome:'Charlotte e Elisabeth',s:2,ids:['charlotte','elisabeth','noah','peter'],t:'Charlotte é mãe de Elisabeth; Elisabeth é mãe de Charlotte. Nenhuma das duas tem uma origem fora do laço.'},
+ {nome:'Bartosz, antepassado de si mesmo',s:3,ids:['bartosz','agnes','tronte','regina','silja'],t:'Bartosz é pai de Agnes. Agnes é mãe de Tronte, Tronte é pai de Regina e Regina é mãe de Bartosz. Ele é o seu próprio trisavô.'},
+ {nome:'Martha, bisavó de si mesma',s:3,ids:['martha','unknown','tronte','ulrich'],t:'O filho de Martha, o Desconhecido, é pai de Tronte. Tronte é pai de Ulrich e Ulrich é pai de Martha.'},
+ {nome:'Hannah, antepassada de Ulrich',s:3,ids:['hannah','silja','agnes','tronte','ulrich'],t:'A filha de Hannah, Silja, é avó de Tronte. Ou seja, Hannah é trisavó de Ulrich, o homem por quem esteve apaixonada a vida toda.'}
+];
+let fSel=null; // {t:'n'|'f'|'l', v}
+const vis=s=> s<=seen || revealed.has('diag');
+function nodeY(n){return YR((n.ys && !vis(n.ys)) ? n.y0 : n.y);}
+function renderTree(){
+  const nodes=FN.filter(n=>vis(n.s)), ok=new Set(nodes.map(n=>n.id));
+  const edges=FE.filter(e=>vis(e[3])&&ok.has(e[0])&&ok.has(e[1]));
+  const hiddenN=FN.length-nodes.length, hiddenE=FE.length-FE.filter(e=>vis(e[3])).length;
+  // destaque
+  let H=null, HE=null;
+  if(fSel){
+    if(fSel.t==='n'){H=new Set([fSel.v]); HE=new Set(); edges.forEach((e,i)=>{if(e[0]===fSel.v||e[1]===fSel.v){H.add(e[0]);H.add(e[1]);HE.add(i);}});}
+    else{ const ids = fSel.t==='f' ? nodes.filter(n=>n.f===fSel.v).map(n=>n.id) : FLOOPS[fSel.v].ids.filter(id=>ok.has(id));
+      H=new Set(ids); HE=new Set(); edges.forEach((e,i)=>{if(H.has(e[0])&&H.has(e[1])) HE.add(i);}); }
+  }
+  let g='';
+  // eixo de épocas
+  [1888,1921,1953,1986,2019,2052].forEach(y=>{const yy=YR(y);
+    g+=`<line x1="44" y1="${yy}" x2="1310" y2="${yy}" style="stroke:var(--line)" stroke-dasharray="2 6"/><text x="8" y="${yy+4}" style="fill:var(--muted);font:500 11px var(--f-mono)">${y}</text>`;});
+  // colunas
+  [['Outros',110],['Doppler',315],['Tiedemann',595],['Nielsen',930],['Kahnwald',1210]].forEach(([t,x])=>{
+    g+=`<text x="${x}" y="22" text-anchor="middle" style="fill:var(--muted);font:600 11px var(--f-mono);letter-spacing:.1em">${t.toUpperCase()}</text>`;});
+  // ligações
+  edges.forEach((e,i)=>{
+    const a=FNB[e[0]], b=FNB[e[1]], ax=a.x+50, bx=b.x+50, ay=nodeY(a), by=nodeY(b);
+    const on = !HE || HE.has(i), op = on ? 1 : .12;
+    if(e[2]==='c'||e[2]==='k'){
+      if(!HE||!HE.has(i)) return;
+      g+=`<path d="M${ax} ${ay} Q ${(ax+bx)/2} ${Math.min(ay,by)-40} ${bx} ${by}" style="stroke:var(--mente);fill:none" stroke-width="2" stroke-dasharray="${e[2]==='k'?'2 4':'6 4'}"/>`;
+      return;
+    }
+    const up = by<ay;
+    const y1 = up? ay-NH/2 : ay+NH/2, y2 = up? by+NH/2 : by-NH/2, my=(y1+y2)/2;
+    const col = up ? 'var(--brass)' : (e[2]==='a' ? 'var(--muted)' : `var(--${a.f})`);
+    const dash = up ? 'stroke-dasharray="7 5"' : (e[2]==='a' ? 'stroke-dasharray="2 4"' : '');
+    g+=`<path d="M${ax} ${y1} C ${ax} ${my}, ${bx} ${my}, ${bx} ${y2}" style="stroke:${col};fill:none;opacity:${on?(HE?1:.6):op}" stroke-width="${HE&&on?2.6:(up?2:1.4)}" ${dash}/>`;
+  });
+  // pessoas
+  nodes.forEach(n=>{
+    const y=nodeY(n), x=n.x+50-NW/2, dim = H && !H.has(n.id), sel = fSel&&fSel.t==='n'&&fSel.v===n.id;
+    const yl = (n.ys&&!vis(n.ys)) ? '≈'+n.y0 : '≈'+n.y;
+    g+=`<g class="node" data-n="${n.id}" tabindex="0" role="button" aria-label="${n.n}" style="opacity:${dim?.28:1}">
+      <rect x="${x}" y="${y-NH/2}" width="${NW}" height="${NH}" rx="5" style="fill:${sel?`var(--sunk)`:'var(--surface)'};stroke:var(--${n.f})" stroke-width="${sel?3:1.6}"/>
+      <text x="${x+9}" y="${y+1}" style="fill:var(--ink);font:600 10.5px var(--f-body)" dominant-baseline="middle"${n.n.length>18?` textLength="${NW-16}" lengthAdjust="spacingAndGlyphs"`:""}>${n.n}</text>
+      <text x="${x+NW-7}" y="${y-NH/2-4}" text-anchor="end" style="fill:var(--muted);font:10px var(--f-mono)">${yl}</text></g>`;
+  });
+  document.getElementById('fam-svg').innerHTML=g;
+  document.getElementById('fam-hidden').textContent = (hiddenN||hiddenE) && !revealed.has('diag') ? `${hiddenN} pessoas e ${hiddenE} ligações escondidas por spoilers` : '';
+  // chips de família
+  document.getElementById('fam-chips').innerHTML=Object.entries(FAMN).map(([k,v])=>`<button class="chip fam-chip" style="--c:var(--${k})" data-fam="${k}" aria-pressed="${fSel&&fSel.t==='f'&&fSel.v===k}">${v}</button>`).join('')
+    + (fSel?`<button class="chip" data-fclear="1" aria-pressed="false">Limpar destaque</button>`:'')
+    + ((hiddenN||hiddenE)&&!revealed.has('diag')?`<button class="chip" data-reveal="diag" aria-pressed="false">Mostrar spoilers no diagrama</button>`:'');
+  // laços
+  document.getElementById('fam-loops').innerHTML=FLOOPS.map((l,i)=> vis(l.s)
+    ? `<button class="mbtn" data-loop="${i}" aria-pressed="${fSel&&fSel.t==='l'&&fSel.v===i}"><span class="lv">T${l.s}</span><span>${l.nome}</span></button>`
+    : `<div class="lock"><span>Laço da ${SNAME[l.s]}</span><button data-reveal="diag">Mostrar</button></div>`).join('');
+  document.getElementById('fam-loop-txt').textContent = fSel&&fSel.t==='l' ? FLOOPS[fSel.v].t : 'Escolhe um laço para o destacar na árvore.';
+  // detalhe
+  const det=document.getElementById('fam-detail');
+  if(fSel&&fSel.t==='n'&&ok.has(fSel.v)){
+    const n=FNB[fSel.v];
+    const als=(n.al||[]).filter(a=>vis(a[1])).map(a=>a[0]);
+    const nm=id=>FNB[id].n;
+    const rel=(lab,arr)=>arr.length?`<div class="rel"><b>${lab}</b><div class="chips">${arr.map(id=>`<button class="chip" data-n="${id}" aria-pressed="false">${nm(id)}</button>`).join('')}</div></div>`:'';
+    const par=edges.filter(e=>(e[2]==='p'||e[2]==='a')&&e[1]===n.id).map(e=>e[0]);
+    const kid=edges.filter(e=>(e[2]==='p'||e[2]==='a')&&e[0]===n.id).map(e=>e[1]);
+    const pr=edges.filter(e=>(e[2]==='c'||e[2]==='k')&&(e[0]===n.id||e[1]===n.id)).map(e=>e[0]===n.id?e[1]:e[0]);
+    const born = n.ys&&!vis(n.ys) ? `cresce a partir de ≈${n.y0}` : (n.ys ? `nasce em ${n.y}, cresce a partir de ${n.y0}` : `nasce por volta de ${n.y}`);
+    det.innerHTML=`<span class="eyebrow" style="color:var(--${n.f})">${FAMN[n.f]} · ${born}</span><h3>${n.n}</h3>
+      ${als.length?`<div><b>Também é</b>${als.join(' · ')}</div>`:''}
+      ${n.d.filter(d=>vis(d[1])).map(d=>`<p>${d[0]}</p>`).join('')}
+      ${rel('Pais',par)}${rel('Filhos',kid)}${rel('Parceiros',pr)}`;
+  } else {
+    det.innerHTML=`<span class="eyebrow">Como ler</span><h3>Escolhe uma pessoa</h3><p>Cada caixa é uma personagem, colocada no ano em que nasce. As linhas tracejadas a dourado sobem na página: ligam um pai ou uma mãe a um filho que nasceu antes deles. É aí que a viagem no tempo entra na família.</p><p class="note">Com o controlo de spoilers no topo da aba, a árvore mostra apenas o que já viste.</p>`;
+  }
+}
+
+function renderDark(){
+  document.querySelectorAll('#sp-chips .chip').forEach(c=>c.setAttribute('aria-pressed',+c.dataset.s===seen));
+  document.getElementById('sp-note').textContent = ['Só aparece a premissa. O resto fica bloqueado, mas podes abrir cada item.','Mostra tudo da temporada 1; o resto fica bloqueado.','Mostra as temporadas 1 e 2; a temporada 3 fica bloqueada.','Sem bloqueios: estão visíveis todos os spoilers, incluindo o final.'][seen];
+  renderSeasons(); renderEras(); renderWho(); renderTree(); renderWorlds(); renderGloss();
+}
+document.getElementById('tab-dark').addEventListener('click',e=>{
+  const t=e.target;
+  const sp=t.closest('#sp-chips .chip'); if(sp){seen=+sp.dataset.s; try{localStorage.setItem('dark-seen',seen);}catch(_){} renderDark(); return;}
+  const rv=t.closest('[data-reveal]'); if(rv){revealed.add(rv.dataset.reveal); renderDark(); return;}
+  const fn=t.closest('[data-n]'); if(fn){const v=fn.dataset.n; fSel=(fSel&&fSel.t==='n'&&fSel.v===v&&fn.closest('svg'))?null:{t:'n',v}; renderTree(); if(!fn.closest('svg')) document.getElementById('fam-svg').closest('.tree-wrap').scrollIntoView({behavior:reduce?'auto':'smooth',block:'nearest'}); return;}
+  const ff=t.closest('[data-fam]'); if(ff){const v=ff.dataset.fam; fSel=(fSel&&fSel.t==='f'&&fSel.v===v)?null:{t:'f',v}; renderTree(); return;}
+  const fl=t.closest('[data-loop]'); if(fl){const v=+fl.dataset.loop; fSel=(fSel&&fSel.t==='l'&&fSel.v===v)?null:{t:'l',v}; renderTree(); return;}
+  if(t.closest('[data-fclear]')){fSel=null; renderTree(); return;}
+  const ss=t.closest('#dk-sel .chip'); if(ss){dkS=+ss.dataset.i; renderSeasons(); return;}
+  const er=t.closest('.era'); if(er){era=+er.dataset.i; renderEras(); return;}
+  const wh=t.closest('[data-who]'); if(wh){whoOpen.add(+wh.dataset.who); renderWho(); return;}
+  const wd=t.closest('[data-w]'); if(wd){wsel=+wd.dataset.w; renderWorlds(); return;}
+  const go=t.closest('[data-goto]'); if(go){selectTab('viagens',false); px='laco'; md='novikov'; updPara(); document.getElementById('paradoxos').scrollIntoView({behavior:reduce?'auto':'smooth'});}
+});
+document.getElementById('fam-svg').addEventListener('keydown',e=>{
+  if(e.key!=='Enter'&&e.key!==' ') return; const n=e.target.closest('[data-n]'); if(!n) return;
+  e.preventDefault(); const v=n.dataset.n; fSel=(fSel&&fSel.t==='n'&&fSel.v===v)?null:{t:'n',v}; renderTree();
+  const again=document.querySelector(`#fam-svg [data-n="${v}"]`); if(again) again.focus();
+});
+renderDark();
+initTab();
+
+/* ---------- LOOP ---------- */
+function frame(t){
+  if(lastT===null) lastT=t; const dt=Math.min(0.1,(t-lastT)/1000); lastT=t;
+  if(activeTab==='tempo'){
+    drawDial();
+    relFrame(reduce?0:dt);
+    if(running) stepGas();
+    drawGas();
+  } else if(activeTab==='viagens') drawTree();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

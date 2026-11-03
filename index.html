@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frisk — Os meus sites</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f4f5f7;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #5f6570;
+    --accent: #2f6fed;
+    --accent-text: #ffffff;
+    --accent2: #a020f0;
+    --border: #e3e5e9;
+    --shadow: rgba(0,0,0,0.06);
+    --danger: #c62828;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121316;
+      --card-bg: #1c1e22;
+      --text: #f0f1f3;
+      --muted: #9aa0aa;
+      --accent: #5b8dff;
+      --accent-text: #0d1220;
+      --accent2: #c27bff;
+      --border: #2c2f34;
+      --shadow: rgba(0,0,0,0.4);
+      --danger: #ff6b6b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px 16px 8px;
+    height: 100vh; height: 100dvh;
+    display: flex; flex-direction: column;
+  }
+  header {
+    width: 100%;
+    margin: 0 0 12px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px 12px;
+    flex: none;
+  }
+  header h1 { font-size: 1.4rem; margin: 0; justify-self: start; white-space: nowrap; }
+  header p { color: var(--muted); margin: 0; font-size: 0.9rem; text-align: center; }
+  .toolbar { display: flex; align-items: center; justify-content: flex-end; gap: 8px; justify-self: end; }
+  .toolbar button { padding: 7px 14px; }
+  @media (max-width: 720px) {
+    header { grid-template-columns: 1fr auto; grid-template-areas: "t tb" "s s"; }
+    header h1 { grid-area: t; font-size: 1.2rem; }
+    header .toolbar { grid-area: tb; }
+    header p { grid-area: s; font-size: 0.8rem; }
+  }
+  .status { color: var(--muted); font-size: 0.8rem; text-align: center; margin: 0 auto 6px; max-width: 1080px; min-height: 1em; flex: none; }
+
+  button {
+    font: inherit;
+    cursor: pointer;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 9px 16px;
+    font-size: 0.9rem;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  button.danger { color: var(--danger); }
+  button.danger:hover { border-color: var(--danger); }
+  button.ghost { background: transparent; color: var(--muted); }
+  button:disabled { opacity: .6; cursor: default; }
+
+  .search { width: 100%; max-width: 1080px; margin: 0 auto 14px; }
+  .search input {
+    width: 100%; font: inherit; font-size: 16px;
+    padding: 10px 14px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--card-bg); color: var(--text);
+  }
+  .search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .vtabs { display: flex; gap: 6px; margin: 0 0 12px; flex: none; justify-content: center; }
+  .vtabs[hidden] { display: none; }
+  .vtabs button { padding: 7px 16px; border-radius: 999px; color: var(--muted); }
+  .vtabs button.on { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  body.vp .search { max-width: none; }
+  .view { flex: 1; min-height: 0; display: flex; flex-direction: column; width: 100%; }
+  .view[hidden] { display: none; }
+  .ptools { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 8px; flex: none; }
+  .ptools .count { color: var(--muted); font-size: 0.85rem; }
+  .twrap { flex: 1; min-height: 0; overflow: auto; border: 1px solid var(--border); border-radius: 14px; background: var(--card-bg); -webkit-overflow-scrolling: touch; }
+  table.pt { width: 100%; border-collapse: collapse; min-width: 820px; font-size: 0.92rem; }
+  .pt th, .pt td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .pt thead th { position: sticky; top: 0; background: var(--card-bg); z-index: 2; box-shadow: 0 1px 0 var(--border); white-space: nowrap; }
+  .pt th button.sort { all: unset; cursor: pointer; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+  .pt th button.sort:hover, .pt th button.sort:focus-visible { color: var(--accent); }
+  .pt th .arr { font-size: 0.7rem; opacity: .35; }
+  .pt th[aria-sort="ascending"] .arr, .pt th[aria-sort="descending"] .arr { opacity: 1; color: var(--accent); }
+  .pt tbody tr:last-child td { border-bottom: 0; }
+  .pt td.t { font-weight: 600; color: var(--accent); min-width: 160px; }
+  .pt td.n { color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; min-width: 200px; }
+  .pt td.l a { color: var(--accent); overflow-wrap: anywhere; }
+  .pt td.a { white-space: nowrap; text-align: right; }
+  .pt td.a button { width: 32px; height: 32px; padding: 0; color: var(--muted); }
+  .pt td.a button + button { margin-left: 4px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; white-space: nowrap; border: 1px solid currentColor; }
+  .st-ideia { color: #8a6d00; } .st-planeamento { color: #7a4cc2; } .st-desenvolvimento { color: #2f6fed; }
+  .st-testes { color: #c26a00; } .st-producao { color: #1f8a4c; } .st-standby { color: #6b7280; }
+  .st-concluido { color: #1f8a4c; opacity: .8; } .st-cancelado { color: #c93a3a; }
+  @media (prefers-color-scheme: dark) {
+    .st-ideia { color: #e2c14a; } .st-planeamento { color: #b58cf0; } .st-desenvolvimento { color: #6fa0ff; }
+    .st-testes { color: #f0a44a; } .st-producao { color: #4cc582; } .st-standby { color: #9aa0aa; }
+    .st-concluido { color: #4cc582; } .st-cancelado { color: #ff7b7b; }
+  }
+  .columns {
+    max-width: 1080px; width: 100%;
+    margin: 0 auto;
+    display: flex;
+    gap: 20px;
+    flex: 1; min-height: 0;
+    overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .col { flex: 0 0 min(100%, 480px); scroll-snap-align: start; display: flex; flex-direction: column; min-height: 0; }
+  .columns { justify-content: safe center; }
+  @media (max-width: 720px) {
+    /* com login: caixas lado a lado; a terceira vê-se a deslizar */
+    .columns.multi { gap: 10px; }
+    .columns.multi .col { flex-basis: calc(50% - 5px); }
+    .columns.multi .column-title { font-size: 0.8rem; }
+    .columns.multi .card-title { padding-right: 0; font-size: 1rem; }
+    .columns.multi .card { padding: 12px 12px; }
+    .columns.multi .has-tools .card { padding-bottom: 50px; }
+    .columns.multi .tools { top: auto; bottom: 8px; right: 8px; }
+    .columns.multi .col-head button { padding: 4px 8px; font-size: 0.75rem; }
+  }
+  .col[hidden] { display: none; }
+  .col-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 10px 4px; flex: none; min-height: 34px; }
+  .col-head .column-title { margin: 0; }
+  .col-head button { padding: 5px 12px; font-size: 0.85rem; }
+  .resp { font-size: 0.9rem; color: var(--muted); }
+  .notas { font-size: 0.9rem; color: var(--muted); line-height: 1.4; margin-top: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .plink { display: block; margin-top: 6px; font-size: 0.85rem; color: var(--accent); overflow-wrap: anywhere; position: relative; z-index: 1; }
+  .resp b { color: var(--text); font-weight: 600; }
+  .col .grid { overflow-y: auto; flex: 1; min-height: 0; padding: 2px 6px 16px 2px; overscroll-behavior: contain; }
+  .column-title {
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 10px 4px;
+    color: var(--muted);
+    flex: none;
+  }
+  .grid { display: flex; flex-direction: column; gap: 14px; }
+  .empty { color: var(--muted); font-size: 0.9rem; padding: 6px 4px; }
+
+  .card-wrap { position: relative; }
+  .card {
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 1px 3px var(--shadow);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  a.card:hover, a.card:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--shadow);
+  }
+  .card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 4px; padding-right: 112px; }
+  .curiosidades .card-title { color: var(--accent2); }
+  .card-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.4; }
+  .tools { position: absolute; top: 10px; right: 10px; display: flex; gap: 4px; }
+  .tools button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    line-height: 1;
+    font-size: 1rem;
+    color: var(--muted);
+  }
+
+  dialog {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 22px;
+    width: min(440px, calc(100vw - 32px));
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  }
+  dialog::backdrop { background: rgba(0,0,0,0.45); }
+  dialog h2 { margin: 0 0 16px; font-size: 1.15rem; }
+  label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin: 0 0 12px; }
+  input, select, textarea {
+    display: block;
+    width: 100%;
+    margin-top: 5px;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 16px; /* evita zoom automático no iPhone */
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  textarea { resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .hint { font-weight: 400; font-size: 0.75rem; margin-top: 4px; }
+  .err { color: var(--danger); font-size: 0.85rem; margin: 0 0 10px; min-height: 1.2em; }
+  .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .actions .spacer { flex: 1; }
+
+  footer {
+    max-width: 1080px;
+    margin: 6px auto 0; flex: none;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Os meus sites</h1>
+  <p>Uma conta, vários projetos.</p>
+  <div class="toolbar" id="toolbar"></div>
+</header>
+
+<div class="status" id="status" role="status"></div>
+
+<div class="vtabs" id="vtabs" hidden>
+  <button type="button" id="vtHome">Curiosidades e Sites</button>
+  <button type="button" id="vtProj">Projetos</button>
+</div>
+
+<div class="search"><input id="q" type="search" placeholder="Pesquisar por título ou notas…" aria-label="Pesquisar" autocomplete="off"></div>
+
+<div class="view" id="viewHome">
+  <div class="columns" id="columns">
+    <div class="col" id="colCur">
+      <div class="col-head"><div class="column-title">Curiosidades</div></div>
+      <div class="grid curiosidades" id="curiosidadesGrid"></div>
+    </div>
+    <div class="col" id="colSites" hidden>
+      <div class="col-head"><div class="column-title">Sites</div></div>
+      <div class="grid" id="siteGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="view" id="viewProj" hidden>
+  <div class="ptools">
+    <span class="count" id="pCount"></span>
+    <button type="button" class="primary" id="btnAddProj">+ projeto</button>
+  </div>
+  <div class="twrap">
+    <table class="pt">
+      <thead><tr id="pHead"></tr></thead>
+      <tbody id="pBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<dialog id="itemDlg" aria-labelledby="itemDlgTitle">
+  <form id="itemForm" novalidate>
+    <h2 id="itemDlgTitle">Novo item</h2>
+    <label>Categoria
+      <select id="fCat">
+        <option value="site">Site</option>
+        <option value="curiosidade">Curiosidade</option>
+      </select>
+    </label>
+    <label>Link
+      <input id="fUrl" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://… ou ficheiro.html" required>
+      <span class="hint">Endereço completo (site) ou ficheiro do hub (ex.: quantica.html).</span>
+    </label>
+    <label>Título
+      <input id="fTitulo" type="text" maxlength="80" autocomplete="off" required>
+    </label>
+    <label>Descrição
+      <textarea id="fDesc" rows="3" maxlength="300"></textarea>
+    </label>
+    <p class="err" id="itemErr" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="danger" id="btnDel" hidden>Apagar</button>
+      <span class="spacer"></span>
+      <button type="button" id="btnCancel">Cancelar</button>
+      <button type="submit" class="primary" id="btnSave">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="projDlg" aria-labelledby="projDlgTitle">
+  <form id="projForm" novalidate>
+    <h2 id="projDlgTitle">Novo projeto</h2>
+    <label>Título
+      <input id="pTitulo" type="text" maxlength="120" autocomplete="off" required>
+    </label>
+    <label>Estado
+      <select id="pEstado"></select>
+    </label>
+    <label>Responsável
+      <input id="pResp" type="text" maxlength="80" autocomplete="off">
+    </label>
+    <label>Link (opcional)
+      <input id="pLink" type="text" inputmode="url" maxlength="500" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://…">
+    </label>
+    <label>Notas
+      <textarea id="pNotas" rows="4" maxlength="2000"></textarea>
+    </label>
+    <p class="err" id="projErr" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="danger" id="pDel" hidden>Apagar</button>
+      <span class="spacer"></span>
+      <button type="button" id="pCancel">Cancelar</button>
+      <button type="submit" class="primary" id="pSave">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="loginDlg" aria-labelledby="loginDlgTitle">
+  <form id="loginForm">
+    <h2 id="loginDlgTitle">Entrar</h2>
+    <label>Email
+      <input id="lEmail" type="email" autocomplete="username" required>
+    </label>
+    <label>Palavra-passe
+      <input id="lPass" type="password" autocomplete="current-password" required>
+    </label>
+    <p class="err" id="loginErr" role="alert"></p>
+    <div class="actions">
+      <span class="spacer"></span>
+      <button type="button" id="btnLoginCancel">Cancelar</button>
+      <button type="submit" class="primary" id="btnLogin">Entrar</button>
+    </div>
+  </form>
+</dialog>
+
+<footer>v2.6</footer>
+
+<script>
+(() => {
+  const SB_URL = "https://aehitgqsfcpzuunyzpsh.supabase.co";
+  const SB_KEY = "sb_publishable_UezgSImwgpd_EDfi02YC_w_6sqkD2Qc"; // chave pública; a segurança está nas políticas RLS
+  const URL_RE = /^(https?:\/\/[^\s]+|\/?[A-Za-z0-9_.\/~%?=&#-]+)$/;
+  const LS_SESSION = "hub.session";
+  const LS_CACHE = "hub.itens";
+
+  // Lista de reserva: usada se a base de dados não responder e ainda não houver cópia guardada.
+  const SEED = [
+    { categoria: "curiosidade", ordem: 10, titulo: "Quântica", url: "quantica.html", descricao: "Notas e explicações sobre mecânica quântica." },
+    { categoria: "curiosidade", ordem: 20, titulo: "Relatividade", url: "relatividade.html", descricao: "Notas e explicações sobre a teoria da relatividade." },
+    { categoria: "curiosidade", ordem: 30, titulo: "Criptografia", url: "criptografia.html", descricao: "Notas e explicações sobre criptografia." },
+    { categoria: "curiosidade", ordem: 40, titulo: "Eletricidade", url: "eletricidade.html", descricao: "Notas e explicações sobre eletricidade." },
+    { categoria: "curiosidade", ordem: 50, titulo: "Binário", url: "binario.html", descricao: "Notas e explicações sobre o sistema binário." },
+    { categoria: "curiosidade", ordem: 60, titulo: "Internet, Dark Web e Sites", url: "/internet", descricao: "Notas e explicações sobre a internet, a dark web e como funcionam os sites." },
+    { categoria: "curiosidade", ordem: 70, titulo: "Bolsa", url: "bolsa.html", descricao: "Notas e explicações sobre a bolsa e o investimento." },
+    { categoria: "curiosidade", ordem: 80, titulo: "Guia de Sites", url: "guia-site.html", descricao: "Guia sobre como criar e gerir sites." }
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const store = {
+    get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+    del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  };
+
+  let session = store.get(LS_SESSION);
+  let isAdmin = false;
+  let view = "home"; // "home" | "proj"
+  let psort = { key: null, dir: 1 };
+  const ESTADOS = [
+    ["ideia", "Ideia"], ["planeamento", "Planeamento"], ["desenvolvimento", "Em desenvolvimento"],
+    ["testes", "Fase de testes"], ["producao", "Em produção"], ["standby", "Standby"],
+    ["concluido", "Concluído"], ["cancelado", "Cancelado"]
+  ];
+  const estLabel = (k) => (ESTADOS.find((e) => e[0] === k) || [0, k || "—"])[1];
+  const estIdx = (k) => Math.max(0, ESTADOS.findIndex((e) => e[0] === k));
+  let projOk = false; // conta autorizada a ver/gerir Projetos (confirmado pelo servidor)
+  let projetos = [];
+  let editingProj = null;
+  let itens = store.get(LS_CACHE) || SEED;
+  let editing = null;
+
+  /* ---------- Supabase (REST + Auth, sem bibliotecas) ---------- */
+  function setSession(d, email) {
+    if (!d) { session = null; store.del(LS_SESSION); return; }
+    session = {
+      access_token: d.access_token,
+      refresh_token: d.refresh_token,
+      expires_at: Math.floor(Date.now() / 1000) + (d.expires_in || 3600),
+      email: email || (d.user && d.user.email) || ""
+    };
+    store.set(LS_SESSION, session);
+  }
+
+  async function refreshSession() {
+    if (!session || !session.refresh_token) return false;
+    try {
+      const r = await fetch(SB_URL + "/auth/v1/token?grant_type=refresh_token", {
+        method: "POST",
+        headers: { apikey: SB_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: session.refresh_token })
+      });
+      if (!r.ok) { setSession(null); isAdmin = false; return false; }
+      setSession(await r.json(), session.email);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  async function api(path, opts = {}, retry = true) {
+    if (session && session.expires_at - 60 < Date.now() / 1000) await refreshSession();
+    const headers = Object.assign({ apikey: SB_KEY, "Content-Type": "application/json" }, opts.headers || {});
+    if (session) headers.Authorization = "Bearer " + session.access_token;
+    const r = await fetch(SB_URL + path, Object.assign({}, opts, { headers }));
+    if (r.status === 401 && session && retry && (await refreshSession())) return api(path, opts, false);
+    return r;
+  }
+
+  async function checkAdmin() {
+    isAdmin = false;
+    if (!session) return;
+    try {
+      const r = await api("/rest/v1/rpc/e_admin_plataforma", { method: "POST", body: "{}" });
+      isAdmin = r.ok && (await r.json()) === true;
+    } catch (e) {}
+  }
+
+  async function checkProj() {
+    projOk = false;
+    if (!session) return;
+    try {
+      const r = await api("/rest/v1/rpc/e_hub_projetos", { method: "POST", body: "{}" });
+      projOk = r.ok && (await r.json()) === true;
+    } catch (e) {}
+  }
+
+  async function loadProj() {
+    projetos = [];
+    if (!projOk) return;
+    try {
+      const r = await api("/rest/v1/hub_projetos?select=*&order=ordem.asc,created_at.asc");
+      if (r.ok) projetos = await r.json();
+    } catch (e) {}
+  }
+
+  async function load() {
+    try {
+      const r = await api("/rest/v1/hub_itens?select=*&order=ordem.asc,created_at.asc");
+      if (!r.ok) throw new Error(r.status);
+      itens = await r.json();
+      store.set(LS_CACHE, itens);
+      setStatus("");
+    } catch (e) {
+      setStatus("Sem ligação à base de dados — a mostrar a última lista guardada.");
+    }
+    await loadProj();
+    render();
+  }
+
+  /* ---------- Interface ---------- */
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function setStatus(t) { $("status").textContent = t; }
+
+  function card(i) {
+    const wrap = el("div", "card-wrap");
+    const a = el("a", "card");
+    a.href = URL_RE.test(i.url) ? i.url : "#";
+    a.append(el("div", "card-title", i.titulo), el("div", "card-desc", i.descricao || ""));
+    wrap.append(a);
+    if (isAdmin && i.id) {
+      wrap.classList.add("has-tools");
+      const tools = el("div", "tools");
+      if (!searching()) {
+        for (const [txt, dir, lbl] of [["▲", -1, "Subir"], ["▼", 1, "Descer"]]) {
+          const m = el("button", "mv", txt);
+          m.type = "button";
+          m.title = lbl;
+          m.setAttribute("aria-label", lbl + " " + i.titulo);
+          m.addEventListener("click", () => move(i, dir));
+          tools.append(m);
+        }
+      }
+      const b = el("button", "edit", "✎");
+      b.type = "button";
+      b.title = "Editar";
+      b.setAttribute("aria-label", "Editar " + i.titulo);
+      b.addEventListener("click", () => openItem(i));
+      tools.append(b);
+      wrap.append(tools);
+    }
+    return wrap;
+  }
+
+  const searching = () => ($("q").value || "").trim() !== "";
+  const byOrdem = (a, b) => (a.ordem - b.ordem) || String(a.created_at || "").localeCompare(String(b.created_at || ""));
+
+  let moving = false;
+  const move = (item, dir) => reorder(itens.filter((x) => x.categoria === item.categoria), item, dir, "hub_itens", load, () => store.set(LS_CACHE, itens));
+  const moveProj = (item, dir) => reorder(projetos, item, dir, "hub_projetos", async () => { await loadProj(); render(); }, () => {});
+  async function reorder(all, item, dir, table, reload, persistLocal) {
+    if (moving) return;
+    const list = all.slice().sort(byOrdem);
+    const from = list.findIndex((x) => x.id === item.id);
+    const to = from + dir;
+    if (from < 0 || to < 0 || to >= list.length) return;
+    list.splice(to, 0, list.splice(from, 1)[0]);
+    const changed = [];
+    list.forEach((x, idx) => {
+      const o = (idx + 1) * 10;
+      if (x.ordem !== o) { x.ordem = o; changed.push(x); }
+    });
+    persistLocal();
+    render();
+    moving = true;
+    try {
+      const rs = await Promise.all(changed.map((x) =>
+        api("/rest/v1/" + table + "?id=eq." + encodeURIComponent(x.id), {
+          method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ ordem: x.ordem })
+        }).then(async (r) => r.ok && (await r.json()).length > 0)
+      ));
+      if (rs.some((ok) => !ok)) throw new Error("save");
+      setStatus("");
+    } catch (e) {
+      await reload();
+      setStatus("Não foi possível guardar a nova ordem.");
+    } finally {
+      moving = false;
+    }
+  }
+
+  const norm = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  const PCOLS = [
+    ["titulo", "Título"], ["estado", "Estado"], ["responsavel", "Responsável"], ["notas", "Notas"], ["link", "Link"]
+  ];
+
+  function pCompare(a, b) {
+    const k = psort.key;
+    let r;
+    if (k === "estado") r = estIdx(a.estado) - estIdx(b.estado);
+    else r = String(a[k] || "").localeCompare(String(b[k] || ""), "pt", { sensitivity: "base", numeric: true });
+    return r * psort.dir || byOrdem(a, b);
+  }
+
+  function renderProjHead() {
+    const tr = $("pHead");
+    tr.replaceChildren();
+    for (const [k, label] of PCOLS) {
+      const th = el("th");
+      th.setAttribute("aria-sort", psort.key === k ? (psort.dir === 1 ? "ascending" : "descending") : "none");
+      const b = el("button", "sort");
+      b.type = "button";
+      b.append(label, el("span", "arr", psort.key === k ? (psort.dir === 1 ? "▲" : "▼") : "↕"));
+      b.title = "Ordenar por " + label.toLowerCase();
+      b.addEventListener("click", () => {
+        if (psort.key !== k) psort = { key: k, dir: 1 };
+        else if (psort.dir === 1) psort = { key: k, dir: -1 };
+        else psort = { key: null, dir: 1 }; // 3.º clique: volta à ordem manual
+        render();
+      });
+      th.append(b);
+      tr.append(th);
+    }
+    tr.append(el("th"));
+  }
+
+  function projRow(p, canMove) {
+    const tr = el("tr");
+    tr.append(el("td", "t", p.titulo));
+    const st = el("td");
+    st.append(el("span", "badge st-" + (p.estado || "desenvolvimento"), estLabel(p.estado)));
+    tr.append(st);
+    tr.append(el("td", null, p.responsavel || "—"));
+    tr.append(el("td", "n", p.notas || ""));
+    const l = el("td", "l");
+    if (p.link && URL_RE.test(p.link)) {
+      const a = el("a", null, p.link.replace(/^https?:\/\//, ""));
+      a.href = p.link; a.target = "_blank"; a.rel = "noopener noreferrer";
+      l.append(a);
+    }
+    tr.append(l);
+    const ac = el("td", "a");
+    if (canMove) {
+      for (const [txt, dir, lbl] of [["▲", -1, "Subir"], ["▼", 1, "Descer"]]) {
+        const m = el("button", "mv", txt);
+        m.type = "button"; m.title = lbl;
+        m.setAttribute("aria-label", lbl + " " + p.titulo);
+        m.addEventListener("click", () => moveProj(p, dir));
+        ac.append(m);
+      }
+    }
+    const b = el("button", "edit", "✎");
+    b.type = "button"; b.title = "Editar";
+    b.setAttribute("aria-label", "Editar " + p.titulo);
+    b.addEventListener("click", () => openProj(p));
+    ac.append(b);
+    tr.append(ac);
+    return tr;
+  }
+
+  function renderProj(nq) {
+    renderProjHead();
+    const body = $("pBody");
+    body.replaceChildren();
+    const rows = projetos
+      .filter((p) => !nq || [p.titulo, p.responsavel, p.notas, p.link, estLabel(p.estado)].some((t) => norm(t).includes(nq)))
+      .sort(psort.key ? pCompare : byOrdem);
+    const canMove = !psort.key && !nq;
+    rows.forEach((p) => body.append(projRow(p, canMove)));
+    if (!rows.length) {
+      const tr = el("tr"); const td = el("td", "n", nq ? "Sem resultados." : "Ainda não há projetos.");
+      td.colSpan = PCOLS.length + 1; tr.append(td); body.append(tr);
+    }
+    $("pCount").textContent = rows.length + (rows.length === 1 ? " projeto" : " projetos");
+  }
+
+  function setView(v) { view = v; render(); }
+
+  function render() {
+    const showProj = !!(session && projOk);
+    if (!showProj) view = "home";
+    $("colSites").hidden = !session;
+    $("columns").classList.toggle("multi", !!session);
+    $("vtabs").hidden = !showProj;
+    $("vtHome").classList.toggle("on", view === "home");
+    $("vtProj").classList.toggle("on", view === "proj");
+    $("viewHome").hidden = view !== "home";
+    $("viewProj").hidden = view !== "proj";
+    document.body.classList.toggle("vp", view === "proj");
+    $("q").placeholder = view === "proj" ? "Pesquisar por título, responsável, estado ou notas…" : "Pesquisar por título ou notas…";
+    const nq = norm(($("q").value || "").trim());
+    if (showProj) renderProj(nq);
+    for (const [cat, gridId] of [["site", "siteGrid"], ["curiosidade", "curiosidadesGrid"]]) {
+      if (cat === "site" && !session) continue;
+      const grid = $(gridId);
+      grid.replaceChildren();
+      itens
+        .filter((i) => i.categoria === cat)
+        .filter((i) => !nq || norm(i.titulo).includes(nq) || norm(i.descricao).includes(nq))
+        .sort(byOrdem)
+        .forEach((i) => grid.append(card(i)));
+      if (!grid.children.length) grid.append(el("div", "empty", nq ? "Sem resultados." : "Ainda não há itens."));
+    }
+    const tb = $("toolbar");
+    tb.replaceChildren();
+    if (isAdmin) {
+      const add = el("button", "primary", "+ site");
+      add.type = "button";
+      add.addEventListener("click", () => openItem(null));
+      tb.append(add);
+    }
+    if (session) {
+      const out = el("button", "ghost", "Sair");
+      out.type = "button";
+      out.title = session.email || "";
+      out.addEventListener("click", logout);
+      tb.append(out);
+    } else {
+      const inn = el("button", "ghost", "Entrar");
+      inn.type = "button";
+      inn.addEventListener("click", () => { $("loginErr").textContent = ""; $("loginDlg").showModal(); $("lEmail").focus(); });
+      tb.append(inn);
+    }
+  }
+
+  $("q").addEventListener("input", render);
+
+  /* ---------- Diálogo de item ---------- */
+  function normUrl(u) {
+    u = u.trim();
+    const semParams = u.split(/[?#]/)[0];
+    if (/^[a-z0-9-]+(\.[a-z0-9-]+)+(\/\S*)?$/i.test(u) && !/\.(html?|php)$/i.test(semParams)) return "https://" + u;
+    return u;
+  }
+  function nextOrdem(cat) {
+    const o = itens.filter((i) => i.categoria === cat).map((i) => i.ordem || 0);
+    return (o.length ? Math.max(...o) : 0) + 10;
+  }
+
+  function openItem(item) {
+    editing = item;
+    $("itemDlgTitle").textContent = item ? "Editar item" : "Novo item";
+    $("fCat").value = item ? item.categoria : "site";
+    $("fUrl").value = item ? item.url : "";
+    $("fTitulo").value = item ? item.titulo : "";
+    $("fDesc").value = item ? item.descricao || "" : "";
+    $("itemErr").textContent = "";
+    $("btnDel").hidden = !item;
+    $("itemDlg").showModal();
+    $("fUrl").focus();
+  }
+
+  async function saveItem(ev) {
+    ev.preventDefault();
+    const err = $("itemErr");
+    const cat = $("fCat").value;
+    const url = normUrl($("fUrl").value);
+    const titulo = $("fTitulo").value.trim();
+    const descricao = $("fDesc").value.trim();
+    if (!url) { err.textContent = "Indica o link."; return; }
+    if (!URL_RE.test(url) || url.length > 500) { err.textContent = "Link inválido. Usa https://… ou o nome de um ficheiro (ex.: quantica.html)."; return; }
+    if (!titulo) { err.textContent = "Indica o título."; return; }
+
+    const body = { categoria: cat, titulo, url, descricao };
+    $("btnSave").disabled = true;
+    try {
+      let r;
+      if (editing) {
+        body.updated_at = new Date().toISOString();
+        if (editing.categoria !== cat) body.ordem = nextOrdem(cat);
+        r = await api("/rest/v1/hub_itens?id=eq." + encodeURIComponent(editing.id), {
+          method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(body)
+        });
+      } else {
+        body.ordem = nextOrdem(cat);
+        r = await api("/rest/v1/hub_itens", {
+          method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(body)
+        });
+      }
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        err.textContent = r.status === 401 || r.status === 403
+          ? "Sem permissão para guardar. Entra com a conta de administrador."
+          : "Não foi possível guardar" + (d.message ? ": " + d.message : ".");
+        return;
+      }
+      const rows = await r.json();
+      if (!rows.length) { err.textContent = "Sem permissão para guardar. Entra com a conta de administrador."; return; }
+      $("itemDlg").close();
+      await load();
+    } catch (e) {
+      err.textContent = "Sem ligação. Tenta outra vez.";
+    } finally {
+      $("btnSave").disabled = false;
+    }
+  }
+
+  async function deleteItem() {
+    if (!editing || !confirm('Apagar "' + editing.titulo + '"?')) return;
+    const err = $("itemErr");
+    try {
+      const r = await api("/rest/v1/hub_itens?id=eq." + encodeURIComponent(editing.id), {
+        method: "DELETE", headers: { Prefer: "return=representation" }
+      });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) { err.textContent = "Não foi possível apagar (sem permissão?)."; return; }
+      $("itemDlg").close();
+      await load();
+    } catch (e) {
+      err.textContent = "Sem ligação. Tenta outra vez.";
+    }
+  }
+
+  /* ---------- Projetos ---------- */
+  function openProj(p) {
+    editingProj = p;
+    $("projDlgTitle").textContent = p ? "Editar projeto" : "Novo projeto";
+    $("pTitulo").value = p ? p.titulo : "";
+    $("pEstado").value = p ? p.estado || "desenvolvimento" : "ideia";
+    $("pResp").value = p ? p.responsavel || "" : "";
+    $("pLink").value = p ? p.link || "" : "";
+    $("pNotas").value = p ? p.notas || "" : "";
+    $("projErr").textContent = "";
+    $("pDel").hidden = !p;
+    $("projDlg").showModal();
+    $("pTitulo").focus();
+  }
+
+  async function saveProj(ev) {
+    ev.preventDefault();
+    const err = $("projErr");
+    const titulo = $("pTitulo").value.trim();
+    const responsavel = $("pResp").value.trim();
+    const link = normUrl($("pLink").value);
+    const notas = $("pNotas").value.trim();
+    if (!titulo) { err.textContent = "Indica o título."; return; }
+    if (link && (!URL_RE.test(link) || link.length > 500)) { err.textContent = "Link inválido. Usa https://… ou deixa em branco."; return; }
+    $("pSave").disabled = true;
+    try {
+      const body = { titulo, responsavel, link, notas, estado: $("pEstado").value };
+      let r;
+      if (editingProj) {
+        body.updated_at = new Date().toISOString();
+        r = await api("/rest/v1/hub_projetos?id=eq." + encodeURIComponent(editingProj.id), {
+          method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(body)
+        });
+      } else {
+        body.ordem = (projetos.length ? Math.max(...projetos.map((x) => x.ordem || 0)) : 0) + 10;
+        r = await api("/rest/v1/hub_projetos", {
+          method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(body)
+        });
+      }
+      const rows = r.ok ? await r.json() : [];
+      if (!r.ok || !rows.length) { err.textContent = "Não foi possível guardar (sem permissão?)."; return; }
+      $("projDlg").close();
+      await loadProj();
+      render();
+    } catch (e) {
+      err.textContent = "Sem ligação. Tenta outra vez.";
+    } finally {
+      $("pSave").disabled = false;
+    }
+  }
+
+  async function deleteProj() {
+    if (!editingProj || !confirm('Apagar "' + editingProj.titulo + '"?')) return;
+    try {
+      const r = await api("/rest/v1/hub_projetos?id=eq." + encodeURIComponent(editingProj.id), {
+        method: "DELETE", headers: { Prefer: "return=representation" }
+      });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) { $("projErr").textContent = "Não foi possível apagar (sem permissão?)."; return; }
+      $("projDlg").close();
+      await loadProj();
+      render();
+    } catch (e) {
+      $("projErr").textContent = "Sem ligação. Tenta outra vez.";
+    }
+  }
+
+  /* ---------- Login ---------- */
+  async function doLogin(ev) {
+    ev.preventDefault();
+    const err = $("loginErr");
+    err.textContent = "";
+    $("btnLogin").disabled = true;
+    try {
+      const email = $("lEmail").value.trim();
+      const r = await fetch(SB_URL + "/auth/v1/token?grant_type=password", {
+        method: "POST",
+        headers: { apikey: SB_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: $("lPass").value })
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        err.textContent = /invalid login/i.test(d.error_description || d.msg || "")
+          ? "Email ou palavra-passe incorretos."
+          : (d.error_description || d.msg || "Não foi possível entrar.");
+        return;
+      }
+      setSession(d, email);
+      $("lPass").value = "";
+      $("loginDlg").close();
+      await Promise.all([checkAdmin(), checkProj()]);
+      setStatus("");
+      await load();
+    } catch (e) {
+      err.textContent = "Sem ligação. Tenta outra vez.";
+    } finally {
+      $("btnLogin").disabled = false;
+    }
+  }
+
+  function logout() {
+    setSession(null);
+    isAdmin = false;
+    projOk = false;
+    projetos = [];
+    view = "home";
+    itens = itens.filter((i) => i.categoria === "curiosidade"); // não deixar sites em memória/cache
+    store.set(LS_CACHE, itens);
+    setStatus("");
+    $("columns").scrollTo({ left: 0, behavior: "auto" });
+    render();
+    load();
+  }
+
+  /* ---------- Eventos ---------- */
+  $("itemForm").addEventListener("submit", saveItem);
+  $("btnCancel").addEventListener("click", () => $("itemDlg").close());
+  $("btnDel").addEventListener("click", deleteItem);
+  $("loginForm").addEventListener("submit", doLogin);
+  $("projForm").addEventListener("submit", saveProj);
+  $("btnAddProj").addEventListener("click", () => openProj(null));
+  $("pCancel").addEventListener("click", () => $("projDlg").close());
+  $("pDel").addEventListener("click", deleteProj);
+  for (const [k, label] of ESTADOS) { const o = el("option", null, label); o.value = k; $("pEstado").append(o); }
+  $("vtHome").addEventListener("click", () => setView("home"));
+  $("vtProj").addEventListener("click", () => setView("proj"));
+  $("btnLoginCancel").addEventListener("click", () => $("loginDlg").close());
+  for (const id of ["itemDlg", "loginDlg", "projDlg"]) {
+    $(id).addEventListener("click", (e) => { if (e.target === $(id)) $(id).close(); });
+  }
+
+  render(); // mostra já a última lista guardada
+  (async () => {
+    await Promise.all([checkAdmin(), checkProj()]);
+    await load();
+  })();
+})();
+</script>
+
+</body>
+</html>

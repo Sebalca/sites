@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Internet, Dark Web e Sites</title>
+<style>
+:root{
+  --bg:#0a0e16;--panel:#111827;--panel2:#18213a;--line:#2a3654;--text:#e7ecf6;--mute:#97a3bd;
+  --ok:#34d399;--bad:#f87171;--warn:#fbbf24;
+  --c-net:#38c6ff;--c-dark:#a78bfa;--c-sites:#ffb547;
+  --acc:var(--c-net);
+  --g:#34d399;--m:#60a5fa;--x:#f472b6;
+}
+body.t-dark{--acc:var(--c-dark)}
+body.t-sites{--acc:var(--c-sites)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--acc)}
+header{padding:22px 16px 10px;max-width:920px;margin:0 auto}
+header h1{margin:0;font-size:1.55rem;letter-spacing:-.01em}
+header p{margin:4px 0 0;color:var(--mute);font-size:.92rem}
+.bar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar-in{max-width:920px;margin:0 auto;padding:10px 16px 8px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tabs button{all:unset;cursor:pointer;text-align:center;padding:10px 6px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font-weight:650;font-size:.95rem;transition:.2s}
+.tabs button[aria-selected=true]{background:color-mix(in srgb,var(--acc) 20%,var(--panel));border-color:var(--acc);color:#fff}
+.tabs .em{display:block;font-size:1.25rem;line-height:1.2}
+.levels{display:flex;gap:6px;margin-top:8px;overflow-x:auto}
+.levels button{all:unset;cursor:pointer;padding:4px 11px;border-radius:99px;font-size:.8rem;border:1px solid var(--line);color:var(--mute);white-space:nowrap}
+.levels button.on{border-color:var(--acc);color:var(--text);background:color-mix(in srgb,var(--acc) 14%,transparent)}
+main{max-width:920px;margin:0 auto;padding:12px 16px 60px}
+.panel{display:none}
+.panel.on{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.intro{padding:16px;border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 22%,var(--panel)),var(--panel));border:1px solid var(--line);margin:8px 0 18px}
+.intro h2{margin:0 0 4px;font-size:1.3rem}
+.intro p{margin:0;color:var(--text);opacity:.9}
+.lvl-h{display:flex;align-items:center;gap:10px;margin:28px 0 10px;font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--mute)}
+.lvl-h::after{content:"";flex:1;height:1px;background:var(--line)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin:0 0 14px}
+.card h3{margin:0 0 8px;font-size:1.08rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card p{margin:.4em 0}
+.badge{font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:99px;letter-spacing:.04em;text-transform:uppercase}
+.b-b{background:#1f3b2f;color:#6ee7b7}.b-i{background:#3b331a;color:#fcd34d}.b-a{background:#3d1d2a;color:#f9a8d4}
+.mute{color:var(--mute)}
+.small{font-size:.86rem}
+.note{border-left:3px solid var(--acc);padding:8px 12px;background:var(--panel2);border-radius:0 10px 10px 0;margin:10px 0;font-size:.92rem}
+.warn{border-left-color:var(--warn)}
+code,pre,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+code{background:var(--panel2);padding:1px 6px;border-radius:6px;font-size:.88em}
+pre{background:#070a11;border:1px solid var(--line);border-radius:12px;padding:12px;overflow-x:auto;font-size:.8rem;line-height:1.5;margin:8px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:620px){.grid2{grid-template-columns:1fr}}
+.mini{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.mini h4{margin:0 0 4px;font-size:.95rem}
+ul.clean{padding-left:18px;margin:.4em 0}
+ul.clean li{margin:.25em 0}
+table{width:100%;border-collapse:collapse;font-size:.86rem;margin:8px 0}
+th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:top}
+th{color:var(--mute);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+.tw{overflow-x:auto}
+.y{color:var(--ok);font-weight:700}.n{color:var(--bad);font-weight:700}.p{color:var(--warn);font-weight:700}
+details{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0}
+details summary{cursor:pointer;font-weight:600}
+details[open] summary{margin-bottom:6px}
+.btn{all:unset;cursor:pointer;padding:7px 12px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);font-size:.86rem;font-weight:600;text-align:center}
+.btn:hover{border-color:var(--acc)}
+.btn.pri{background:var(--acc);color:#0a0e16;border-color:var(--acc)}
+/* diagramas */
+.dg{width:100%;height:auto;display:block;margin:6px 0}
+.dg text{fill:var(--text);font-size:11px;text-anchor:middle;font-family:inherit}
+.dg .sub{fill:var(--mute);font-size:9px}
+.dg .big{font-size:18px}
+.dg .wire line,.dg .wire path,.dg line.wire{stroke:var(--line);stroke-width:2;fill:none}
+.dg .node rect,.dg .node circle.nd{fill:var(--panel2);stroke:var(--line);stroke-width:1.5;transition:.35s}
+.dg .node.hl rect,.dg .node.hl circle.nd{stroke:var(--acc);fill:color-mix(in srgb,var(--acc) 20%,var(--panel2))}
+.dg .node.hl{filter:drop-shadow(0 0 6px color-mix(in srgb,var(--acc) 70%,transparent))}
+.dg .pkt{transition:transform .75s cubic-bezier(.5,0,.3,1)}
+.dg .pk{fill:var(--acc);stroke:#fff;stroke-width:1.5}
+.dg [data-from],.dg [data-to]{transition:opacity .4s}
+.dg .hide{opacity:0}
+.dg .arr{stroke:var(--mute);stroke-width:1.6;fill:none}
+.dg .hl .arr{stroke:var(--acc);stroke-width:2.2}
+.dg .clk{cursor:pointer}
+.dg .clk:hover{filter:brightness(1.25)}
+.stepper .ctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.stepper .cnt{margin-left:auto;color:var(--mute);font-size:.8rem}
+.stepper .cap{min-height:4.6em;background:var(--panel2);border-radius:12px;padding:10px 12px;font-size:.92rem;border:1px solid var(--line)}
+.stepper .cap b{color:var(--acc)}
+.dots{display:flex;gap:4px;margin:8px 0 0}
+.dots i{flex:1;height:4px;border-radius:4px;background:var(--line);transition:.3s}
+.dots i.on{background:var(--acc)}
+.info{background:var(--panel2);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:.9rem;min-height:3.2em;margin-top:6px}
+.info b{color:var(--acc)}
+/* camadas */
+.layers{display:grid;gap:6px;margin:8px 0}
+.layers button{all:unset;cursor:pointer;padding:11px 14px;border-radius:12px;border:1px solid var(--line);font-weight:650;display:flex;justify-content:space-between;gap:8px;transition:.2s}
+.layers button span{font-weight:400;color:var(--mute);font-size:.82rem}
+.layers button.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+.encap{font-family:ui-monospace,monospace;font-size:.75rem;margin:10px 0}
+.encap div{border-radius:10px;padding:6px 8px;border:1px solid}
+.e1{background:#132235;border-color:#2c5079}.e2{background:#1b2440;border-color:#3d4f8f}.e3{background:#261c40;border-color:#5b3f99}.e4{background:#2c1c2f;border-color:#8a3d78}
+.encap .lab{display:block;color:var(--mute);margin-bottom:4px}
+/* timeline */
+.tl{position:relative;margin:8px 0 0 6px;padding-left:18px;border-left:2px solid var(--line)}
+.tl div{position:relative;margin:0 0 12px}
+.tl div::before{content:"";position:absolute;left:-25px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 3px var(--bg)}
+.tl b{color:var(--acc);margin-right:6px}
+/* URL */
+.urlin{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:#070a11;color:var(--text);font:14px ui-monospace,monospace}
+.urlview{font:14px/1.9 ui-monospace,monospace;word-break:break-all;margin:10px 0;padding:10px;border-radius:12px;background:#070a11;border:1px solid var(--line)}
+.urlview span{padding:2px 1px;border-radius:4px}
+.u-pr{background:#3b1d4a;color:#e9a8ff}.u-sub{background:#1d3b4a;color:#8fe1ff}.u-dom{background:#1d4a2c;color:#8ff5b5}.u-tld{background:#4a3b1d;color:#ffd98f}.u-port{background:#4a1d2a;color:#ffa3b8}.u-path{background:#22304d;color:#a9c3ff}.u-q{background:#3e2a12;color:#ffc77d}.u-f{background:#2b2b2b;color:#ddd}
+.ulist{display:grid;gap:5px;font-size:.88rem}
+.ulist div{display:flex;gap:8px;align-items:baseline}
+.ulist .sw{flex:0 0 auto;font-family:ui-monospace,monospace;font-size:.78rem;padding:1px 6px;border-radius:5px}
+/* demo html/css/js */
+.demo-ctl{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0}
+.demo-ctl label{display:flex;gap:6px;align-items:center;cursor:pointer}
+#demo{border-radius:12px;padding:14px;min-height:130px;border:1px solid var(--line)}
+#demo.styled{background:linear-gradient(135deg,#fff7ed,#fde68a)}
+#demo.styled .dcard{max-width:300px;margin:auto;background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.25);color:#3b2b14;font-family:Georgia,serif;text-align:center}
+#demo.styled .dcard h4{margin:0 0 4px;font-size:1.25rem;color:#9a3412}
+#demo.styled .dcard button{background:#ea580c;color:#fff;border:0;border-radius:99px;padding:9px 18px;font-weight:700;cursor:pointer}
+#demo:not(.styled){background:#fff;color:#000;font-family:"Times New Roman",serif}
+#demo:not(.styled) *{all:revert}
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chips button{all:unset;cursor:pointer;padding:5px 10px;border-radius:9px;font:600 .85rem ui-monospace,monospace;border:1px solid var(--line);background:var(--panel2)}
+.chips button.on{border-color:var(--acc);color:var(--acc)}
+.c2{color:#6ee7b7}.c3{color:#93c5fd}.c4{color:#fcd34d}.c5{color:#fca5a5}
+/* iceberg legenda / flip */
+.flips{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:620px){.flips{grid-template-columns:1fr}}
+.flip{cursor:pointer;border-radius:12px;border:1px solid var(--line);background:var(--panel2);padding:12px;min-height:84px;transition:.25s}
+.flip .f2{display:none}
+.flip.on{border-color:var(--acc)}
+.flip.on .f1{display:none}.flip.on .f2{display:block}
+.flip small{display:block;color:var(--mute);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+/* fluxo */
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0;font-size:.82rem}
+.flow span{padding:5px 9px;border-radius:9px;background:var(--panel2);border:1px solid var(--line)}
+.flow i{font-style:normal;color:var(--acc)}
+/* quiz */
+.quiz .q{margin:0 0 14px}
+.quiz .q p{font-weight:600;margin:0 0 6px}
+.quiz .opts{display:grid;gap:6px}
+.quiz .opts button{all:unset;cursor:pointer;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);font-size:.9rem}
+.quiz .opts button.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,var(--panel2))}
+.quiz .opts button.ko{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 18%,var(--panel2))}
+.quiz .ex{font-size:.86rem;color:var(--mute);margin-top:5px;display:none}
+.quiz .q.done .ex{display:block}
+.score{font-weight:700;color:var(--acc)}
+select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit}
+.big-n{font-size:2rem;font-weight:800;color:var(--acc);line-height:1.1}
+footer{color:var(--mute);font-size:.78rem;text-align:center;padding:10px 16px 30px}
+</style>
+</head>
+<body class="t-net">
+
+<header>
+  <h1>Internet · Dark Web · Sites</h1>
+  <p>Do básico ao avançado, com esquemas interativos. Toca nos diagramas e usa os botões ▶.</p>
+</header>
+
+<div class="bar"><div class="bar-in">
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="net" aria-selected="true"><span class="em">🌐</span>Internet</button>
+    <button role="tab" data-tab="dark" aria-selected="false"><span class="em">🧅</span>Dark Web</button>
+    <button role="tab" data-tab="sites" aria-selected="false"><span class="em">🧱</span>Sites</button>
+  </div>
+</div></div>
+
+<main>
+
+<!-- ===================================================== INTERNET -->
+<section class="panel on" id="p-net">
+  <div class="intro">
+    <h2>🌐 A Internet</h2>
+    <p>Uma rede de redes: milhares de milhões de dispositivos ligados por cabos, rádio e regras comuns (protocolos) que lhes permitem trocar dados.</p>
+  </div>
+
+  <div class="card" data-level="b">
+    <h3>O que é, afinal?</h3>
+    <p>Pensa nos <b>correios</b>: cada casa tem uma morada, as cartas passam por vários centros de distribuição e chegam ao destino. Na internet, cada dispositivo tem um <b>endereço IP</b>, os dados vão em <b>pacotes</b> e os <b>routers</b> fazem de centros de distribuição.</p>
+    <div class="grid2">
+      <div class="mini"><h4>🌐 Internet</h4><p class="small">A infraestrutura: cabos, routers, antenas, protocolos. A "estrada".</p></div>
+      <div class="mini"><h4>🕸️ Web (WWW)</h4><p class="small">Um dos serviços que circula nela: páginas ligadas por links. Email, jogos online, videochamadas e streaming também usam a internet, mas não são "a web".</p></div>
+    </div>
+  </div>
+
+  <div class="card stepper" data-level="b" data-id="jp">
+    <h3>A viagem de um pedido</h3>
+    <svg class="dg" viewBox="0 0 360 160">
+      <g class="wire"><line x1="36" y1="78" x2="324" y2="78"/></g>
+      <g class="node" id="jp-n1"><rect x="10" y="56" width="52" height="44" rx="9"/><text x="36" y="84" class="big">💻</text><text x="36" y="118">Portátil</text><text x="36" y="131" class="sub">192.168.1.20</text></g>
+      <g class="node" id="jp-n2"><rect x="82" y="56" width="52" height="44" rx="9"/><text x="108" y="84" class="big">📶</text><text x="108" y="118">Router</text><text x="108" y="131" class="sub">Wi-Fi / NAT</text></g>
+      <g class="node" id="jp-n3"><rect x="154" y="56" width="52" height="44" rx="9"/><text x="180" y="84" class="big">🏢</text><text x="180" y="118">Operador</text><text x="180" y="131" class="sub">ISP</text></g>
+      <g class="node" id="jp-n4"><rect x="226" y="56" width="52" height="44" rx="9"/><text x="252" y="84" class="big">🌊</text><text x="252" y="118">Backbone</text><text x="252" y="131" class="sub">IXP / cabos</text></g>
+      <g class="node" id="jp-n5"><rect x="298" y="56" width="52" height="44" rx="9"/><text x="324" y="84" class="big">🗄️</text><text x="324" y="118">Servidor</text><text x="324" y="131" class="sub">93.184.x.x</text></g>
+      <g class="pkt"><circle r="8" class="pk"/></g>
+    </svg>
+    <div class="cap"></div><div class="dots"></div>
+    <div class="ctl"><button class="btn" data-a="prev">◀</button><button class="btn pri" data-a="play">▶ Animar</button><button class="btn" data-a="next">▶</button><span class="cnt"></span></div>
+  </div>
+
+  <div class="card" data-level="b">
+    <h3>Endereços IP</h3>
+    <p>Todo o dispositivo ligado precisa de um endereço. Há dois "sabores":</p>
+    <div class="grid2">
+      <div class="mini"><h4>IPv4 · <code>85.244.10.7</code></h4><p class="small">4 números de 0 a 255. Cerca de <b>4,3 mil milhões</b> de endereços — esgotaram-se.</p></div>
+      <div class="mini"><h4>IPv6 · <code>2001:db8::1</code></h4><p class="small">128 bits: ~3,4×10³⁸ endereços. Chega para dar um IP a cada grão de areia do planeta, muitas vezes.</p></div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="mini"><h4>🏠 IP privado</h4><p class="small">Dentro de casa (<code>192.168.x.x</code>, <code>10.x.x.x</code>). Não é visível na internet.</p></div>
+      <div class="mini"><h4>🌍 IP público</h4><p class="small">O que o mundo vê. Toda a casa partilha um só, graças ao <b>NAT</b> do router, que "traduz" e reencaminha.</p></div>
+    </div>
+  </div>
+
+  <div class="card" data-level="i">
+    <h3>As camadas (modelo TCP/IP)</h3>
+    <p class="small mute">Cada camada resolve um problema e confia na de baixo. Toca numa camada.</p>
+    <div class="layers" data-target="lyinfo">
+      <button data-info="l4" style="background:#2c1c2f">4 · Aplicação <span>HTTP, DNS, SMTP</span></button>
+      <button data-info="l3" style="background:#261c40">3 · Transporte <span>TCP, UDP</span></button>
+      <button data-info="l2" style="background:#1b2440">2 · Internet <span>IP, ICMP</span></button>
+      <button data-info="l1" style="background:#132235">1 · Ligação / Física <span>Wi-Fi, Ethernet, fibra</span></button>
+    </div>
+    <div class="info" id="lyinfo">Toca numa camada para ver o que faz.</div>
+    <p class="small" style="margin-top:12px"><b>Encapsulamento:</b> cada camada embrulha os dados da camada de cima com o seu próprio cabeçalho — como envelopes dentro de envelopes.</p>
+    <div class="encap">
+      <div class="e1"><span class="lab">Trama Wi-Fi/Ethernet · MAC origem/destino</span>
+        <div class="e2"><span class="lab">Pacote IP · IP origem → IP destino</span>
+          <div class="e3"><span class="lab">Segmento TCP · porta 51234 → 443, nº sequência</span>
+            <div class="e4"><span class="lab">Dados HTTP</span>GET /index.html</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card stepper" data-level="i" data-id="dns">
+    <h3>DNS: a lista telefónica da internet</h3>
+    <p class="small mute">Os humanos usam nomes (<code>exemplo.pt</code>); as máquinas usam IPs. O DNS faz a tradução.</p>
+    <svg class="dg" viewBox="0 0 360 250">
+      <g class="wire"><line x1="80" y1="125" x2="125" y2="125"/><line x1="195" y1="118" x2="260" y2="42"/><line x1="195" y1="125" x2="260" y2="125"/><line x1="195" y1="132" x2="260" y2="208"/></g>
+      <g class="node" id="dns-b"><rect x="10" y="103" width="70" height="44" rx="9"/><text x="45" y="122">Browser</text><text x="45" y="136" class="sub">+ cache</text></g>
+      <g class="node" id="dns-r"><rect x="125" y="103" width="70" height="44" rx="9"/><text x="160" y="122">Resolvedor</text><text x="160" y="136" class="sub">ISP / 1.1.1.1</text></g>
+      <g class="node" id="dns-root"><rect x="260" y="20" width="84" height="44" rx="9"/><text x="302" y="39">Raiz  .</text><text x="302" y="53" class="sub">13 nomes, centenas de cópias</text></g>
+      <g class="node" id="dns-tld"><rect x="260" y="103" width="84" height="44" rx="9"/><text x="302" y="122">TLD  .pt</text><text x="302" y="136" class="sub">DNS.PT</text></g>
+      <g class="node" id="dns-auth"><rect x="260" y="186" width="84" height="44" rx="9"/><text x="302" y="205">Autoritativo</text><text x="302" y="219" class="sub">exemplo.pt</text></g>
+      <g class="pkt"><circle r="7" class="pk"/></g>
+    </svg>
+    <div class="cap"></div><div class="dots"></div>
+    <div class="ctl"><button class="btn" data-a="prev">◀</button><button class="btn pri" data-a="play">▶ Animar</button><button class="btn" data-a="next">▶</button><span class="cnt"></span></div>
+  </div>
+
+  <div class="card stepper" data-level="i" data-id="tcp">
+    <h3>Aperto de mão TCP + TLS (o cadeado 🔒)</h3>
+    <svg class="dg" viewBox="0 0 360 285">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+      <text x="60" y="18">💻 Cliente</text><text x="300" y="18">🗄️ Servidor</text>
+      <line class="wire" x1="60" y1="28" x2="60" y2="278"/><line class="wire" x1="300" y1="28" x2="300" y2="278"/>
+      <g id="tcp-a0" data-from="0" style="color:var(--acc)"><path class="arr" d="M62,45 L298,62" marker-end="url(#ah)"/><text x="180" y="45">SYN</text></g>
+      <g id="tcp-a1" data-from="1" style="color:var(--acc)"><path class="arr" d="M298,85 L62,102" marker-end="url(#ah)"/><text x="180" y="85">SYN-ACK</text></g>
+      <g id="tcp-a2" data-from="2" style="color:var(--acc)"><path class="arr" d="M62,125 L298,142" marker-end="url(#ah)"/><text x="180" y="125">ACK ✓ ligação aberta</text></g>
+      <g id="tcp-a3" data-from="3" style="color:var(--acc)"><path class="arr" d="M62,170 L298,187" marker-end="url(#ah)"/><text x="180" y="170">ClientHello + chave</text></g>
+      <g id="tcp-a4" data-from="4" style="color:var(--acc)"><path class="arr" d="M298,210 L62,227" marker-end="url(#ah)"/><text x="180" y="210">ServerHello + certificado</text></g>
+      <g id="tcp-a5" data-from="5" style="color:var(--ok)"><path class="arr" d="M64,258 L296,258" marker-start="url(#ah)" marker-end="url(#ah)" style="stroke:var(--ok)"/><text x="180" y="252">🔒 HTTP cifrado</text></g>
+    </svg>
+    <div class="cap"></div><div class="dots"></div>
+    <div class="ctl"><button class="btn" data-a="prev">◀</button><button class="btn pri" data-a="play">▶ Animar</button><button class="btn" data-a="next">▶</button><span class="cnt"></span></div>
+  </div>
+
+  <div class="card" data-level="i">
+    <h3>TCP vs UDP e portas</h3>
+    <div class="grid2">
+      <div class="mini"><h4>TCP · carta registada</h4><p class="small">Confirma a entrega, reordena, reenvia o que se perdeu. Usado em páginas web, email, ficheiros.</p></div>
+      <div class="mini"><h4>UDP · postal</h4><p class="small">Envia e não espera confirmação. Mais rápido. Usado em chamadas, jogos, streaming ao vivo, DNS.</p></div>
+    </div>
+    <p class="small" style="margin-top:10px">A <b>porta</b> diz a que "porta do prédio" (programa) entregar: <code>80</code> HTTP · <code>443</code> HTTPS · <code>53</code> DNS · <code>25/587</code> email · <code>22</code> SSH.</p>
+  </div>
+
+  <div class="card" data-level="a">
+    <h3>Como a internet se mantém ligada</h3>
+    <ul class="clean">
+      <li><b>Sistemas Autónomos (AS):</b> a internet é composta por dezenas de milhares de redes independentes (operadores, Google, universidades), cada uma com um número ASN.</li>
+      <li><b>BGP:</b> o protocolo com que estas redes anunciam umas às outras "consigo chegar a estes IPs". É baseado em confiança — um anúncio errado pode desviar ou apagar tráfego. Em 2021, uma alteração de configuração retirou as rotas do Facebook e deixou-o inacessível durante horas.</li>
+      <li><b>Pontos de troca (IXP):</b> locais onde redes se ligam diretamente para trocar tráfego mais barato e rápido. Em Portugal, o principal é o GigaPIX.</li>
+      <li><b>Cabos submarinos:</b> transportam a esmagadora maioria do tráfego intercontinental. Portugal é ponto de chegada de vários (ex.: Carcavelos, Sines).</li>
+      <li><b>CDNs:</b> redes (Cloudflare, Akamai…) que guardam cópias de conteúdos perto de ti para reduzir distância e carga.</li>
+    </ul>
+  </div>
+
+  <div class="card" data-level="a">
+    <h3>Latência vs largura de banda</h3>
+    <p class="small"><b>Largura de banda</b> = nº de faixas da autoestrada (quanto cabe por segundo). <b>Latência</b> = quanto tempo demora a viagem. A luz na fibra viaja a ~200 000 km/s, por isso há um mínimo físico que nenhum tarifário resolve.</p>
+    <label class="small">Lisboa →
+      <select id="latsel">
+        <option value="500">Madrid (~500 km)</option>
+        <option value="1600">Londres (~1 600 km)</option>
+        <option value="1900">Frankfurt (~1 900 km)</option>
+        <option value="5400" selected>Nova Iorque (~5 400 km)</option>
+        <option value="7900">São Paulo (~7 900 km)</option>
+        <option value="11100">Tóquio (~11 100 km)</option>
+        <option value="18000">Sydney (~18 000 km)</option>
+      </select></label>
+    <div style="margin-top:10px"><span class="big-n" id="latout">54 ms</span> <span class="mute small">ida e volta mínima teórica</span></div>
+    <p class="small mute">Na prática é mais, porque os cabos não seguem linha reta e há routers pelo caminho. Daí as CDNs: trazer o conteúdo para perto.</p>
+  </div>
+
+  <div class="card" data-level="a">
+    <h3>Tendências e protocolos modernos</h3>
+    <ul class="clean">
+      <li><b>HTTP/3 e QUIC:</b> correm sobre UDP, juntam o aperto de mão e a cifra num só passo e lidam melhor com redes móveis instáveis.</li>
+      <li><b>DNS cifrado (DoH/DoT):</b> evita que quem está no caminho veja os nomes que consultas.</li>
+      <li><b>IPv6:</b> elimina a necessidade de NAT; a adoção cresce aos poucos.</li>
+      <li><b>Internet por satélite em órbita baixa:</b> latências muito menores que os satélites geoestacionários clássicos.</li>
+      <li><b>Neutralidade da rede:</b> princípio (protegido na UE) de que o operador deve tratar o tráfego de forma igual.</li>
+    </ul>
+  </div>
+
+  <div class="card" data-level="b">
+    <h3>Linha do tempo</h3>
+    <div class="tl">
+      <div><b>1969</b>ARPANET liga as primeiras universidades nos EUA.</div>
+      <div><b>1974</b>Cerf e Kahn descrevem o TCP/IP.</div>
+      <div><b>1983</b>A ARPANET adota o TCP/IP — nasce a internet moderna. Surge o DNS pouco depois.</div>
+      <div><b>1989</b>Tim Berners-Lee propõe a World Wide Web no CERN.</div>
+      <div><b>1991</b>Primeiro site público. Portugal liga-se à internet nesse período através da rede académica.</div>
+      <div><b>1993</b>Navegador Mosaic: a web ganha imagens e vai para o grande público.</div>
+      <div><b>1998</b>Google é fundado.</div>
+      <div><b>2007</b>iPhone: a internet passa para o bolso.</div>
+      <div><b>2010s</b>Cloud, streaming, redes sociais, HTTPS por defeito.</div>
+      <div><b>2020s</b>5G, fibra até casa, IA generativa, HTTP/3.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== DARK WEB -->
+<section class="panel" id="p-dark">
+  <div class="intro">
+    <h2>🧅 Deep Web e Dark Web</h2>
+    <p>Conteúdo que os motores de busca não mostram — a maior parte é banal (o teu email). Uma pequena parte está em redes que escondem quem és e onde está o servidor.</p>
+  </div>
+
+  <div class="card" data-level="b">
+    <h3>O icebergue</h3>
+    <p class="small mute">Toca em cada camada.</p>
+    <svg class="dg" viewBox="0 0 360 300" data-target="iceinfo">
+      <defs><clipPath id="iceclip"><polygon points="150,70 180,20 212,70 258,110 292,200 250,288 118,292 68,210 96,120"/></clipPath></defs>
+      <rect x="0" y="70" width="360" height="230" fill="#0c2a4a" opacity=".55"/>
+      <line x1="0" y1="70" x2="360" y2="70" stroke="#38bdf8" stroke-dasharray="4 4"/>
+      <g clip-path="url(#iceclip)">
+        <rect class="clk" data-info="surf" x="0" y="0" width="360" height="70" fill="#e0f2fe"/>
+        <rect class="clk" data-info="deep" x="0" y="70" width="360" height="160" fill="#3b82f6" opacity=".85"/>
+        <rect class="clk" data-info="dark" x="0" y="230" width="360" height="70" fill="#5b21b6"/>
+      </g>
+      <text x="290" y="40" style="font-weight:700">Web de superfície</text>
+      <text x="290" y="54" class="sub">Google, notícias, lojas</text>
+      <text x="180" y="150" style="font-weight:700;pointer-events:none">Deep Web</text>
+      <text x="180" y="165" class="sub" style="fill:#dbeafe;pointer-events:none">email, banca, intranets, nuvem</text>
+      <text x="180" y="262" style="font-weight:700;pointer-events:none">Dark Web</text>
+      <text x="180" y="276" class="sub" style="fill:#e9d5ff;pointer-events:none">Tor (.onion), I2P…</text>
+    </svg>
+    <div class="info" id="iceinfo">Toca numa camada do icebergue.</div>
+  </div>
+
+  <div class="card" data-level="b">
+    <h3>Mitos vs realidade</h3>
+    <p class="small mute">Toca para virar.</p>
+    <div class="flips">
+      <div class="flip"><div class="f1"><small>Mito</small>"A dark web é 90% da internet."</div><div class="f2"><small>Realidade</small>Isso confunde deep web com dark web. A deep web (páginas privadas) é enorme; a dark web é minúscula em comparação.</div></div>
+      <div class="flip"><div class="f1"><small>Mito</small>"Só criminosos usam o Tor."</div><div class="f2"><small>Realidade</small>Jornalistas, ativistas, pessoas sob censura e quem só quer privacidade usam-no diariamente. Há crime, mas não é o único uso.</div></div>
+      <div class="flip"><div class="f1"><small>Mito</small>"Com Tor, sou 100% anónimo."</div><div class="f2"><small>Realidade</small>O Tor esconde o caminho, não o comportamento. Iniciar sessão numa conta pessoal ou abrir ficheiros descarregados pode revelar-te.</div></div>
+      <div class="flip"><div class="f1"><small>Mito</small>"Entrar na dark web é ilegal."</div><div class="f2"><small>Realidade</small>Em Portugal, usar o Tor é legal. Ilegal é o que já o era: comprar droga, armas, dados roubados, etc. — seja em que rede for.</div></div>
+    </div>
+  </div>
+
+  <div class="card stepper" data-level="i" data-id="tor">
+    <h3>Encaminhamento em cebola (Tor)</h3>
+    <svg class="dg" viewBox="0 0 360 240">
+      <g class="wire"><path d="M30,125 L115,60 L190,180 L265,60 L330,125"/></g>
+      <g class="node" id="tor-you"><circle class="nd" cx="30" cy="125" r="24"/><text x="30" y="166">Tu</text><text x="30" y="178" class="sub">IP real</text></g>
+      <g class="node" id="tor-g"><circle class="nd" cx="115" cy="60" r="24" style="stroke:var(--g)"/><text x="115" y="101">Guarda</text><text x="115" y="113" class="sub">entrada</text></g>
+      <g class="node" id="tor-m"><circle class="nd" cx="190" cy="180" r="24" style="stroke:var(--m)"/><text x="190" y="221">Meio</text><text x="190" y="233" class="sub">relé</text></g>
+      <g class="node" id="tor-x"><circle class="nd" cx="265" cy="60" r="24" style="stroke:var(--x)"/><text x="265" y="101">Saída</text><text x="265" y="113" class="sub">exit</text></g>
+      <g class="node" id="tor-s"><circle class="nd" cx="330" cy="125" r="24"/><text x="330" y="166">Site</text><text x="330" y="178" class="sub">destino</text></g>
+      <g class="pkt">
+        <circle r="16" fill="none" stroke="var(--g)" stroke-width="3.5" data-to="0"/>
+        <circle r="11" fill="none" stroke="var(--m)" stroke-width="3.5" data-to="1"/>
+        <circle r="6.5" fill="none" stroke="var(--x)" stroke-width="3.5" data-to="2"/>
+        <circle r="3" fill="#fff"/>
+      </g>
+    </svg>
+    <p class="small mute" style="margin:0">Anéis = camadas de cifra: <span style="color:var(--g)">● guarda</span> <span style="color:var(--m)">● meio</span> <span style="color:var(--x)">● saída</span> ⚪ mensagem</p>
+    <div class="cap"></div><div class="dots"></div>
+    <div class="ctl"><button class="btn" data-a="prev">◀</button><button class="btn pri" data-a="play">▶ Animar</button><button class="btn" data-a="next">▶</button><span class="cnt"></span></div>
+  </div>
+
+  <div class="card" data-level="i">
+    <h3>Quem sabe o quê?</h3>
+    <div class="tw"><table>
+      <tr><th></th><th>O teu IP</th><th>Destino</th><th>Conteúdo*</th></tr>
+      <tr><td>O teu operador</td><td class="y">Sim</td><td class="n">Não</td><td class="n">Não</td></tr>
+      <tr><td>Nó de guarda</td><td class="y">Sim</td><td class="n">Não</td><td class="n">Não</td></tr>
+      <tr><td>Nó do meio</td><td class="n">Não</td><td class="n">Não</td><td class="n">Não</td></tr>
+      <tr><td>Nó de saída</td><td class="n">Não</td><td class="y">Sim</td><td class="p">Só sem HTTPS</td></tr>
+      <tr><td>O site</td><td class="n">Não</td><td class="y">Sim</td><td class="y">Sim</td></tr>
+    </table></div>
+    <p class="small mute">*O operador vê que usas Tor (a não ser com "pontes"). Nenhum ponto isolado tem a imagem completa — é essa a ideia.</p>
+  </div>
+
+  <div class="card" data-level="i">
+    <h3>Serviços .onion</h3>
+    <p class="small">Num site normal visitado por Tor, o servidor é conhecido. Num <b>serviço .onion</b>, também o servidor fica escondido: ambos os lados constroem 3 saltos até um <b>ponto de encontro</b>, e nenhum conhece o IP do outro.</p>
+    <svg class="dg" viewBox="0 0 360 110">
+      <path class="wire" d="M22,55 L340,55" style="stroke:var(--line);stroke-width:2"/>
+      <circle cx="22" cy="55" r="14" fill="var(--panel2)" stroke="var(--acc)" stroke-width="2"/><text x="22" y="59">💻</text><text x="22" y="88">Tu</text>
+      <circle cx="62" cy="55" r="7" fill="var(--g)"/><circle cx="98" cy="55" r="7" fill="var(--m)"/><circle cx="134" cy="55" r="7" fill="var(--m)"/>
+      <circle cx="180" cy="55" r="15" fill="var(--panel2)" stroke="var(--warn)" stroke-width="2.5"/><text x="180" y="59">🤝</text><text x="180" y="88">Ponto de</text><text x="180" y="100">encontro</text>
+      <circle cx="226" cy="55" r="7" fill="var(--m)"/><circle cx="262" cy="55" r="7" fill="var(--m)"/><circle cx="298" cy="55" r="7" fill="var(--g)"/>
+      <circle cx="338" cy="55" r="14" fill="var(--panel2)" stroke="var(--acc)" stroke-width="2"/><text x="338" y="59">🗄️</text><text x="338" y="88">Serviço</text><text x="338" y="100">.onion</text>
+      <text x="98" y="30" class="sub">3 saltos teus</text><text x="262" y="30" class="sub">3 saltos do serviço</text>
+    </svg>
+    <ul class="clean small">
+      <li>O endereço (v3) tem 56 caracteres e <b>é derivado da chave criptográfica</b> do serviço — por isso não precisa de DNS nem de autoridade de certificados.</li>
+      <li>Não existe um "Google" fiável da dark web: os endereços são difíceis de memorizar e há muitas cópias falsas de sites (phishing).</li>
+      <li>Organizações legítimas mantêm versões .onion, como a BBC, o New York Times ou o Facebook, para chegar a quem vive sob censura.</li>
+    </ul>
+  </div>
+
+  <div class="card" data-level="i">
+    <h3>Tor, VPN e outras redes</h3>
+    <div class="tw"><table>
+      <tr><th></th><th>VPN</th><th>Tor</th></tr>
+      <tr><td>Esconde o IP do site</td><td class="y">Sim</td><td class="y">Sim</td></tr>
+      <tr><td>Quem pode ver tudo</td><td>A empresa de VPN</td><td>Ninguém sozinho</td></tr>
+      <tr><td>Velocidade</td><td class="y">Rápida</td><td class="p">Lenta</td></tr>
+      <tr><td>Acede a .onion</td><td class="n">Não</td><td class="y">Sim</td></tr>
+      <tr><td>Modelo de confiança</td><td>Confias numa empresa</td><td>Distribuído por voluntários</td></tr>
+    </table></div>
+    <p class="small"><b>I2P</b>: rede pensada para serviços internos ("eepsites"), com encaminhamento "alho" (várias mensagens agrupadas). <b>Hyphanet</b> (antiga Freenet): armazenamento distribuído e resistente à censura.</p>
+  </div>
+
+  <div class="card" data-level="a">
+    <h3>Como as pessoas são identificadas na mesma</h3>
+    <p class="small">A criptografia do Tor raramente é "partida". Quase sempre falha o lado humano ou o software à volta:</p>
+    <ul class="clean small">
+      <li><b>Erros operacionais:</b> reutilizar um nome de utilizador ou email ligado à identidade real; publicar algo que só tu sabias; entrar em contas pessoais.</li>
+      <li><b>Metadados:</b> fotos e documentos guardam localização GPS, nome do autor, modelo do equipamento.</li>
+      <li><b>Falhas no browser:</b> vulnerabilidades exploradas para fazer o computador ligar-se fora do Tor.</li>
+      <li><b>Correlação de tráfego:</b> quem consegue observar a entrada e a saída ao mesmo tempo pode cruzar padrões de tempo e volume.</li>
+      <li><b>Servidores mal configurados:</b> serviços .onion que revelam o IP real por erros de configuração.</li>
+      <li><b>Seguir o dinheiro:</b> as criptomoedas mais comuns ficam registadas publicamente — a análise de blockchain tem sido decisiva em grandes investigações.</li>
+    </ul>
+    <div class="note">Casos conhecidos: o encerramento do Silk Road (2013) e do AlphaBay (2017) resultaram sobretudo de erros humanos e cooperação policial internacional, não de "quebrar" o Tor.</div>
+  </div>
+
+  <div class="card" data-level="a">
+    <h3>Usos legítimos vs riscos</h3>
+    <div class="grid2">
+      <div class="mini"><h4>✅ Usos legítimos</h4><ul class="clean small">
+        <li>Denúncias anónimas a jornais (ex.: SecureDrop)</li>
+        <li>Contornar censura em regimes autoritários</li>
+        <li>Investigação de segurança e de ameaças</li>
+        <li>Evitar rastreio publicitário e vigilância</li>
+      </ul></div>
+      <div class="mini"><h4>⚠️ Riscos</h4><ul class="clean small">
+        <li>Burlas: a maioria das "lojas" fica com o dinheiro</li>
+        <li>Malware em ficheiros e links</li>
+        <li>Conteúdo ilegal e perturbador</li>
+        <li>Fugas de dados roubados e grupos de ransomware</li>
+      </ul></div>
+    </div>
+    <div class="note warn small">⚖️ Em Portugal, usar Tor ou VPN é legal. Comprar, vender ou aceder a conteúdos ilegais é crime em qualquer rede, e a Polícia Judiciária (UNC3T) investiga cibercrime, incluindo na dark web. Isto é informação geral, não aconselhamento jurídico.</div>
+  </div>
+
+  <div class="card" data-level="a">
+    <h3>Para empresas: monitorização de ameaças</h3>
+    <p class="small">Muitas organizações pagam serviços de <b>threat intelligence</b> que vigiam fóruns e sites de fugas para saber cedo se as suas credenciais, dados de clientes ou documentos internos estão à venda. A defesa prática passa por autenticação de dois fatores, palavras-passe únicas e serviços como o <i>Have I Been Pwned</i> para verificar fugas conhecidas.</p>
+  </div>
+</section>
+
+<!-- ===================================================== SITES -->
+<section class="panel" id="p-sites">
+  <div class="intro">
+    <h2>🧱 Sites</h2>
+    <p>Um site é um conjunto de ficheiros e programas num servidor, entregues ao teu browser quando os pedes por um endereço.</p>
+  </div>
+
+  <div class="card" data-level="b">
+    <h3>As 3 peças essenciais</h3>
+    <div class="grid2">
+      <div class="mini"><h4>🏷️ Domínio</h4><p class="small">O nome (<code>exemplo.pt</code>). Aluga-se anualmente a um registrador. Em Portugal, o <code>.pt</code> é gerido pela DNS.PT.</p></div>
+      <div class="mini"><h4>🏠 Alojamento</h4><p class="small">O computador (servidor) onde os ficheiros vivem, ligado 24 h/dia.</p></div>
+    </div>
+    <div class="mini" style="margin-top:10px"><h4>📄 Os ficheiros e o código</h4><p class="small">HTML, CSS, JavaScript, imagens — e, em sites dinâmicos, programas e uma base de dados.</p></div>
+  </div>
+
+  <div class="card" data-level="b">
+    <h3>Anatomia de um URL</h3>
+    <input class="urlin" id="urlin" value="https://loja.exemplo.pt:443/produtos/cadeira?cor=azul&tam=m#avaliacoes" spellcheck="false" autocapitalize="off">
+    <div class="urlview" id="urlview"></div>
+    <div class="ulist" id="ulist"></div>
+    <p class="small mute">Experimenta colar outro endereço.</p>
+  </div>
+
+  <div class="card" data-level="b">
+    <h3>HTML + CSS + JavaScript</h3>
+    <p class="small"><b>HTML</b> = esqueleto (o que existe). <b>CSS</b> = aparência (cores, tamanhos). <b>JavaScript</b> = comportamento (o que acontece quando clicas). Desliga cada um:</p>
+    <div class="demo-ctl"><label><input type="checkbox" id="dCss" checked> CSS</label><label><input type="checkbox" id="dJs" checked> JavaScript</label></div>
+    <div id="demo" class="styled"><div class="dcard"><h4>Pastelaria do Bairro</h4><p>Pastéis acabados de sair do forno.</p><button id="dBtn">Encomendar</button><p id="dOut"></p></div></div>
+    <details><summary>Ver o código</summary>
+<pre>&lt;!-- HTML --&gt;
+&lt;h4&gt;Pastelaria do Bairro&lt;/h4&gt;
+&lt;button id="btn"&gt;Encomendar&lt;/button&gt;
+
+/* CSS */
+button { background:#ea580c; color:#fff; border-radius:99px; }
+
+// JavaScript
+let n = 0;
+btn.onclick = () =&gt; out.textContent = `${++n} pastéis no carrinho`;</pre>
+    </details>
+  </div>
+
+  <div class="card stepper" data-level="i" data-id="load">
+    <h3>O que acontece quando carregas Enter</h3>
+    <svg class="dg" viewBox="0 0 360 74">
+      <line class="wire" x1="25" y1="28" x2="335" y2="28"/>
+      <g class="node" id="load-s0"><circle class="nd" cx="25" cy="28" r="10"/><text x="25" y="60">URL</text></g>
+      <g class="node" id="load-s1"><circle class="nd" cx="77" cy="28" r="10"/><text x="77" y="60">DNS</text></g>
+      <g class="node" id="load-s2"><circle class="nd" cx="129" cy="28" r="10"/><text x="129" y="60">TCP</text></g>
+      <g class="node" id="load-s3"><circle class="nd" cx="181" cy="28" r="10"/><text x="181" y="60">TLS</text></g>
+      <g class="node" id="load-s4"><circle class="nd" cx="233" cy="28" r="10"/><text x="233" y="60">Pedido</text></g>
+      <g class="node" id="load-s5"><circle class="nd" cx="285" cy="28" r="10"/><text x="285" y="60">Servidor</text></g>
+      <g class="node" id="load-s6"><circle class="nd" cx="335" cy="28" r="10"/><text x="335" y="60">Ecrã</text></g>
+      <g class="pkt"><circle r="15" fill="none" stroke="var(--acc)" stroke-width="2.5"/></g>
+    </svg>
+    <div class="cap"></div><div class="dots"></div>
+    <div class="ctl"><button class="btn" data-a="prev">◀</button><button class="btn pri" data-a="play">▶ Animar</button><button class="btn" data-a="next">▶</button><span class="cnt"></span></div>
+  </div>
+
+  <div class="card" data-level="i">
+    <h3>A conversa HTTP</h3>
+    <div class="grid2">
+<pre><span style="color:#93c5fd">➜ Pedido</span>
+GET /produtos?cor=azul HTTP/1.1
+Host: loja.exemplo.pt
+User-Agent: Mozilla/5.0 …
+Accept-Language: pt-PT
+Cookie: sessao=a8f3…</pre>
+<pre><span style="color:#6ee7b7">⬅ Resposta</span>
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+Cache-Control: max-age=3600
+Set-Cookie: carrinho=2
+
+&lt;!doctype html&gt;&lt;html&gt;…</pre>
+    </div>
+    <p class="small"><b>Métodos:</b> <code>GET</code> ler · <code>POST</code> criar/enviar formulário · <code>PUT/PATCH</code> alterar · <code>DELETE</code> apagar.</p>
+    <p class="small"><b>Códigos de estado</b> — toca:</p>
+    <div class="chips" id="codes"></div>
+    <div class="info" id="codeinfo">Toca num código.</div>
+  </div>
+
+  <div class="card" data-level="i">
+    <h3>Estático vs dinâmico</h3>
+    <div class="grid2">
+      <div class="mini"><h4>📄 Estático</h4><p class="small">Ficheiros prontos, iguais para todos. Rápido, barato, seguro. Ex.: página de apresentação, portefólio, documentação.</p></div>
+      <div class="mini"><h4>⚙️ Dinâmico</h4><p class="small">Um programa gera a página na hora, com dados de uma base de dados. Ex.: loja, rede social, banca online.</p></div>
+    </div>
+    <div class="flow"><span>Browser</span><i>⇄</i><span>Servidor (PHP, Node, Python…)</span><i>⇄</i><span>Base de dados (PostgreSQL, MySQL…)</span></div>
+  </div>
+
+  <div class="card" data-level="i">
+    <h3>Cookies, sessões e memória do browser</h3>
+    <p class="small">O HTTP não tem memória: cada pedido é independente. Para saber que és tu, o site entrega um <b>cookie</b> com um identificador de <b>sessão</b>, que o browser devolve em todos os pedidos seguintes.</p>
+    <ul class="clean small">
+      <li><b>Cookies próprios:</b> do site que visitas (sessão, carrinho, idioma).</li>
+      <li><b>Cookies de terceiros:</b> de outros domínios (publicidade, analítica) — permitem seguir-te entre sites. Por isso o RGPD obriga a pedir consentimento.</li>
+      <li><b>localStorage:</b> pequeno armazém no browser para o próprio site guardar preferências.</li>
+    </ul>
+  </div>
+
+  <div class="card" data-level="i">
+    <h3>Registos DNS que um dono de site usa</h3>
+    <div class="tw"><table>
+      <tr><th>Tipo</th><th>Para quê</th><th>Exemplo</th></tr>
+      <tr><td><code>A</code></td><td>Nome → IPv4</td><td class="mono small">exemplo.pt → 93.184.216.34</td></tr>
+      <tr><td><code>AAAA</code></td><td>Nome → IPv6</td><td class="mono small">→ 2606:2800::1</td></tr>
+      <tr><td><code>CNAME</code></td><td>Alcunha para outro nome</td><td class="mono small">www → exemplo.pt</td></tr>
+      <tr><td><code>MX</code></td><td>Onde entregar email</td><td class="mono small">→ mail.exemplo.pt</td></tr>
+      <tr><td><code>TXT</code></td><td>Verificações, anti-spam (SPF, DKIM)</td><td class="mono small">"v=spf1 …"</td></tr>
+      <tr><td><code>NS</code></td><td>Quem manda no domínio</td><td class="mono small">→ ns1.alojamento.pt</td></tr>
+    </table></div>
+  </div>
+
+  <div class="card" data-level="a">
+    <h3>Arquitetura de um site grande</h3>
+    <p class="small mute">Toca em cada bloco.</p>
+    <svg class="dg" viewBox="0 0 360 320" data-target="archinfo">
+      <g class="wire"><line x1="180" y1="45" x2="180" y2="70"/><line x1="180" y1="105" x2="180" y2="130"/><line x1="160" y1="165" x2="110" y2="190"/><line x1="200" y1="165" x2="250" y2="190"/><line x1="110" y1="225" x2="70" y2="262"/><line x1="110" y1="225" x2="180" y2="262"/><line x1="250" y1="225" x2="180" y2="262"/><line x1="250" y1="225" x2="290" y2="262"/></g>
+      <g class="node clk" data-info="user"><rect x="125" y="10" width="110" height="35" rx="9"/><text x="180" y="32">👤 Utilizador</text></g>
+      <g class="node clk" data-info="cdn"><rect x="105" y="70" width="150" height="35" rx="9"/><text x="180" y="92">🌍 CDN / WAF</text></g>
+      <g class="node clk" data-info="lb"><rect x="105" y="130" width="150" height="35" rx="9"/><text x="180" y="152">⚖️ Balanceador</text></g>
+      <g class="node clk" data-info="app"><rect x="50" y="190" width="120" height="35" rx="9"/><text x="110" y="212">⚙️ App #1</text></g>
+      <g class="node clk" data-info="app"><rect x="190" y="190" width="120" height="35" rx="9"/><text x="250" y="212">⚙️ App #2</text></g>
+      <g class="node clk" data-info="cache"><rect x="15" y="262" width="100" height="44" rx="9"/><text x="65" y="282">⚡ Cache</text><text x="65" y="296" class="sub">Redis</text></g>
+      <g class="node clk" data-info="db"><rect x="130" y="262" width="100" height="44" rx="9"/><text x="180" y="282">🗃️ Base de dados</text><text x="180" y="296" class="sub">PostgreSQL</text></g>
+      <g class="node clk" data-info="store"><rect x="245" y="262" width="100" height="44" rx="9"/><text x="295" y="282">📦 Ficheiros</text><text x="295" y="296" class="sub">S3 / R2</text></g>
+    </svg>
+    <div class="info" id="archinfo">Toca num bloco do esquema.</div>
+  </div>
+
+  <div class="card" data-level="a">
+    <h3>Como o browser desenha a página</h3>
+    <div class="flow"><span>HTML → DOM</span><i>+</i><span>CSS → CSSOM</span><i>→</i><span>Árvore de render</span><i>→</i><span>Layout</span><i>→</i><span>Pintura</span><i>→</i><span>Composição</span></div>
+    <p class="small">JavaScript pode alterar o DOM a qualquer momento e obrigar a refazer o layout. Scripts pesados no topo da página atrasam tudo — por isso usa-se <code>defer</code>, imagens com <code>loading="lazy"</code> e CSS crítico primeiro.</p>
+    <div class="tw"><table>
+      <tr><th>Estratégia</th><th>Como funciona</th><th>Bom para</th></tr>
+      <tr><td><b>SSG</b> (estático gerado)</td><td>Páginas geradas antes, no deploy</td><td>Blogs, documentação</td></tr>
+      <tr><td><b>SSR</b> (no servidor)</td><td>Servidor gera HTML a cada pedido</td><td>Conteúdo personalizado + SEO</td></tr>
+      <tr><td><b>CSR / SPA</b> (no cliente)</td><td>Chega um HTML vazio; o JavaScript constrói tudo</td><td>Aplicações tipo painel</td></tr>
+    </table></div>
+  </div>
+
+  <div class="card" data-level="a">
+    <h3>APIs: sites que falam com programas</h3>
+    <p class="small">Uma API devolve dados em vez de páginas, normalmente em JSON. A app do teu banco e o site do banco usam a mesma API.</p>
+<pre>GET /api/produtos/42
+
+{ "id": 42, "nome": "Cadeira", "preco": 89.90, "stock": 3 }</pre>
+    <p class="small"><b>REST</b> organiza tudo em recursos e URLs; <b>GraphQL</b> deixa o cliente pedir exatamente os campos que quer; <b>WebSockets</b> mantêm uma ligação aberta para dados em tempo real (chat, cotações).</p>
+  </div>
+
+  <div class="card" data-level="a">
+    <h3>Segurança web: os ataques clássicos</h3>
+    <details><summary>💉 Injeção de SQL</summary><p class="small">O site mete texto do utilizador diretamente numa consulta à base de dados, e um atacante consegue alterar a consulta. <b>Defesa:</b> consultas parametrizadas, nunca concatenar texto.</p></details>
+    <details><summary>🧪 XSS (cross-site scripting)</summary><p class="small">Um comentário com código JavaScript é mostrado a outros visitantes e corre no browser deles. <b>Defesa:</b> escapar sempre o conteúdo, Content-Security-Policy.</p></details>
+    <details><summary>🎭 CSRF</summary><p class="small">Outro site faz o teu browser enviar um pedido autenticado sem saberes. <b>Defesa:</b> tokens anti-CSRF, cookies <code>SameSite</code>.</p></details>
+    <details><summary>🔑 Palavras-passe</summary><p class="small">Nunca guardar em texto: usar hash lento com "sal" (bcrypt, Argon2), limitar tentativas, oferecer 2FA.</p></details>
+    <details><summary>🧩 Dependências desatualizadas</summary><p class="small">Plugins de WordPress e bibliotecas antigas são a porta de entrada mais comum. Atualizar regularmente.</p></details>
+    <details><summary>🔒 HTTPS em todo o lado</summary><p class="small">Certificados gratuitos (Let's Encrypt) e HSTS para impedir ligações sem cifra.</p></details>
+  </div>
+
+  <div class="card" data-level="a">
+    <h3>Desempenho e SEO</h3>
+    <p class="small">O Google mede a experiência real com as <b>Core Web Vitals</b>:</p>
+    <div class="grid2">
+      <div class="mini"><h4>LCP ≤ 2,5 s</h4><p class="small">Quanto demora o maior elemento visível a aparecer.</p></div>
+      <div class="mini"><h4>INP ≤ 200 ms</h4><p class="small">Quanto demora a página a reagir a um toque ou clique.</p></div>
+    </div>
+    <div class="mini" style="margin-top:10px"><h4>CLS ≤ 0,1</h4><p class="small">Quanto a página "salta" enquanto carrega (anúncios, imagens sem tamanho).</p></div>
+    <p class="small" style="margin-top:10px"><b>SEO:</b> títulos e descrições únicos, HTML semântico (<code>h1</code>, <code>nav</code>, <code>article</code>), texto alternativo nas imagens, <code>sitemap.xml</code>, ligações de outros sites relevantes, e conteúdo que responde ao que as pessoas pesquisam.</p>
+  </div>
+
+  <div class="card" data-level="a">
+    <h3>Publicar um site, passo a passo</h3>
+    <ol class="small" style="padding-left:20px">
+      <li>Registar o domínio.</li>
+      <li>Escolher alojamento: estático (Cloudflare Pages, Netlify, GitHub Pages) ou servidor/plataforma para backend.</li>
+      <li>Apontar o DNS: registo <code>A</code>/<code>CNAME</code> para o alojamento.</li>
+      <li>Ativar HTTPS (normalmente automático).</li>
+      <li>Fazer deploy — idealmente com Git, para cada alteração publicar sozinha.</li>
+      <li>Configurar email (<code>MX</code>, SPF, DKIM, DMARC) se usares o domínio para email.</li>
+      <li>Monitorizar: analítica respeitadora da privacidade, alertas de falha, cópias de segurança.</li>
+    </ol>
+  </div>
+</section>
+</main>
+
+<footer>Ficheiro único, funciona offline.</footer>
+
+<script>
+/* ---------- passos dos diagramas ---------- */
+const STEPS = {
+  jp: [
+    {t:'<b>1. Tu.</b> Escreves um endereço. O dispositivo prepara o pedido e parte-o em <b>pacotes</b> — pedaços pequenos, cada um com o endereço de origem e de destino.', hl:['n1'], p:[36,40]},
+    {t:'<b>2. Router.</b> O router de casa recebe os pacotes por Wi-Fi ou cabo. É a fronteira entre a tua rede local e a internet; troca o teu IP privado pelo IP público (NAT).', hl:['n2'], p:[108,40]},
+    {t:'<b>3. Operador (ISP).</b> MEO, NOS, Vodafone, Digi… ligam a tua casa ao resto do mundo, por fibra, cabo ou rede móvel.', hl:['n3'], p:[180,40]},
+    {t:'<b>4. Backbone.</b> Os pacotes saltam entre redes de vários operadores em pontos de troca (IXP) e cabos de alta capacidade — às vezes submarinos. Cada pacote pode seguir um caminho diferente!', hl:['n4'], p:[252,40]},
+    {t:'<b>5. Servidor.</b> Junta os pacotes pela ordem certa, processa o pedido e responde. A resposta faz o caminho inverso — tudo em milissegundos.', hl:['n5'], p:[324,40]}
+  ],
+  dns: [
+    {t:'<b>1.</b> Queres abrir <code>exemplo.pt</code>. O browser e o sistema operativo verificam a sua <b>cache</b>. Não sabem o IP…', hl:['b'], p:[45,96]},
+    {t:'<b>2.</b> Perguntam ao <b>resolvedor DNS</b> — normalmente do operador, ou públicos como 1.1.1.1 (Cloudflare) e 8.8.8.8 (Google).', hl:['r'], p:[160,96]},
+    {t:'<b>3.</b> O resolvedor pergunta a um <b>servidor raiz</b>: "quem trata de <code>.pt</code>?". A raiz não sabe o IP final, mas indica o caminho.', hl:['root'], p:[302,13]},
+    {t:'<b>4.</b> Pergunta ao servidor do <b>.pt</b> (gerido pela DNS.PT): "quem trata de <code>exemplo.pt</code>?". Resposta: os servidores do dono do domínio.', hl:['tld'], p:[302,96]},
+    {t:'<b>5.</b> O servidor <b>autoritativo</b> do domínio dá a resposta definitiva: <code>exemplo.pt → 93.184.216.34</code>.', hl:['auth'], p:[302,179]},
+    {t:'<b>6.</b> O resolvedor guarda a resposta durante o <b>TTL</b> (ex.: 1 hora) e entrega o IP ao browser. Na próxima vez é instantâneo.', hl:['b','r'], p:[45,96]}
+  ],
+  tcp: [
+    {t:'<b>SYN:</b> o cliente pergunta "posso ligar-me?" e envia um número de sequência inicial.', hl:['a0']},
+    {t:'<b>SYN-ACK:</b> o servidor responde "sim, recebi o teu número, aqui está o meu".', hl:['a1']},
+    {t:'<b>ACK:</b> o cliente confirma. A ligação TCP está aberta — custou uma ida e volta completa.', hl:['a2']},
+    {t:'<b>TLS ClientHello:</b> o cliente propõe algoritmos de cifra e envia a sua metade de uma troca de chaves (Diffie-Hellman).', hl:['a3']},
+    {t:'<b>ServerHello + certificado:</b> o servidor escolhe a cifra, envia a sua metade da chave e um <b>certificado</b> assinado por uma autoridade, que prova que é mesmo aquele domínio.', hl:['a4']},
+    {t:'<b>Canal cifrado:</b> ambos calculam a mesma chave secreta <i>sem nunca a enviarem</i>. A partir daqui, quem estiver no meio (Wi-Fi público, operador) vê o destino mas não o conteúdo.', hl:['a5']}
+  ],
+  tor: [
+    {t:'<b>1.</b> O Tor Browser escolhe 3 relés ao acaso entre milhares de voluntários e embrulha a mensagem em <b>3 camadas de cifra</b>, uma para cada relé — como uma cebola.', hl:['you'], p:[30,125]},
+    {t:'<b>2. Guarda.</b> Retira a camada exterior (verde). Sabe <b>quem és</b> (o teu IP), mas não o que pedes nem o destino final — só o próximo relé.', hl:['g'], p:[115,60]},
+    {t:'<b>3. Meio.</b> Retira a camada azul. Não sabe quem és nem o destino: só conhece os dois vizinhos. É o "isolante" do circuito.', hl:['m'], p:[190,180]},
+    {t:'<b>4. Saída.</b> Retira a última camada e envia o pedido ao site. Sabe o <b>destino</b> mas não quem és. Se o site não usar HTTPS, poderia ler o conteúdo!', hl:['x'], p:[265,60]},
+    {t:'<b>5. Site.</b> Recebe o pedido vindo do IP do nó de saída. A resposta volta pelo mesmo circuito, ganhando camadas no caminho inverso. O circuito é trocado periodicamente.', hl:['s'], p:[330,125]}
+  ],
+  load: [
+    {t:'<b>URL.</b> O browser analisa o endereço e verifica se já tem a página em cache. Também pode já ter iniciado a ligação enquanto escrevias.', hl:['s0'], p:[25,28]},
+    {t:'<b>DNS.</b> Converte o nome no endereço IP do servidor (ver a aba Internet).', hl:['s1'], p:[77,28]},
+    {t:'<b>TCP.</b> Abre a ligação com o aperto de mão de 3 passos (SYN, SYN-ACK, ACK).', hl:['s2'], p:[129,28]},
+    {t:'<b>TLS.</b> Negoceia a cifra e verifica o certificado. Se falhar, vês o aviso "A sua ligação não é privada".', hl:['s3'], p:[181,28]},
+    {t:'<b>Pedido HTTP.</b> Envia <code>GET /</code> com cabeçalhos: idioma, cookies, tipo de browser.', hl:['s4'], p:[233,28]},
+    {t:'<b>Servidor.</b> Corre o código, consulta a base de dados se for preciso, e devolve HTML com um código de estado (200, 404…).', hl:['s5'], p:[285,28]},
+    {t:'<b>Ecrã.</b> O browser lê o HTML, descobre CSS, JS e imagens, faz mais pedidos (muitas vezes dezenas), constrói o DOM e pinta a página.', hl:['s6'], p:[335,28]}
+  ]
+};
+
+document.querySelectorAll('.stepper').forEach(el => {
+  const id = el.dataset.id, steps = STEPS[id]; let i = 0, timer = null;
+  const svg = el.querySelector('svg'), cap = el.querySelector('.cap'), cnt = el.querySelector('.cnt'),
+        pkt = svg.querySelector('.pkt'), dots = el.querySelector('.dots'), play = el.querySelector('[data-a=play]');
+  dots.innerHTML = steps.map(() => '<i></i>').join('');
+  function render() {
+    const s = steps[i];
+    svg.querySelectorAll('.hl').forEach(n => n.classList.remove('hl'));
+    (s.hl || []).forEach(h => { const n = svg.querySelector('#' + id + '-' + h); if (n) n.classList.add('hl'); });
+    svg.querySelectorAll('[data-from],[data-to]').forEach(n => {
+      const f = n.dataset.from !== undefined ? +n.dataset.from : -1;
+      const t = n.dataset.to !== undefined ? +n.dataset.to : 99;
+      n.classList.toggle('hide', !(i >= f && i <= t));
+    });
+    if (pkt && s.p) pkt.style.transform = `translate(${s.p[0]}px,${s.p[1]}px)`;
+    cap.innerHTML = s.t;
+    cnt.textContent = (i + 1) + ' / ' + steps.length;
+    [...dots.children].forEach((d, k) => d.classList.toggle('on', k <= i));
+  }
+  function stop() { clearInterval(timer); timer = null; play.textContent = '▶ Animar'; }
+  el.querySelector('[data-a=prev]').onclick = () => { stop(); i = Math.max(0, i - 1); render(); };
+  el.querySelector('[data-a=next]').onclick = () => { stop(); i = Math.min(steps.length - 1, i + 1); render(); };
+  play.onclick = () => {
+    if (timer) return stop();
+    if (i >= steps.length - 1) { i = 0; render(); }
+    play.textContent = '⏸ Pausa';
+    timer = setInterval(() => { if (i >= steps.length - 1) return stop(); i++; render(); }, 2600);
+  };
+  render();
+});
+
+/* ---------- blocos clicáveis ---------- */
+const INFO = {
+  l4:'<b>Aplicação.</b> A linguagem da conversa: HTTP para páginas, DNS para nomes, SMTP/IMAP para email. Analogia: o conteúdo da carta.',
+  l3:'<b>Transporte.</b> Entrega ao programa certo (porta) e, no TCP, garante que tudo chega completo e por ordem. Analogia: o serviço de "carta registada".',
+  l2:'<b>Internet.</b> Endereços IP e encaminhamento: cada router decide para onde mandar o pacote a seguir. O <code>ping</code> usa ICMP desta camada. Analogia: o código postal.',
+  l1:'<b>Ligação / Física.</b> Bits a viajar como luz (fibra), eletricidade (cobre) ou ondas de rádio (Wi-Fi, 5G). Usa endereços MAC só dentro da rede local. Analogia: a carrinha dos correios.',
+  surf:'<b>Web de superfície.</b> Tudo o que um motor de busca encontra: notícias, Wikipédia, lojas, blogs. É apenas uma pequena fração do que existe online.',
+  deep:'<b>Deep Web.</b> Tudo o que não é indexado: o teu email, a área de cliente do banco, o portal das Finanças, documentos na nuvem, intranets de empresas, resultados de pesquisas em bases de dados. É a <b>maior parte</b> da web — e é perfeitamente normal.',
+  dark:'<b>Dark Web.</b> Sites em redes sobrepostas (Tor, I2P) que exigem software próprio e escondem tanto o visitante como o servidor. Mistura de usos legítimos (privacidade, denúncia, contornar censura) e criminosos (mercados ilegais, fugas de dados).',
+  user:'<b>Utilizador.</b> O pedido parte do browser ou da app. Primeiro, o DNS aponta-o para a CDN, não diretamente para os servidores.',
+  cdn:'<b>CDN / WAF.</b> Servidores espalhados pelo mundo que guardam cópias de imagens, CSS e JS perto do utilizador. A <b>WAF</b> (firewall de aplicação) filtra ataques e tráfego abusivo (DDoS) antes de chegarem à origem.',
+  lb:'<b>Balanceador de carga.</b> Distribui pedidos por vários servidores de aplicação. Se um falhar, deixa de lhe mandar tráfego — o site continua no ar.',
+  app:'<b>Servidores de aplicação.</b> Correm o código (Node, Python, PHP, Java…). São "sem estado": qualquer um atende qualquer pedido, por isso dá para adicionar mais em picos de tráfego (escalar horizontalmente).',
+  cache:'<b>Cache (ex.: Redis).</b> Memória ultrarrápida para dados pedidos muitas vezes (sessões, contadores, resultados frequentes). Evita martelar a base de dados.',
+  db:'<b>Base de dados.</b> A fonte da verdade: utilizadores, encomendas, produtos. Costuma ter réplicas só de leitura e cópias de segurança automáticas. É o componente mais difícil de escalar.',
+  store:'<b>Armazenamento de objetos.</b> Fotos, vídeos e PDFs carregados pelos utilizadores ficam num serviço próprio (S3, R2), servidos depois pela CDN.'
+};
+document.querySelectorAll('[data-target]').forEach(box => {
+  const out = document.getElementById(box.dataset.target);
+  box.querySelectorAll('[data-info]').forEach(b => b.addEventListener('click', () => {
+    out.innerHTML = INFO[b.dataset.info];
+    box.querySelectorAll('[data-info]').forEach(x => x.classList.remove('on', 'hl'));
+    b.classList.add(b.tagName === 'BUTTON' ? 'on' : 'hl');
+  }));
+});
+
+/* ---------- flips ---------- */
+document.querySelectorAll('.flip').forEach(f => f.onclick = () => f.classList.toggle('on'));
+
+/* ---------- latência ---------- */
+const latsel = document.getElementById('latsel'), latout = document.getElementById('latout');
+const lat = () => latout.textContent = Math.round(latsel.value / 100) + ' ms';
+latsel.onchange = lat; lat();
+
+/* ---------- URL ---------- */
+const urlin = document.getElementById('urlin'), urlview = document.getElementById('urlview'), ulist = document.getElementById('ulist');
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function dissect() {
+  let u;
+  try { u = new URL(urlin.value.trim()); } catch (e) { urlview.innerHTML = '<span style="color:var(--bad)">URL inválido — começa por https://</span>'; ulist.innerHTML = ''; return; }
+  const h = u.hostname.split('.');
+  let tld = h.slice(-1).join('.'), dom = h.slice(-2, -1).join('.'), sub = h.slice(0, -2).join('.');
+  if (h.length >= 3 && ['com','org','gov','edu','net','co','ac'].includes(h[h.length - 2])) { tld = h.slice(-2).join('.'); dom = h.slice(-3, -2).join('.'); sub = h.slice(0, -3).join('.'); }
+  const parts = [], items = [];
+  const add = (cls, txt, name, desc) => { parts.push(`<span class="${cls}">${esc(txt)}</span>`); items.push(`<div><span class="sw ${cls}">${name}</span><span>${desc}</span></div>`); };
+  add('u-pr', u.protocol + '//', 'protocolo', u.protocol === 'https:' ? 'HTTPS: a ligação é cifrada (o cadeado).' : 'Esquema de acesso. Sem "s" a ligação não é cifrada.');
+  if (sub) add('u-sub', sub + '.', 'subdomínio', `"${esc(sub)}" — uma secção ou serviço do domínio, controlado pelo dono.`);
+  if (dom) add('u-dom', dom + '.', 'domínio', `"${esc(dom)}" — o nome registado. É aqui que se detetam sites falsos (ex.: "rneo" em vez de "meo").`);
+  add('u-tld', tld, 'TLD', `".${esc(tld)}" — domínio de topo (país ou genérico).`);
+  if (u.port) add('u-port', ':' + u.port, 'porta', `Porta ${u.port}. Normalmente omitida (443 para HTTPS, 80 para HTTP).`);
+  else items.push(`<div><span class="sw u-port">porta</span><span>Implícita: ${u.protocol === 'https:' ? 443 : 80}.</span></div>`);
+  if (u.pathname && u.pathname !== '/') add('u-path', u.pathname, 'caminho', 'A página ou recurso dentro do site.'); else parts.push('<span class="u-path">/</span>');
+  if (u.search) {
+    const ps = [...u.searchParams].map(([k, v]) => `<code>${esc(k)}</code> = ${esc(v)}`).join(', ');
+    add('u-q', u.search, 'parâmetros', 'Dados enviados ao servidor: ' + ps + '.');
+  }
+  if (u.hash) add('u-f', u.hash, 'fragmento', 'Salta para uma secção da página. Nunca é enviado ao servidor.');
+  urlview.innerHTML = parts.join('');
+  ulist.innerHTML = items.join('');
+}
+urlin.addEventListener('input', dissect); dissect();
+
+/* ---------- demo HTML/CSS/JS ---------- */
+const demo = document.getElementById('demo'), dCss = document.getElementById('dCss'), dJs = document.getElementById('dJs'), dOut = document.getElementById('dOut');
+let pasteis = 0;
+dCss.onchange = () => demo.classList.toggle('styled', dCss.checked);
+document.getElementById('dBtn').onclick = () => {
+  dOut.textContent = dJs.checked ? `🥐 ${++pasteis} pastel(éis) no carrinho` : '(sem JavaScript, o botão não faz nada)';
+};
+dJs.onchange = () => { if (!dJs.checked) dOut.textContent = ''; };
+
+/* ---------- códigos HTTP ---------- */
+const CODES = {
+  200:['OK','Correu tudo bem; aqui está o conteúdo.'],
+  201:['Created','Recurso criado (ex.: conta registada).'],
+  301:['Moved Permanently','A página mudou de endereço para sempre. Os motores de busca atualizam o link.'],
+  302:['Found','Redirecionamento temporário (ex.: depois de iniciar sessão).'],
+  304:['Not Modified','"A versão que tens em cache ainda serve." Poupa dados.'],
+  400:['Bad Request','O pedido está mal formado.'],
+  401:['Unauthorized','Precisas de iniciar sessão.'],
+  403:['Forbidden','Sabemos quem és, mas não tens permissão.'],
+  404:['Not Found','Essa página não existe (ou já não existe).'],
+  429:['Too Many Requests','Demasiados pedidos em pouco tempo — limite de taxa.'],
+  500:['Internal Server Error','O código do servidor rebentou. Culpa do site, não tua.'],
+  502:['Bad Gateway','Um servidor intermédio recebeu uma resposta inválida do servidor de trás.'],
+  503:['Service Unavailable','Servidor sobrecarregado ou em manutenção.']
+};
+const codes = document.getElementById('codes'), codeinfo = document.getElementById('codeinfo');
+codes.innerHTML = Object.keys(CODES).map(c => `<button class="c${c[0]}" data-c="${c}">${c}</button>`).join('');
+codes.onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  codes.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  const [n, d] = CODES[b.dataset.c];
+  const fam = {2:'Sucesso',3:'Redirecionamento',4:'Erro do cliente',5:'Erro do servidor'}[b.dataset.c[0]];
+  codeinfo.innerHTML = `<b>${b.dataset.c} ${n}</b> · <span class="mute">${fam}</span><br>${d}`;
+};
+
+/* ---------- abas e níveis ---------- */
+const tabs = document.querySelectorAll('.tabs button');
+function showTab(t) {
+  tabs.forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + t));
+  document.body.className = 't-' + t;
+  history.replaceState(null, '', '#' + t);
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+tabs.forEach(b => b.onclick = () => showTab(b.dataset.tab));
+const start = location.hash.slice(1); if (['net','dark','sites'].includes(start)) showTab(start);
+
+</script>
+</body>
+</html>

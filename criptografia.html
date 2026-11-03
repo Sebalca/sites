@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Criptografia — como funciona a encriptação</title>
+<style>
+  :root{
+    --bg:#10162a; --bg-deep:#0b1020; --surface:#19203a; --surface-2:#212a49;
+    --border:#2c3760; --border-soft:#232c4d;
+    --text:#e9ecf5; --muted:#9aa3be; --faint:#6a7295;
+    --plain:#ffb454;   /* texto exposto / legível */
+    --cipher:#37d6b0;  /* texto cifrado / protegido */
+    --danger:#ff6b6b; --ok:#37d6b0;
+    --mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  }
+  ::selection{background:var(--cipher);color:#06231d}
+  a{color:var(--cipher)}
+  h1,h2,h3{line-height:1.15;margin:0 0 .4em;font-weight:700;letter-spacing:-.01em}
+  h2{font-size:clamp(1.5rem,4.5vw,2.3rem)}
+  h3{font-size:1.15rem;font-weight:650}
+  p{margin:0 0 1em}
+  .wrap{max-width:920px;margin:0 auto;padding:0 20px}
+  section{padding:64px 0;border-top:1px solid var(--border-soft)}
+  .lead{color:var(--muted);font-size:1.05rem;max-width:60ch}
+  .kicker{color:var(--cipher);font-weight:650;font-size:.82rem;letter-spacing:.06em;margin-bottom:8px}
+  .mono{font-family:var(--mono)}
+
+  /* ---------- HERO ---------- */
+  header.hero{
+    padding:0;border:0;position:relative;
+    min-height:88vh;display:flex;align-items:center;
+    background:radial-gradient(1200px 600px at 70% -10%,rgba(55,214,176,.10),transparent 60%),
+               radial-gradient(900px 500px at 10% 110%,rgba(255,180,84,.08),transparent 60%),
+               var(--bg-deep);
+  }
+  .hero-inner{max-width:920px;margin:0 auto;padding:80px 20px;width:100%}
+  .hero h1{font-size:clamp(2.6rem,9vw,5rem);margin-bottom:.15em;letter-spacing:-.03em}
+  .hero .sub{font-size:clamp(1.05rem,3vw,1.35rem);color:var(--muted);max-width:52ch;margin-bottom:36px}
+  .cipher-stage{
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:22px;max-width:640px;
+  }
+  .cipher-line{font-family:var(--mono);font-size:clamp(.95rem,3.4vw,1.35rem);word-break:break-word;min-height:1.6em}
+  .cipher-line.plain{color:var(--plain)}
+  .cipher-line.enc{color:var(--cipher)}
+  .stage-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:.78rem;color:var(--faint)}
+  .stage-arrow{color:var(--faint);text-align:center;font-size:1.1rem;margin:8px 0;letter-spacing:.3em}
+  .hero .hint{margin-top:22px;font-size:.85rem;color:var(--faint)}
+  .hero .hint b{color:var(--plain);font-weight:600}
+  .hero .hint i{color:var(--cipher);font-style:normal;font-weight:600}
+
+  /* ---------- controls ---------- */
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+    background:var(--cipher);color:#06231d;border:0;border-radius:9px;
+    padding:11px 18px;font-weight:650;font-size:.95rem;font-family:var(--sans);
+    transition:transform .12s ease,filter .12s ease;
+  }
+  .btn:hover{filter:brightness(1.08)}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+  .btn.ghost:hover{border-color:var(--cipher);color:var(--cipher);filter:none}
+  input[type=text],input[type=password],textarea,select{
+    width:100%;background:var(--bg-deep);color:var(--text);
+    border:1px solid var(--border);border-radius:9px;padding:11px 13px;
+    font-family:var(--sans);font-size:1rem;
+  }
+  textarea{resize:vertical;min-height:70px}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--cipher);outline-offset:1px;border-color:transparent}
+  label.fld{display:block;font-size:.82rem;color:var(--muted);margin:0 0 6px}
+  input[type=range]{width:100%;accent-color:var(--cipher)}
+  .row{display:flex;gap:14px;flex-wrap:wrap}
+  .row>*{flex:1;min-width:180px}
+
+  /* ---------- demo cards ---------- */
+  .demo{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-top:20px}
+  .io{background:var(--bg-deep);border:1px solid var(--border);border-radius:9px;padding:13px;
+      font-family:var(--mono);word-break:break-word;min-height:1.4em;font-size:.95rem}
+  .io.plain{color:var(--plain)}
+  .io.enc{color:var(--cipher)}
+  .io.small{font-size:.85rem}
+  .field{margin-bottom:14px}
+  .split{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}
+  .split .mid{color:var(--faint);text-align:center;font-size:1.4rem}
+  @media(max-width:560px){.split{grid-template-columns:1fr;gap:8px}.split .mid{transform:rotate(90deg)}}
+  .tag{display:inline-block;font-size:.72rem;font-weight:650;padding:3px 9px;border-radius:100px;
+       border:1px solid var(--border);color:var(--muted);margin:0 6px 6px 0}
+  .tag.plain{color:var(--plain);border-color:rgba(255,180,84,.4)}
+  .tag.cipher{color:var(--cipher);border-color:rgba(55,214,176,.4)}
+  .note{font-size:.85rem;color:var(--muted);margin-top:12px}
+
+  /* ---------- timeline ---------- */
+  .timeline{position:relative;margin-top:32px;padding-left:26px}
+  .timeline::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;
+    background:linear-gradient(var(--plain),var(--cipher))}
+  .tl-item{position:relative;padding:0 0 30px 8px}
+  .tl-item::before{content:"";position:absolute;left:-26px;top:5px;width:14px;height:14px;border-radius:50%;
+    background:var(--bg);border:2px solid var(--cipher)}
+  .tl-item .yr{font-family:var(--mono);color:var(--plain);font-size:.85rem;font-weight:600}
+  .tl-item h3{margin:.1em 0 .25em}
+  .tl-item p{color:var(--muted);margin:0;font-size:.95rem}
+
+  /* ---------- generic grid ---------- */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:24px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+  .card h3{font-size:1rem;margin-bottom:.35em}
+  .card p{font-size:.9rem;color:var(--muted);margin:0}
+  .card .ic{font-size:1.4rem;margin-bottom:8px;display:block}
+
+  .pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:24px}
+  .pillar{border:1px solid var(--border);border-radius:12px;padding:16px;background:var(--surface)}
+  .pillar b{display:block;color:var(--text);margin-bottom:4px}
+  .pillar span{font-size:.88rem;color:var(--muted)}
+
+  /* handshake steps */
+  .steps{counter-reset:s;margin-top:22px}
+  .step{position:relative;padding:14px 14px 14px 54px;background:var(--surface);border:1px solid var(--border);
+        border-radius:11px;margin-bottom:10px}
+  .step::before{counter-increment:s;content:counter(s);position:absolute;left:14px;top:14px;
+    width:26px;height:26px;border-radius:50%;background:var(--surface-2);border:1px solid var(--cipher);
+    color:var(--cipher);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
+  .step b{color:var(--text)}
+  .step p{margin:.2em 0 0;font-size:.9rem;color:var(--muted)}
+
+  .callout{border-left:3px solid var(--cipher);background:var(--surface);padding:14px 16px;border-radius:0 10px 10px 0;margin:18px 0}
+  .callout.warn{border-color:var(--danger)}
+  .callout p{margin:0;font-size:.92rem;color:var(--muted)}
+
+  footer{padding:48px 20px;text-align:center;color:var(--faint);font-size:.85rem;border-top:1px solid var(--border-soft)}
+  .miss{color:var(--faint);font-size:.8rem;margin-top:8px}
+
+  /* nav */
+  nav.top{position:sticky;top:0;z-index:20;background:rgba(11,16,32,.82);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border-soft)}
+  nav.top .wrap{display:flex;gap:6px;overflow-x:auto;padding:10px 20px;scrollbar-width:none}
+  nav.top .wrap::-webkit-scrollbar{display:none}
+  nav.top a{color:var(--muted);text-decoration:none;font-size:.86rem;white-space:nowrap;padding:6px 11px;border-radius:8px}
+  nav.top a:hover{color:var(--text);background:var(--surface)}
+  @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="hero-inner">
+    <h1>Criptografia</h1>
+    <p class="sub">A arte de transformar algo legível em algo indecifrável — e de o voltar a tornar legível apenas por quem tem a chave certa.</p>
+
+    <div class="cipher-stage">
+      <div class="stage-label"><span>MENSAGEM ORIGINAL</span><span class="mono" id="algLbl">César · +3</span></div>
+      <div class="cipher-line plain mono" id="heroPlain"></div>
+      <div class="stage-arrow">↓ cifrar ↓</div>
+      <div class="stage-label"><span>MENSAGEM CIFRADA</span><span class="mono">ininteligível</span></div>
+      <div class="cipher-line enc mono" id="heroEnc"></div>
+    </div>
+
+    <p class="hint">Ao longo desta página, o <b>laranja</b> representa sempre texto <b>exposto</b> e o <i>verde</i> representa texto <i>protegido</i>. Todos os exemplos são interativos.</p>
+  </div>
+</header>
+
+<nav class="top"><div class="wrap">
+  <a href="#base">Fundamentos</a>
+  <a href="#historia">Evolução</a>
+  <a href="#cesar">César</a>
+  <a href="#vigenere">Vigenère</a>
+  <a href="#xor">XOR</a>
+  <a href="#aes">Simétrica</a>
+  <a href="#rsa">Assimétrica</a>
+  <a href="#dh">Troca de chaves</a>
+  <a href="#hash">Hashing</a>
+  <a href="#web">Web segura</a>
+  <a href="#ameacas">Ameaças</a>
+  <a href="#quantica">Futuro</a>
+</div></nav>
+
+<!-- ================= FUNDAMENTOS ================= -->
+<section id="base"><div class="wrap">
+  <div class="kicker">O PROBLEMA FUNDAMENTAL</div>
+  <h2>Comunicar em segredo por um canal inseguro</h2>
+  <p class="lead">Sempre que uma mensagem viaja — por um mensageiro, um cabo telefónico ou a Internet — pode ser intercetada. A criptografia parte do princípio de que o canal <em>não</em> é de confiança e que o atacante pode ver tudo o que passa. A segurança não pode depender de esconder o método; tem de depender de esconder a <strong>chave</strong>.</p>
+
+  <div class="callout"><p><strong>Princípio de Kerckhoffs (1883):</strong> um sistema deve manter-se seguro mesmo que tudo sobre ele seja conhecido, exceto a chave. É por isso que os algoritmos modernos (AES, RSA) são públicos e auditados por toda a comunidade — a robustez está na matemática, não no segredo do método.</p></div>
+
+  <h3 style="margin-top:32px">A criptografia garante quatro coisas</h3>
+  <div class="pillars">
+    <div class="pillar"><b>Confidencialidade</b><span>Só quem tem a chave lê o conteúdo.</span></div>
+    <div class="pillar"><b>Integridade</b><span>Deteta-se qualquer alteração da mensagem.</span></div>
+    <div class="pillar"><b>Autenticidade</b><span>Confirma-se quem é o autor.</span></div>
+    <div class="pillar"><b>Não-repúdio</b><span>O autor não pode negar que a enviou.</span></div>
+  </div>
+</div></section>
+
+<!-- ================= HISTÓRIA ================= -->
+<section id="historia"><div class="wrap">
+  <div class="kicker">DA CANETA AO QUÂNTICO</div>
+  <h2>Uma evolução de dois mil anos</h2>
+  <p class="lead">A corrida entre quem cifra e quem tenta decifrar (a criptanálise) empurrou esta ciência do lápis e papel para a matemática mais avançada que temos.</p>
+
+  <div class="timeline">
+    <div class="tl-item"><div class="yr">~50 a.C.</div><h3>Cifra de César</h3><p>Júlio César desloca cada letra do alfabeto um número fixo de posições. Simples, mas a base de toda a criptografia de substituição.</p></div>
+    <div class="tl-item"><div class="yr">Séc. XVI</div><h3>Cifra de Vigenère</h3><p>Usa uma palavra-chave para variar o deslocamento letra a letra. Resistiu à criptanálise durante 300 anos — chamavam-lhe «le chiffre indéchiffrable».</p></div>
+    <div class="tl-item"><div class="yr">1918–1945</div><h3>Máquina Enigma</h3><p>Cifra eletromecânica alemã com milhões de milhões de combinações. Quebrá-la em Bletchley Park (Turing e equipa) terá encurtado a 2ª Guerra Mundial em anos.</p></div>
+    <div class="tl-item"><div class="yr">1977</div><h3>DES</h3><p>O primeiro padrão de cifra digital adotado por governos e bancos. A sua chave de 56 bits acabou por ser demasiado curta para o poder de cálculo moderno.</p></div>
+    <div class="tl-item"><div class="yr">1976–1977</div><h3>Diffie-Hellman e RSA</h3><p>A revolução da chave pública: pela primeira vez, duas pessoas que nunca se encontraram podem trocar segredos sem partilhar previamente uma chave secreta.</p></div>
+    <div class="tl-item"><div class="yr">2001</div><h3>AES</h3><p>Sucessor do DES e ainda hoje o padrão mundial de cifra simétrica. Protege desde o teu Wi-Fi até documentos classificados.</p></div>
+    <div class="tl-item"><div class="yr">1994 →</div><h3>SSL / TLS na Web</h3><p>Combina cifra assimétrica e simétrica para dar o cadeado do HTTPS. Hoje, quase todo o tráfego da Internet é cifrado.</p></div>
+    <div class="tl-item"><div class="yr">Atualidade</div><h3>Criptografia pós-quântica</h3><p>Novos algoritmos desenhados para resistir a computadores quânticos, que ameaçam quebrar o RSA. Já em normalização (NIST, 2024).</p></div>
+  </div>
+</div></section>
+
+<!-- ================= CÉSAR ================= -->
+<section id="cesar"><div class="wrap">
+  <div class="kicker">SUBSTITUIÇÃO SIMPLES</div>
+  <h2>Cifra de César</h2>
+  <p class="lead">Cada letra avança um número fixo de posições no alfabeto. Com deslocamento 3, o A torna-se D, o B torna-se E, e assim por diante. A chave é apenas esse número (de 1 a 25).</p>
+
+  <div class="demo">
+    <div class="field">
+      <label class="fld">Texto</label>
+      <input type="text" id="cesarIn" value="Ataque ao amanhecer" oninput="cesar()">
+    </div>
+    <div class="field">
+      <label class="fld">Deslocamento da chave: <span class="mono" id="cesarKlbl" style="color:var(--plain)">3</span></label>
+      <input type="range" id="cesarK" min="1" max="25" value="3" oninput="cesar()">
+    </div>
+    <div class="split">
+      <div><div class="tag plain">original</div><div class="io plain" id="cesarPlain"></div></div>
+      <div class="mid">→</div>
+      <div><div class="tag cipher">cifrado</div><div class="io enc" id="cesarOut"></div></div>
+    </div>
+    <p class="note"><strong>A fraqueza:</strong> só existem 25 chaves possíveis. Um atacante testa todas em segundos (ataque de força bruta) ou analisa a frequência das letras. Serve para ilustrar o conceito, não para segurança real.</p>
+  </div>
+</div></section>
+
+<!-- ================= VIGENÈRE ================= -->
+<section id="vigenere"><div class="wrap">
+  <div class="kicker">CHAVE VARIÁVEL</div>
+  <h2>Cifra de Vigenère</h2>
+  <p class="lead">Em vez de um deslocamento fixo, usa-se uma palavra-chave que se repete ao longo do texto. Cada letra da chave define um deslocamento diferente, o que dilui a análise de frequências que quebrava a cifra de César.</p>
+
+  <div class="demo">
+    <div class="row" style="margin-bottom:14px">
+      <div>
+        <label class="fld">Texto</label>
+        <input type="text" id="vigIn" value="Reuniao a meia noite" oninput="vigenere()">
+      </div>
+      <div>
+        <label class="fld">Palavra-chave</label>
+        <input type="text" id="vigKey" value="SEGREDO" oninput="vigenere()">
+      </div>
+    </div>
+    <div class="split">
+      <div><div class="tag plain">original</div><div class="io plain" id="vigPlain"></div></div>
+      <div class="mid">→</div>
+      <div><div class="tag cipher">cifrado</div><div class="io enc" id="vigOut"></div></div>
+    </div>
+    <p class="note"><strong>Porque foi tão forte:</strong> a mesma letra do texto pode dar letras cifradas diferentes conforme a posição. Só no séc. XIX, com o método de Kasiski, se descobriu como atacar o comprimento da chave.</p>
+  </div>
+</div></section>
+
+<!-- ================= XOR ================= -->
+<section id="xor"><div class="wrap">
+  <div class="kicker">A OPERAÇÃO NO CORAÇÃO DO DIGITAL</div>
+  <h2>XOR — a base de tudo o que é moderno</h2>
+  <p class="lead">Os computadores não trabalham com letras, mas com bits (0 e 1). A operação <strong>XOR</strong> (ou exclusivo) combina cada bit da mensagem com um bit da chave. A sua magia: aplicá-la duas vezes com a mesma chave devolve o original. Cifrar e decifrar são a <em>mesma</em> operação.</p>
+
+  <div class="demo">
+    <div class="row" style="margin-bottom:14px">
+      <div>
+        <label class="fld">Texto</label>
+        <input type="text" id="xorIn" value="OLA" oninput="xorDemo()">
+      </div>
+      <div>
+        <label class="fld">Chave (repete-se pelos bytes)</label>
+        <input type="text" id="xorKey" value="K" oninput="xorDemo()">
+      </div>
+    </div>
+    <div class="field">
+      <div class="tag">bits do texto ⊕ bits da chave</div>
+      <div class="io small mono" id="xorBits"></div>
+    </div>
+    <div class="split">
+      <div><div class="tag cipher">cifrado (hexadecimal)</div><div class="io enc small" id="xorHex"></div></div>
+      <div class="mid">↺</div>
+      <div><div class="tag plain">decifrado (XOR outra vez)</div><div class="io plain" id="xorBack"></div></div>
+    </div>
+    <p class="note">Se a chave for verdadeiramente aleatória, tão longa como a mensagem e usada uma única vez, o XOR torna-se o <strong>one-time pad</strong> — a única cifra matematicamente inquebrável que existe. O problema prático é distribuir chaves assim tão grandes.</p>
+  </div>
+</div></section>
+
+<!-- ================= AES / SIMÉTRICA ================= -->
+<section id="aes"><div class="wrap">
+  <div class="kicker">CRIPTOGRAFIA SIMÉTRICA</div>
+  <h2>Uma só chave: AES</h2>
+  <p class="lead">Na cifra simétrica, a mesma chave secreta cifra e decifra. É rápida e protege a esmagadora maioria dos dados do mundo. Abaixo tens <strong>AES-GCM real</strong>, executado pelo teu navegador — a palavra-passe gera a chave, e sem ela o texto é irrecuperável.</p>
+
+  <div class="demo">
+    <div class="field">
+      <label class="fld">Mensagem</label>
+      <textarea id="aesMsg" oninput="clearAes()">Os documentos estão no cofre 12.</textarea>
+    </div>
+    <div class="field">
+      <label class="fld">Palavra-passe (a chave)</label>
+      <input type="password" id="aesPass" value="peritos2026" oninput="clearAes()">
+    </div>
+    <div class="row" style="margin-bottom:14px">
+      <button class="btn" onclick="aesEncrypt()">🔒 Cifrar</button>
+      <button class="btn ghost" onclick="aesDecrypt()">🔓 Decifrar</button>
+    </div>
+    <div class="field">
+      <div class="tag cipher">resultado cifrado (Base64)</div>
+      <div class="io enc small" id="aesOut">—</div>
+    </div>
+    <div class="field">
+      <div class="tag plain">resultado decifrado</div>
+      <div class="io plain" id="aesBack">—</div>
+    </div>
+    <p class="note" id="aesNote">Experimenta: cifra, apaga a mensagem original, e recupera-a com a palavra-passe. Depois tenta decifrar com uma palavra-passe errada — falha por completo.</p>
+    <div class="miss" id="aesMiss"></div>
+  </div>
+
+  <div class="callout warn"><p><strong>O calcanhar de Aquiles da cifra simétrica:</strong> como é que as duas pessoas combinam a chave secreta sem que alguém a intercete pelo caminho? Se o canal é inseguro, enviar a chave por ele é entregá-la ao atacante. É este problema que a criptografia assimétrica resolve.</p></div>
+</div></section>
+
+<!-- ================= RSA / ASSIMÉTRICA ================= -->
+<section id="rsa"><div class="wrap">
+  <div class="kicker">CRIPTOGRAFIA ASSIMÉTRICA</div>
+  <h2>Duas chaves: pública e privada</h2>
+  <p class="lead">A grande ideia de 1977: cada pessoa tem um <strong>par</strong> de chaves. A <span style="color:var(--cipher)">chave pública</span> pode ser distribuída a toda a gente e serve para cifrar; a <span style="color:var(--plain)">chave privada</span> nunca sai das tuas mãos e é a única que decifra. Quem te quer escrever usa a tua chave pública; só tu consegues ler.</p>
+
+  <div class="cards">
+    <div class="card"><span class="ic">📢</span><h3>Chave pública</h3><p>Podes publicá-la abertamente. Serve para <strong>cifrar</strong> mensagens dirigidas a ti e para <strong>verificar</strong> as tuas assinaturas.</p></div>
+    <div class="card"><span class="ic">🔑</span><h3>Chave privada</h3><p>Segredo absoluto. Serve para <strong>decifrar</strong> o que te enviam e para <strong>assinar</strong> em teu nome.</p></div>
+  </div>
+
+  <div class="demo">
+    <h3>RSA em miniatura</h3>
+    <p class="note" style="margin-top:0">O RSA assenta num facto simples: multiplicar dois primos grandes é fácil, mas voltar a fatorizar o produto é praticamente impossível. Aqui usamos primos minúsculos (p=61, q=53) só para veres a mecânica. O RSA real usa números com centenas de dígitos.</p>
+    <div class="field">
+      <label class="fld">Número secreto a enviar (0–3232): <span class="mono" id="rsaMlbl" style="color:var(--plain)">42</span></label>
+      <input type="range" id="rsaM" min="0" max="3232" value="42" oninput="rsaDemo()">
+    </div>
+    <div class="split">
+      <div><div class="tag plain">original (m)</div><div class="io plain" id="rsaPlain"></div></div>
+      <div class="mid">→</div>
+      <div><div class="tag cipher">cifrado com chave pública (c)</div><div class="io enc" id="rsaCipher"></div></div>
+    </div>
+    <div style="margin-top:12px"><div class="tag plain">decifrado com chave privada</div><div class="io plain" id="rsaBack"></div></div>
+    <div class="io small mono" id="rsaMath" style="margin-top:12px;color:var(--muted)"></div>
+  </div>
+</div></section>
+
+<!-- ================= DIFFIE-HELLMAN ================= -->
+<section id="dh"><div class="wrap">
+  <div class="kicker">TROCA DE CHAVES</div>
+  <h2>Chegar a um segredo comum em público</h2>
+  <p class="lead">O protocolo Diffie-Hellman permite que duas pessoas construam uma chave secreta partilhada trocando mensagens à vista de todos. A analogia clássica é a mistura de tintas: é fácil misturar duas cores, mas muito difícil separá-las depois.</p>
+
+  <div class="demo">
+    <p class="note" style="margin-top:0">Ana e Bruno acordam publicamente uma base e um número primo. Cada um escolhe um segredo privado e calcula um valor público. No fim, chegam ambos ao <em>mesmo</em> segredo — que o espião nunca consegue reconstruir.</p>
+    <div class="row" style="margin-bottom:14px">
+      <div><label class="fld">Segredo privado da Ana</label><input type="text" id="dhA" value="6" oninput="dhDemo()"></div>
+      <div><label class="fld">Segredo privado do Bruno</label><input type="text" id="dhB" value="15" oninput="dhDemo()"></div>
+    </div>
+    <div class="io small mono" id="dhSteps" style="line-height:2"></div>
+    <div style="margin-top:14px;text-align:center">
+      <div class="tag cipher">segredo partilhado (igual para os dois)</div>
+      <div class="io enc" id="dhShared" style="font-size:1.3rem;text-align:center"></div>
+    </div>
+    <p class="note">O espião vê a base, o primo e os dois valores públicos — e mesmo assim não consegue calcular o segredo em tempo útil. É o «problema do logaritmo discreto» que o protege.</p>
+  </div>
+</div></section>
+
+<!-- ================= HASHING ================= -->
+<section id="hash"><div class="wrap">
+  <div class="kicker">FUNÇÕES DE SENTIDO ÚNICO</div>
+  <h2>Hashing: a impressão digital dos dados</h2>
+  <p class="lead">Uma função de hash transforma qualquer entrada numa sequência de tamanho fixo. Não é encriptação — não há volta atrás. Serve para <strong>verificar integridade</strong> e para <strong>guardar palavras-passe</strong> sem as guardar em claro. A menor alteração no texto muda completamente o resultado (efeito avalanche).</p>
+
+  <div class="demo">
+    <div class="field">
+      <label class="fld">Escreve algo (repara como o hash muda a cada tecla)</label>
+      <input type="text" id="hashIn" value="perito" oninput="hashDemo()">
+    </div>
+    <div class="field">
+      <div class="tag cipher">SHA-256</div>
+      <div class="io enc small mono" id="hashOut">—</div>
+    </div>
+    <div class="row">
+      <div class="io small" style="text-align:center"><span style="color:var(--muted)">comprimento fixo</span><br><b class="mono" style="color:var(--plain)">256 bits</b></div>
+      <div class="io small" style="text-align:center"><span style="color:var(--muted)">reversível?</span><br><b class="mono" style="color:var(--danger)">não</b></div>
+      <div class="io small" style="text-align:center"><span style="color:var(--muted)">mesma entrada</span><br><b class="mono" style="color:var(--cipher)">mesmo hash</b></div>
+    </div>
+    <p class="note"><strong>Onde vive:</strong> quando um site guarda a tua palavra-passe, guarda (idealmente) o hash, não a palavra em si. Ao entrares, calcula o hash do que escreveste e compara. Assim, mesmo que roubem a base de dados, não ficam com as tuas passwords — desde que se use hashing lento e com «sal» (bcrypt, Argon2).</p>
+  </div>
+</div></section>
+
+<!-- ================= WEB SEGURA ================= -->
+<section id="web"><div class="wrap">
+  <div class="kicker">TUDO JUNTO</div>
+  <h2>Como o cadeado do HTTPS funciona</h2>
+  <p class="lead">O HTTPS combina o melhor dos dois mundos: usa cifra <strong>assimétrica</strong> (lenta, mas resolve a troca de chaves) apenas para combinar uma chave <strong>simétrica</strong> (rápida) que protege o resto da conversa. É o «handshake» TLS.</p>
+
+  <div class="steps">
+    <div class="step"><b>O teu navegador contacta o servidor</b><p>Diz «olá» e indica que cifras suporta.</p></div>
+    <div class="step"><b>O servidor envia o seu certificado</b><p>Contém a chave pública do site, assinada por uma Autoridade de Certificação (CA) em quem o teu sistema confia.</p></div>
+    <div class="step"><b>O navegador verifica o certificado</b><p>Confirma a assinatura da CA e que o certificado corresponde ao domínio. Se algo falha, aparece o aviso de «ligação não segura».</p></div>
+    <div class="step"><b>Combinam uma chave de sessão</b><p>Usando a chave pública do servidor (ou Diffie-Hellman), acordam uma chave simétrica temporária que só os dois conhecem.</p></div>
+    <div class="step"><b>Toda a conversa passa a ser cifrada com AES</b><p>A partir daqui, rápido e seguro. A chave de sessão é descartada no fim.</p></div>
+  </div>
+
+  <div class="cards">
+    <div class="card"><span class="ic">✍️</span><h3>Assinatura digital</h3><p>Assina-se o hash de um documento com a chave privada. Qualquer pessoa verifica com a chave pública — garante autor e integridade.</p></div>
+    <div class="card"><span class="ic">📜</span><h3>Certificado</h3><p>Liga uma chave pública a uma identidade, avalizada por uma CA. É a carta de condução da Internet.</p></div>
+    <div class="card"><span class="ic">🔗</span><h3>Cadeia de confiança</h3><p>O teu dispositivo confia num punhado de CAs raiz; estas avalizam outras, que avalizam os sites. A confiança propaga-se.</p></div>
+  </div>
+</div></section>
+
+<!-- ================= AMEAÇAS ================= -->
+<section id="ameacas"><div class="wrap">
+  <div class="kicker">CIBERSEGURANÇA NA PRÁTICA</div>
+  <h2>Onde a segurança realmente falha</h2>
+  <p class="lead">A cifra moderna quase nunca é quebrada pela matemática. Cede pelos lados: pessoas, configurações e implementações. Conhecer os ataques é o primeiro passo para os travar.</p>
+
+  <div class="cards">
+    <div class="card"><span class="ic">🕵️</span><h3>Homem no meio (MITM)</h3><p>O atacante coloca-se entre as duas partes e faz-se passar por cada uma. Os certificados TLS existem precisamente para o impedir.</p></div>
+    <div class="card"><span class="ic">🎣</span><h3>Phishing / engenharia social</h3><p>Enganar a pessoa para que revele a password ou clique num link. Nenhum algoritmo protege contra uma chave entregue voluntariamente.</p></div>
+    <div class="card"><span class="ic">🔨</span><h3>Força bruta</h3><p>Testar todas as chaves possíveis. Inviável contra o AES-256, trivial contra passwords curtas e previsíveis.</p></div>
+    <div class="card"><span class="ic">📚</span><h3>Ataque de dicionário</h3><p>Testar palavras e combinações comuns. É por isso que «123456» ou o nome do cão caem em segundos.</p></div>
+    <div class="card"><span class="ic">🦠</span><h3>Ransomware</h3><p>Usa a própria cifra contra a vítima: encripta os ficheiros e exige resgate pela chave. Backups offline são a melhor defesa.</p></div>
+    <div class="card"><span class="ic">💧</span><h3>Fuga de dados</h3><p>Bases de dados mal protegidas expõem milhões de credenciais. Hashing forte limita o estrago.</p></div>
+  </div>
+
+  <h3 style="margin-top:36px">Boas práticas que valem a pena</h3>
+  <div class="pillars">
+    <div class="pillar"><b>Passwords longas e únicas</b><span>O comprimento vence a complexidade. Usa um gestor de palavras-passe.</span></div>
+    <div class="pillar"><b>Autenticação em dois passos</b><span>Mesmo que roubem a password, falta o segundo fator.</span></div>
+    <div class="pillar"><b>Atualizações em dia</b><span>A maioria dos ataques explora falhas já corrigidas.</span></div>
+    <div class="pillar"><b>Backups offline</b><span>A resposta certa ao ransomware é restaurar, não pagar.</span></div>
+    <div class="pillar"><b>Desconfiar de links</b><span>Verifica o remetente e o domínio antes de clicar.</span></div>
+    <div class="pillar"><b>Cifrar dispositivos</b><span>Portáteis e telemóveis cifrados protegem os dados se forem perdidos.</span></div>
+  </div>
+</div></section>
+
+<!-- ================= QUÂNTICA ================= -->
+<section id="quantica"><div class="wrap">
+  <div class="kicker">O QUE AÍ VEM</div>
+  <h2>A ameaça e a resposta quânticas</h2>
+  <p class="lead">Um computador quântico suficientemente grande, com o algoritmo de Shor, conseguiria fatorizar os números que hoje protegem o RSA — quebrando grande parte da criptografia assimétrica atual. Ainda não existe, mas os dados cifrados hoje podem ser guardados para decifrar amanhã («harvest now, decrypt later»).</p>
+
+  <div class="cards">
+    <div class="card"><span class="ic">⚛️</span><h3>Criptografia pós-quântica</h3><p>Novos algoritmos baseados em problemas matemáticos (reticulados) que nem os computadores quânticos sabem resolver. O NIST já normalizou os primeiros em 2024.</p></div>
+    <div class="card"><span class="ic">🔬</span><h3>Distribuição quântica de chaves</h3><p>Usa as leis da física: qualquer tentativa de espiar a chave altera-a e é detetada. Já em uso experimental por fibra ótica.</p></div>
+    <div class="card"><span class="ic">🛡️</span><h3>Simétrica aguenta-se</h3><p>O AES-256 continua seguro na era quântica — basta duplicar o tamanho da chave. O problema real é a cifra de chave pública.</p></div>
+  </div>
+
+  <div class="callout"><p>A criptografia nunca está «terminada». É uma corrida permanente entre defesa e ataque, e cada geração reescreve as regras. Perceber os princípios — chave, sentido único, confiança distribuída — é o que permite acompanhar seja qual for a tecnologia que venha a seguir.</p></div>
+</div></section>
+
+<footer>
+  Ferramenta educativa · criptografia e cibersegurança · funciona offline, sem ligação à Internet.<br>
+  Os exemplos de AES-GCM e SHA-256 são executados no teu navegador; os restantes são simplificações didáticas.
+</footer>
+
+<script>
+/* ========== utilidades ========== */
+function stripDiacritics(s){return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function esc(s){return s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}
+
+/* ========== HERO ========== */
+const heroText="Encontramo-nos ao pôr do sol";
+function heroCesar(t,k){
+  return t.replace(/[a-zA-Z]/g,ch=>{
+    const base=ch<="Z"?65:97;
+    return String.fromCharCode((ch.charCodeAt(0)-base+k)%26+base);
+  });
+}
+(function heroInit(){
+  const p=document.getElementById("heroPlain"), e=document.getElementById("heroEnc");
+  const clean=stripDiacritics(heroText);
+  p.textContent=heroText;
+  const target=heroCesar(clean,3);
+  // animação de "assentamento" do texto cifrado
+  const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@%&*";
+  let frame=0;
+  const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(reduce){e.textContent=target;return;}
+  const iv=setInterval(()=>{
+    frame++;
+    let out="";
+    for(let i=0;i<target.length;i++){
+      if(target[i]===" "){out+=" ";continue;}
+      if(i< frame/2){out+=target[i];}
+      else{out+=chars[Math.floor(Math.random()*chars.length)];}
+    }
+    e.textContent=out;
+    if(frame/2>target.length){clearInterval(iv);e.textContent=target;}
+  },45);
+})();
+
+/* ========== CÉSAR ========== */
+function cesar(){
+  const t=stripDiacritics(document.getElementById("cesarIn").value);
+  const k=+document.getElementById("cesarK").value;
+  document.getElementById("cesarKlbl").textContent="+"+k;
+  document.getElementById("cesarPlain").textContent=t||"—";
+  document.getElementById("cesarOut").textContent=heroCesar(t,k)||"—";
+}
+cesar();
+
+/* ========== VIGENÈRE ========== */
+function vigenere(){
+  const t=stripDiacritics(document.getElementById("vigIn").value);
+  const key=stripDiacritics(document.getElementById("vigKey").value).replace(/[^a-zA-Z]/g,"").toUpperCase();
+  document.getElementById("vigPlain").textContent=t||"—";
+  if(!key){document.getElementById("vigOut").textContent="(indica uma chave)";return;}
+  let out="",ki=0;
+  for(const ch of t){
+    if(/[a-zA-Z]/.test(ch)){
+      const base=ch<="Z"?65:97;
+      const shift=key.charCodeAt(ki%key.length)-65;
+      out+=String.fromCharCode((ch.charCodeAt(0)-base+shift)%26+base);
+      ki++;
+    }else out+=ch;
+  }
+  document.getElementById("vigOut").textContent=out||"—";
+}
+vigenere();
+
+/* ========== XOR ========== */
+function xorDemo(){
+  const t=document.getElementById("xorIn").value;
+  const key=document.getElementById("xorKey").value||" ";
+  const enc=new TextEncoder();
+  const tb=enc.encode(t), kb=enc.encode(key);
+  if(tb.length===0){["xorBits","xorHex","xorBack"].forEach(id=>document.getElementById(id).textContent="—");return;}
+  let hex="",bits="",cipher=new Uint8Array(tb.length);
+  for(let i=0;i<tb.length;i++){
+    const c=tb[i]^kb[i%kb.length];
+    cipher[i]=c;
+    hex+=c.toString(16).padStart(2,"0")+" ";
+    if(i<3){
+      bits+=tb[i].toString(2).padStart(8,"0")+" ⊕ "+kb[i%kb.length].toString(2).padStart(8,"0")+" = "+c.toString(2).padStart(8,"0")+"\n";
+    }
+  }
+  // decifrar (XOR novamente)
+  let back="";
+  for(let i=0;i<cipher.length;i++) back+=String.fromCharCode(cipher[i]^kb[i%kb.length]);
+  document.getElementById("xorBits").textContent=bits.trim()+(tb.length>3?"\n…":"");
+  document.getElementById("xorBits").style.whiteSpace="pre";
+  document.getElementById("xorHex").textContent=hex.trim().toUpperCase();
+  document.getElementById("xorBack").textContent=back;
+}
+xorDemo();
+
+/* ========== AES-GCM (Web Crypto, com aviso se indisponível) ========== */
+const AES_OK = !!(window.crypto && crypto.subtle);
+if(!AES_OK){
+  document.getElementById("aesMiss").textContent="O teu navegador não expõe Web Crypto neste contexto; abre o ficheiro noutro navegador para usar o AES real.";
+}
+function clearAes(){document.getElementById("aesOut").textContent="—";document.getElementById("aesBack").textContent="—";}
+async function deriveKey(pass,salt){
+  const enc=new TextEncoder();
+  const base=await crypto.subtle.importKey("raw",enc.encode(pass),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    {name:"PBKDF2",salt,iterations:100000,hash:"SHA-256"},
+    base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
+}
+function b64(bytes){let s="";bytes.forEach(b=>s+=String.fromCharCode(b));return btoa(s);}
+function unb64(str){const bin=atob(str);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
+async function aesEncrypt(){
+  if(!AES_OK)return;
+  const msg=document.getElementById("aesMsg").value, pass=document.getElementById("aesPass").value;
+  if(!msg||!pass){document.getElementById("aesNote").textContent="Precisas de uma mensagem e de uma palavra-passe.";return;}
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await deriveKey(pass,salt);
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv},key,new TextEncoder().encode(msg)));
+  const packed=new Uint8Array(salt.length+iv.length+ct.length);
+  packed.set(salt);packed.set(iv,16);packed.set(ct,28);
+  document.getElementById("aesOut").textContent=b64(packed);
+  document.getElementById("aesBack").textContent="—";
+}
+async function aesDecrypt(){
+  if(!AES_OK)return;
+  const data=document.getElementById("aesOut").textContent.trim(), pass=document.getElementById("aesPass").value;
+  if(!data||data==="—"){document.getElementById("aesBack").textContent="(cifra algo primeiro)";return;}
+  try{
+    const packed=unb64(data);
+    const salt=packed.slice(0,16), iv=packed.slice(16,28), ct=packed.slice(28);
+    const key=await deriveKey(pass,salt);
+    const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv},key,ct);
+    document.getElementById("aesBack").textContent=new TextDecoder().decode(pt);
+    document.getElementById("aesBack").style.color="var(--plain)";
+  }catch(e){
+    document.getElementById("aesBack").textContent="✗ Falhou — palavra-passe errada ou dados adulterados.";
+    document.getElementById("aesBack").style.color="var(--danger)";
+  }
+}
+
+/* ========== RSA em miniatura ========== */
+function modpow(b,e,m){b=BigInt(b);e=BigInt(e);m=BigInt(m);let r=1n;b%=m;while(e>0n){if(e&1n)r=(r*b)%m;e>>=1n;b=(b*b)%m;}return r;}
+const RSA_N=3233n, RSA_E=17n, RSA_D=2753n; // p=61,q=53,φ=3120
+function rsaDemo(){
+  const m=+document.getElementById("rsaM").value;
+  document.getElementById("rsaMlbl").textContent=m;
+  const c=modpow(m,RSA_E,RSA_N);
+  const back=modpow(c,RSA_D,RSA_N);
+  document.getElementById("rsaPlain").textContent=m;
+  document.getElementById("rsaCipher").textContent=c.toString();
+  document.getElementById("rsaBack").textContent=back.toString();
+  document.getElementById("rsaMath").textContent=
+    "chave pública (e=17, n=3233):  c = "+m+"^17 mod 3233 = "+c+"\n"+
+    "chave privada (d=2753, n=3233): m = "+c+"^2753 mod 3233 = "+back;
+  document.getElementById("rsaMath").style.whiteSpace="pre";
+}
+rsaDemo();
+
+/* ========== DIFFIE-HELLMAN ========== */
+const DH_P=23n, DH_G=5n; // primo e base públicos (pequenos, para ilustrar)
+function dhDemo(){
+  let a=parseInt(document.getElementById("dhA").value), b=parseInt(document.getElementById("dhB").value);
+  if(isNaN(a)||a<1)a=1; if(isNaN(b)||b<1)b=1;
+  const A=modpow(DH_G,a,DH_P);           // valor público da Ana
+  const B=modpow(DH_G,b,DH_P);           // valor público do Bruno
+  const s1=modpow(B,a,DH_P);             // Ana calcula
+  const s2=modpow(A,b,DH_P);             // Bruno calcula
+  document.getElementById("dhSteps").textContent=
+    "Público (todos veem):  base g=5,  primo p=23\n"+
+    "Ana envia:    A = 5^"+a+" mod 23 = "+A+"\n"+
+    "Bruno envia:  B = 5^"+b+" mod 23 = "+B+"\n"+
+    "Ana calcula:  "+B+"^"+a+" mod 23 = "+s1+"\n"+
+    "Bruno calcula: "+A+"^"+b+" mod 23 = "+s2;
+  document.getElementById("dhSteps").style.whiteSpace="pre";
+  document.getElementById("dhShared").textContent=(s1===s2)?s1.toString():"—";
+}
+dhDemo();
+
+/* ========== SHA-256 (Web Crypto + fallback puro em JS) ========== */
+async function sha256hex(str){
+  if(window.crypto && crypto.subtle){
+    const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(str));
+    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+  }
+  return sha256js(str);
+}
+/* fallback compacto de SHA-256 (usado apenas se Web Crypto não existir) */
+function sha256js(ascii){
+  function rrot(x,n){return (x>>>n)|(x<<(32-n));}
+  const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  let H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const bytes=[];for(let i=0;i<ascii.length;i++){let c=ascii.charCodeAt(i);if(c<128)bytes.push(c);else if(c<2048){bytes.push(192|(c>>6),128|(c&63));}else{bytes.push(224|(c>>12),128|((c>>6)&63),128|(c&63));}}
+  const l=bytes.length*8;bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);
+  for(let i=7;i>=0;i--)bytes.push((l/Math.pow(2,i*8))&0xff);
+  for(let j=0;j<bytes.length;j+=64){
+    const w=new Array(64);
+    for(let i=0;i<16;i++)w[i]=(bytes[j+i*4]<<24)|(bytes[j+i*4+1]<<16)|(bytes[j+i*4+2]<<8)|(bytes[j+i*4+3]);
+    for(let i=16;i<64;i++){const s0=rrot(w[i-15],7)^rrot(w[i-15],18)^(w[i-15]>>>3);const s1=rrot(w[i-2],17)^rrot(w[i-2],19)^(w[i-2]>>>10);w[i]=(w[i-16]+s0+w[i-7]+s1)|0;}
+    let[a,b,c,d,e,f,g,h]=H;
+    for(let i=0;i<64;i++){
+      const S1=rrot(e,6)^rrot(e,11)^rrot(e,25);const ch=(e&f)^((~e)&g);const t1=(h+S1+ch+K[i]+w[i])|0;
+      const S0=rrot(a,2)^rrot(a,13)^rrot(a,22);const maj=(a&b)^(a&c)^(b&c);const t2=(S0+maj)|0;
+      h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0;
+    }
+    H=[(H[0]+a)|0,(H[1]+b)|0,(H[2]+c)|0,(H[3]+d)|0,(H[4]+e)|0,(H[5]+f)|0,(H[6]+g)|0,(H[7]+h)|0];
+  }
+  return H.map(x=>((x>>>0).toString(16).padStart(8,"0"))).join("");
+}
+async function hashDemo(){
+  const v=document.getElementById("hashIn").value;
+  document.getElementById("hashOut").textContent = v ? await sha256hex(v) : "—";
+}
+hashDemo();
+</script>
+</body>
+</html>

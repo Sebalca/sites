@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Copas — Folha de Pontos</title>
+<style>
+  :root{
+    --felt:#0b3d2e;
+    --felt-dark:#082c21;
+    --felt-line:rgba(255,255,255,.07);
+    --card:#f6f1e4;
+    --card-2:#efe8d5;
+    --card-line:#e2dac2;
+    --ink:#1d1c19;
+    --heart:#c62b3b;
+    --spade:#23252a;
+    --gold:#cba135;
+    --gold-soft:rgba(203,161,53,.18);
+    --muted:#7a7364;
+    --danger:#c62b3b;
+    --display:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    color:#f3efe4;
+    background:
+      radial-gradient(120% 80% at 50% -10%, #12543f 0%, var(--felt) 45%, var(--felt-dark) 100%);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:22px 16px 120px}
+
+  /* Cabeçalho */
+  header{text-align:center;margin:6px 0 20px;position:relative}
+  .suits{font-family:var(--display);font-size:15px;letter-spacing:.5em;color:var(--gold);opacity:.85;padding-left:.5em}
+  h1{font-family:var(--display);font-size:44px;font-weight:400;letter-spacing:.02em;line-height:1;margin:4px 0 2px}
+  h1 .heart{color:var(--heart)}
+  .sub{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(243,239,228,.55)}
+
+  /* Banner fim de jogo */
+  .banner{
+    display:none;background:linear-gradient(180deg,#145a42 0%,#0e4834 100%);
+    border:1px solid var(--gold);border-radius:14px;padding:16px;margin-bottom:18px;
+    text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.35)
+  }
+  .banner.show{display:block;animation:rise .4s ease}
+  .banner .crown{font-size:22px}
+  .banner .who{font-family:var(--display);font-size:26px;color:var(--gold);margin:2px 0}
+  .banner .note{font-size:12.5px;color:rgba(243,239,228,.7)}
+
+  /* Grelha de jogadores */
+  .board{display:grid;gap:10px;margin-bottom:22px}
+  .pcard{
+    background:linear-gradient(180deg,var(--card) 0%,var(--card-2) 100%);
+    color:var(--ink);border-radius:14px;padding:14px 15px;
+    display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;
+    border:1px solid var(--card-line);position:relative;overflow:hidden;
+    box-shadow:0 6px 18px rgba(0,0,0,.25)
+  }
+  .pcard.leader{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 8px 22px rgba(0,0,0,.3)}
+  .pcard.leader::after{content:"";position:absolute;inset:0;background:var(--gold-soft);pointer-events:none}
+  .rank{
+    width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+    font-family:var(--display);font-size:15px;background:var(--spade);color:#fff;flex:none;z-index:1
+  }
+  .pcard.leader .rank{background:var(--gold);color:#20180a}
+  .pinfo{min-width:0;z-index:1}
+  .pname{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pmeta{font-size:11.5px;color:var(--muted);margin-top:2px;height:14px}
+  .ptotal{font-family:var(--display);font-size:30px;line-height:1;text-align:right;z-index:1;font-variant-numeric:tabular-nums}
+  .ptotal small{display:block;font-size:10px;letter-spacing:.12em;color:var(--muted);font-family:var(--sans);margin-top:3px;text-transform:uppercase}
+  .prog{position:absolute;left:0;bottom:0;height:3px;background:var(--heart);opacity:.5;transition:width .3s ease}
+
+  /* Botões de ação */
+  .actions{display:flex;gap:10px;margin-bottom:22px}
+  button{font-family:var(--sans);cursor:pointer;border:none;border-radius:12px;font-size:15px}
+  .btn-main{
+    flex:1;background:var(--heart);color:#fff;padding:15px;font-weight:600;letter-spacing:.02em;
+    box-shadow:0 6px 16px rgba(198,43,59,.35);transition:transform .1s ease,filter .15s ease
+  }
+  .btn-main:active{transform:translateY(1px)}
+  .btn-main:disabled{background:#5a4a44;box-shadow:none;cursor:not-allowed}
+  .btn-ghost{
+    background:rgba(255,255,255,.06);color:#f3efe4;padding:15px 16px;
+    border:1px solid rgba(255,255,255,.12)
+  }
+  .btn-ghost:disabled{opacity:.4;cursor:not-allowed}
+
+  /* Histórico */
+  .hist-title{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:rgba(243,239,228,.5);margin:0 4px 10px}
+  .hist{background:rgba(0,0,0,.18);border-radius:14px;overflow:hidden;border:1px solid var(--felt-line)}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  th,td{padding:9px 6px;text-align:center;font-size:14px}
+  thead th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:rgba(243,239,228,.55);font-weight:600;border-bottom:1px solid var(--felt-line);padding-bottom:11px}
+  thead th:first-child,tbody td:first-child{color:rgba(243,239,228,.45);font-size:12px;width:34px}
+  tbody tr:not(:last-child){border-bottom:1px solid var(--felt-line)}
+  tbody td{color:#f3efe4}
+  td.moon{color:var(--gold);font-weight:600}
+  .empty{text-align:center;padding:26px 16px;color:rgba(243,239,228,.4);font-size:13.5px}
+
+  /* Painel inferior (entrada de ronda / definições) */
+  .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:40}
+  .sheet-bg.open{opacity:1;pointer-events:auto}
+  .sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:50;
+    background:linear-gradient(180deg,#124a38,#0c3728);
+    border-top-left-radius:20px;border-top-right-radius:20px;
+    padding:18px 16px calc(20px + env(safe-area-inset-bottom));
+    transform:translateY(105%);transition:transform .28s cubic-bezier(.32,.72,0,1);
+    max-width:640px;margin:0 auto;box-shadow:0 -10px 40px rgba(0,0,0,.4);
+    max-height:88vh;overflow-y:auto
+  }
+  .sheet.open{transform:translateY(0)}
+  .grab{width:38px;height:4px;border-radius:2px;background:rgba(255,255,255,.25);margin:0 auto 14px}
+  .sheet h2{font-family:var(--display);font-weight:400;font-size:22px;margin-bottom:4px}
+  .sheet .hint{font-size:12.5px;color:rgba(243,239,228,.6);margin-bottom:16px;line-height:1.5}
+
+  .row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;margin-bottom:9px}
+  .row label{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row input[type=number]{
+    width:74px;padding:11px;border-radius:10px;border:1px solid rgba(255,255,255,.14);
+    background:rgba(0,0,0,.22);color:#fff;font-size:17px;text-align:center;font-variant-numeric:tabular-nums
+  }
+  .row input[type=text]{
+    padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);
+    background:rgba(0,0,0,.22);color:#fff;font-size:15px;width:100%
+  }
+  .moon-btn{
+    background:transparent;border:1px solid var(--gold);color:var(--gold);
+    padding:9px 11px;font-size:12px;border-radius:9px;white-space:nowrap
+  }
+  .moon-btn.on{background:var(--gold);color:#20180a}
+
+  .counter{
+    text-align:center;margin:14px 0 4px;font-family:var(--display);font-size:15px;
+    color:rgba(243,239,228,.75)
+  }
+  .counter b{font-size:20px}
+  .counter.ok b{color:#7ad19b}
+  .counter.bad b{color:var(--heart)}
+
+  .sheet-actions{display:flex;gap:10px;margin-top:16px}
+  .sheet-actions .btn-main{background:var(--gold);color:#20180a;box-shadow:none}
+  .sheet-actions .btn-main:disabled{background:#4a4335;color:rgba(255,255,255,.4)}
+
+  .settings-foot{display:flex;justify-content:space-between;align-items:center;margin-top:20px;font-size:13px}
+  .count-ctrl{display:flex;align-items:center;gap:12px}
+  .count-ctrl button{width:34px;height:34px;background:rgba(255,255,255,.08);color:#fff;font-size:20px;border:1px solid rgba(255,255,255,.14)}
+  .link{background:none;color:rgba(243,239,228,.6);text-decoration:underline;font-size:13px;padding:6px}
+  .link.danger{color:var(--heart)}
+
+  .field{margin-bottom:14px}
+  .field span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(243,239,228,.5);margin-bottom:7px}
+  .field.inline{display:flex;align-items:center;justify-content:space-between;gap:14px}
+  .field.inline input{width:90px}
+
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="suits">♠ ♥ ♦ ♣</div>
+    <h1>Co<span class="heart">p</span>as</h1>
+    <div class="sub">Folha de Pontos</div>
+  </header>
+
+  <div class="banner" id="banner">
+    <div class="crown">♛</div>
+    <div class="who" id="winnerName"></div>
+    <div class="note" id="winnerNote"></div>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <div class="actions">
+    <button class="btn-main" id="addBtn">+ Nova ronda</button>
+    <button class="btn-ghost" id="undoBtn" title="Anular última ronda">↶ Anular</button>
+    <button class="btn-ghost" id="setBtn" title="Definições">⚙</button>
+  </div>
+
+  <div class="hist-title">Histórico</div>
+  <div class="hist" id="hist"></div>
+</div>
+
+<!-- Painel: entrada de ronda -->
+<div class="sheet-bg" id="roundBg"></div>
+<div class="sheet" id="roundSheet">
+  <div class="grab"></div>
+  <h2>Pontos da ronda</h2>
+  <p class="hint">São 26 pontos por ronda: 13 copas (1 cada) + Dama de Espadas (13). Se alguém <b>correu o baralho</b> (fez as 26), fica a 0 e os restantes levam 26.</p>
+  <div id="roundInputs"></div>
+  <div class="counter" id="counter"></div>
+  <div class="sheet-actions">
+    <button class="btn-ghost" id="cancelRound">Cancelar</button>
+    <button class="btn-main" id="saveRound">Guardar ronda</button>
+  </div>
+</div>
+
+<!-- Painel: definições -->
+<div class="sheet-bg" id="setBg"></div>
+<div class="sheet" id="setSheet">
+  <div class="grab"></div>
+  <h2>Definições</h2>
+  <p class="hint">Ajusta os jogadores e o limite de pontos. Vence quem tiver <b>menos</b> pontos quando alguém chega ao limite.</p>
+  <div class="field">
+    <span>Jogadores</span>
+    <div id="nameInputs"></div>
+  </div>
+  <div class="settings-foot">
+    <div class="count-ctrl">
+      <button id="lessP">−</button>
+      <span id="pCount">4 jogadores</span>
+      <button id="moreP">+</button>
+    </div>
+  </div>
+  <div class="field inline" style="margin-top:18px">
+    <span style="margin:0">Limite</span>
+    <input type="number" id="targetInput" min="20" step="10">
+  </div>
+  <div class="sheet-actions">
+    <button class="btn-ghost" id="cancelSet">Fechar</button>
+    <button class="btn-main" id="saveSet">Guardar</button>
+  </div>
+  <div style="text-align:center;margin-top:12px">
+    <button class="link danger" id="resetBtn">Recomeçar jogo (apaga pontos)</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+const KEY="copas-scoreboard-v2";
+const DEFAULT={players:["Jogador 1","Jogador 2","Jogador 3","Jogador 4"],rounds:[],target:100};
+let state=load();
+
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.players)return s;}catch(e){}
+  return structuredClone(DEFAULT);
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+
+function totals(){
+  return state.players.map((_,i)=>state.rounds.reduce((a,r)=>a+(r.scores[i]||0),0));
+}
+function lastRound(){return state.rounds.length?state.rounds[state.rounds.length-1]:null;}
+function isOver(){const t=totals();return t.length&&Math.max(...t)>=state.target;}
+
+/* ---------- Render ---------- */
+function render(){
+  const t=totals();
+  const min=t.length?Math.min(...t):0;
+  const order=t.map((v,i)=>({i,v})).sort((a,b)=>a.v-b.v);
+  const rankOf={};order.forEach((o,idx)=>rankOf[o.i]=idx+1);
+  const last=lastRound();
+
+  // board
+  const board=document.getElementById("board");
+  board.innerHTML="";
+  state.players.forEach((name,i)=>{
+    const total=t[i];
+    const leader=total===min && state.rounds.length>0;
+    const delta=last?last.scores[i]:null;
+    const pct=Math.min(100,Math.round(total/state.target*100));
+    const el=document.createElement("div");
+    el.className="pcard"+(leader?" leader":"");
+    let meta="";
+    if(state.rounds.length===0) meta="";
+    else if(delta===0 && last.moon===i) meta="Correu o baralho ✦";
+    else if(delta!=null) meta=(delta>0?"+"+delta:"—")+" na última ronda";
+    el.innerHTML=`
+      <div class="rank">${state.rounds.length?rankOf[i]:"♦"}</div>
+      <div class="pinfo">
+        <div class="pname">${esc(name)}</div>
+        <div class="pmeta">${meta}</div>
+      </div>
+      <div class="ptotal">${total}<small>pontos</small></div>
+      <div class="prog" style="width:${pct}%"></div>`;
+    board.appendChild(el);
+  });
+
+  // história
+  const hist=document.getElementById("hist");
+  if(state.rounds.length===0){
+    hist.innerHTML=`<div class="empty">Ainda sem rondas.<br>Toca em “Nova ronda” para começar.</div>`;
+  }else{
+    let head="<tr><th>#</th>"+state.players.map(n=>`<th>${esc(short(n))}</th>`).join("")+"</tr>";
+    let body="";
+    state.rounds.forEach((r,ri)=>{
+      let cells=r.scores.map((s,i)=>{
+        const moon=r.moon===i;
+        return `<td class="${moon?"moon":""}">${moon?"0 ✦":s}</td>`;
+      }).join("");
+      body+=`<tr><td>${ri+1}</td>${cells}</tr>`;
+    });
+    hist.innerHTML=`<table><thead>${head}</thead><tbody>${body}</tbody></table>`;
+  }
+
+  // fim de jogo
+  const banner=document.getElementById("banner");
+  if(isOver()){
+    const winIdx=t.indexOf(min);
+    document.getElementById("winnerName").textContent=state.players[winIdx];
+    document.getElementById("winnerNote").textContent=`Vence com ${min} pontos · limite de ${state.target} atingido`;
+    banner.classList.add("show");
+    document.getElementById("addBtn").disabled=true;
+  }else{
+    banner.classList.remove("show");
+    document.getElementById("addBtn").disabled=false;
+  }
+  document.getElementById("undoBtn").disabled=state.rounds.length===0;
+  save();
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function short(n){return n.length>7?n.slice(0,6)+"…":n;}
+
+/* ---------- Entrada de ronda ---------- */
+let draft=[];let moonPlayer=null;
+function openRound(){
+  draft=state.players.map(()=>0);moonPlayer=null;
+  const box=document.getElementById("roundInputs");
+  box.innerHTML="";
+  state.players.forEach((name,i)=>{
+    const row=document.createElement("div");
+    row.className="row";
+    row.innerHTML=`
+      <label>${esc(name)}</label>
+      <input type="number" inputmode="numeric" min="0" max="26" data-i="${i}" value="0">
+      <button class="moon-btn" data-moon="${i}">Correu 26</button>`;
+    box.appendChild(row);
+  });
+  box.querySelectorAll("input").forEach(inp=>inp.addEventListener("input",onDraftInput));
+  box.querySelectorAll(".moon-btn").forEach(b=>b.addEventListener("click",()=>toggleMoon(+b.dataset.moon)));
+  updateCounter();
+  toggle("round",true);
+}
+function onDraftInput(e){
+  const i=+e.target.dataset.i;
+  let v=parseInt(e.target.value,10);if(isNaN(v)||v<0)v=0;if(v>26)v=26;
+  draft[i]=v;
+  if(moonPlayer!==null){moonPlayer=null;refreshMoonBtns();}
+  updateCounter();
+}
+function toggleMoon(i){
+  if(moonPlayer===i){moonPlayer=null;draft=state.players.map(()=>0);}
+  else{moonPlayer=i;draft=state.players.map((_,j)=>j===i?0:26);}
+  syncInputs();refreshMoonBtns();updateCounter();
+}
+function refreshMoonBtns(){
+  document.querySelectorAll(".moon-btn").forEach(b=>{
+    b.classList.toggle("on",+b.dataset.moon===moonPlayer);
+  });
+}
+function syncInputs(){
+  document.querySelectorAll("#roundInputs input").forEach(inp=>{inp.value=draft[+inp.dataset.i];});
+}
+function roundValid(){
+  const sum=draft.reduce((a,b)=>a+b,0);
+  if(moonPlayer!==null) return draft[moonPlayer]===0 && draft.every((v,j)=>j===moonPlayer||v===26);
+  return sum===26;
+}
+function updateCounter(){
+  const c=document.getElementById("counter");
+  const sum=draft.reduce((a,b)=>a+b,0);
+  if(moonPlayer!==null){
+    c.className="counter ok";
+    c.innerHTML=`<b>${esc(state.players[moonPlayer])}</b> correu o baralho — 0 vs 26`;
+  }else{
+    const ok=sum===26;
+    c.className="counter "+(ok?"ok":"bad");
+    c.innerHTML=`Total: <b>${sum}</b> / 26 ${ok?"✓":""}`;
+  }
+  document.getElementById("saveRound").disabled=!roundValid();
+}
+function saveRound(){
+  if(!roundValid())return;
+  state.rounds.push({scores:draft.slice(),moon:moonPlayer});
+  toggle("round",false);render();
+}
+
+/* ---------- Definições ---------- */
+function openSettings(){
+  buildNameInputs();
+  document.getElementById("targetInput").value=state.target;
+  toggle("set",true);
+}
+let tempNames=[];
+function buildNameInputs(){
+  tempNames=state.players.slice();
+  const box=document.getElementById("nameInputs");
+  box.innerHTML="";
+  tempNames.forEach((n,i)=>{
+    const f=document.createElement("div");
+    f.className="row";f.style.gridTemplateColumns="1fr";f.style.marginBottom="8px";
+    f.innerHTML=`<input type="text" value="${esc(n)}" data-i="${i}" maxlength="14" placeholder="Nome">`;
+    box.appendChild(f);
+  });
+  box.querySelectorAll("input").forEach(inp=>inp.addEventListener("input",e=>{tempNames[+e.target.dataset.i]=e.target.value;}));
+  document.getElementById("pCount").textContent=tempNames.length+" jogadores";
+}
+function changePlayers(d){
+  const n=tempNames.length+d;
+  if(n<2||n>6)return;
+  if(d>0)tempNames.push("Jogador "+n);
+  else tempNames.pop();
+  const box=document.getElementById("nameInputs");
+  box.innerHTML="";
+  tempNames.forEach((nm,i)=>{
+    const f=document.createElement("div");
+    f.className="row";f.style.gridTemplateColumns="1fr";f.style.marginBottom="8px";
+    f.innerHTML=`<input type="text" value="${esc(nm)}" data-i="${i}" maxlength="14" placeholder="Nome">`;
+    box.appendChild(f);
+  });
+  box.querySelectorAll("input").forEach(inp=>inp.addEventListener("input",e=>{tempNames[+e.target.dataset.i]=e.target.value;}));
+  document.getElementById("pCount").textContent=tempNames.length+" jogadores";
+}
+function saveSettings(){
+  const names=tempNames.map((n,i)=>n.trim()||("Jogador "+(i+1)));
+  const changedCount=names.length!==state.players.length;
+  if(changedCount && state.rounds.length){
+    if(!confirm("Mudar o número de jogadores apaga o histórico. Continuar?"))return;
+    state.rounds=[];
+  }
+  state.players=names;
+  let tg=parseInt(document.getElementById("targetInput").value,10);
+  if(isNaN(tg)||tg<20)tg=100;
+  state.target=tg;
+  toggle("set",false);render();
+}
+function resetGame(){
+  if(!confirm("Apagar todos os pontos e recomeçar?"))return;
+  state.rounds=[];toggle("set",false);render();
+}
+
+/* ---------- util painéis ---------- */
+function toggle(which,open){
+  const sheet=document.getElementById(which==="round"?"roundSheet":"setSheet");
+  const bg=document.getElementById(which==="round"?"roundBg":"setBg");
+  sheet.classList.toggle("open",open);
+  bg.classList.toggle("open",open);
+}
+
+/* ---------- eventos ---------- */
+document.getElementById("addBtn").onclick=openRound;
+document.getElementById("undoBtn").onclick=()=>{if(state.rounds.length){state.rounds.pop();render();}};
+document.getElementById("setBtn").onclick=openSettings;
+document.getElementById("saveRound").onclick=saveRound;
+document.getElementById("cancelRound").onclick=()=>toggle("round",false);
+document.getElementById("roundBg").onclick=()=>toggle("round",false);
+document.getElementById("saveSet").onclick=saveSettings;
+document.getElementById("cancelSet").onclick=()=>toggle("set",false);
+document.getElementById("setBg").onclick=()=>toggle("set",false);
+document.getElementById("resetBtn").onclick=resetGame;
+document.getElementById("moreP").onclick=()=>changePlayers(1);
+document.getElementById("lessP").onclick=()=>changePlayers(-1);
+
+render();
+</script>
+</body>
+</html>
