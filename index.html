@@ -64,11 +64,12 @@
   header h1 { font-size: 1.4rem; margin: 0; justify-self: start; white-space: nowrap; }
   header p { color: var(--muted); margin: 0; font-size: 0.9rem; text-align: center; }
   .toolbar { display: flex; align-items: center; justify-content: flex-end; gap: 8px; justify-self: end; }
-  .toolbar button { padding: 7px 14px; }
+  .toolbar button { padding: 7px 14px; white-space: nowrap; }
   @media (max-width: 720px) {
     header { grid-template-columns: 1fr auto; grid-template-areas: "t tb" "s s"; }
     header h1 { grid-area: t; font-size: 1.2rem; }
-    header .toolbar { grid-area: tb; }
+    header .toolbar { grid-area: tb; gap: 6px; }
+    header .toolbar button { padding: 6px 10px; font-size: 0.85rem; }
     header p { grid-area: s; font-size: 0.8rem; }
   }
   .status { color: var(--muted); font-size: 0.8rem; text-align: center; margin: 0 auto 6px; max-width: 1080px; min-height: 1em; flex: none; }
@@ -130,8 +131,18 @@
   .pt th[aria-sort="ascending"] .arr, .pt th[aria-sort="descending"] .arr { opacity: 1; color: var(--accent); }
   .pt tbody tr:last-child td { border-bottom: 0; }
   .pt td.t { font-weight: 600; color: var(--accent); min-width: 160px; }
-  .pt td.n { color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; min-width: 200px; }
-  .pt td.l a { color: var(--accent); overflow-wrap: anywhere; }
+  .pt td.t a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+  .pt td.n { color: var(--muted); min-width: 240px; }
+  .pt td.d { white-space: nowrap; }
+  .atraso { color: var(--danger); font-weight: 600; }
+  .nwrap { display: flex; gap: 8px; align-items: flex-start; }
+  .nadd { flex: none; width: 28px; height: 28px; padding: 0; border-radius: 8px; color: var(--accent); font-weight: 700; line-height: 1; }
+  .nlast { all: unset; cursor: pointer; flex: 1; min-width: 0; color: var(--muted); }
+  .nlast:hover .nt, .nlast:focus-visible .nt { color: var(--text); }
+  .nlast:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .nlast .nd { display: block; font-size: 0.75rem; font-weight: 600; color: var(--accent); }
+  .nlast .nt { white-space: pre-wrap; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .nlast .nmais { display: block; font-size: 0.75rem; margin-top: 2px; }
   .pt td.a { white-space: nowrap; text-align: right; }
   .pt td.a button { width: 32px; height: 32px; padding: 0; color: var(--muted); }
   .pt td.a button + button { margin-left: 4px; }
@@ -165,8 +176,6 @@
     .columns.multi .column-title { font-size: 0.8rem; }
     .columns.multi .card-title { padding-right: 0; font-size: 1rem; }
     .columns.multi .card { padding: 12px 12px; }
-    .columns.multi .has-tools .card { padding-bottom: 50px; }
-    .columns.multi .tools { top: auto; bottom: 8px; right: 8px; }
     .columns.multi .col-head button { padding: 4px 8px; font-size: 0.75rem; }
   }
   .col[hidden] { display: none; }
@@ -206,18 +215,20 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 16px var(--shadow);
   }
-  .card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 4px; padding-right: 112px; }
+  .card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 4px; }
   .curiosidades .card-title { color: var(--accent2); }
   .card-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.4; }
-  .tools { position: absolute; top: 10px; right: 10px; display: flex; gap: 4px; }
-  .tools button {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    line-height: 1;
-    font-size: 1rem;
-    color: var(--muted);
+  /* modo editar das curiosidades/sites: tocar abre o item, ☰ arrasta */
+  .editing .card { border-style: dashed; padding-right: 48px; cursor: pointer; }
+  .editing a.card:hover { transform: none; }
+  .card-wrap > .grip { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); }
+  .card-wrap.dragging { z-index: 3; }
+  .card-wrap.dragging .card { box-shadow: 0 10px 24px var(--shadow); opacity: .95; }
+  .card-wrap.drop-before::before, .card-wrap.drop-after::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 3px; background: var(--accent); border-radius: 2px;
   }
+  .card-wrap.drop-before::before { top: -9px; }
+  .card-wrap.drop-after::after { bottom: -9px; }
 
   dialog {
     border: 1px solid var(--border);
@@ -249,6 +260,15 @@
   .err { color: var(--danger); font-size: 0.85rem; margin: 0 0 10px; min-height: 1.2em; }
   .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .actions .spacer { flex: 1; }
+  label[hidden] { display: none; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+  #histDlg { width: min(580px, calc(100vw - 32px)); }
+  .hist { max-height: 60vh; overflow: auto; margin: 0 0 14px; display: flex; flex-direction: column; gap: 10px; }
+  .hitem { position: relative; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: var(--bg); }
+  .hitem .hd { font-size: 0.78rem; font-weight: 600; color: var(--accent); margin-bottom: 4px; padding-right: 32px; }
+  .hitem .hd span { color: var(--muted); font-weight: 400; }
+  .hitem .ht { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.92rem; }
+  .hitem .hx { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; padding: 0; color: var(--muted); }
 
   footer {
     max-width: 1080px;
@@ -353,8 +373,16 @@
     <label>Link (opcional)
       <input id="pLink" type="text" inputmode="url" maxlength="500" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://…">
     </label>
-    <label>Notas
-      <textarea id="pNotas" rows="4" maxlength="2000"></textarea>
+    <div class="row2">
+      <label>Data de informação
+        <input id="pData" type="date">
+      </label>
+      <label>Periodicidade
+        <select id="pPer"></select>
+      </label>
+    </div>
+    <label id="pNotaWrap">Ponto de situação (opcional)
+      <textarea id="pNotas" rows="3" maxlength="4000"></textarea>
     </label>
     <p class="err" id="projErr" role="alert"></p>
     <div class="actions">
@@ -364,6 +392,35 @@
       <button type="submit" class="primary" id="pSave">Guardar</button>
     </div>
   </form>
+</dialog>
+
+<dialog id="notaDlg" aria-labelledby="notaDlgTitle">
+  <form id="notaForm" novalidate>
+    <h2 id="notaDlgTitle">Ponto de situação</h2>
+    <label>Data
+      <input id="nData" type="date" required>
+    </label>
+    <label>Ponto de situação
+      <textarea id="nTexto" rows="5" maxlength="4000" required></textarea>
+    </label>
+    <p class="err" id="notaErr" role="alert"></p>
+    <div class="actions">
+      <span class="spacer"></span>
+      <button type="button" id="nCancel">Cancelar</button>
+      <button type="submit" class="primary" id="nSave">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="histDlg" aria-labelledby="histDlgTitle">
+  <h2 id="histDlgTitle">Pontos de situação</h2>
+  <div class="hist" id="histList"></div>
+  <p class="err" id="histErr" role="alert"></p>
+  <div class="actions">
+    <span class="spacer"></span>
+    <button type="button" id="hClose">Fechar</button>
+    <button type="button" class="primary" id="hAdd">+ ponto de situação</button>
+  </div>
 </dialog>
 
 <dialog id="loginDlg" aria-labelledby="loginDlgTitle">
@@ -384,7 +441,7 @@
   </form>
 </dialog>
 
-<footer>v2.8</footer>
+<footer>v2.9</footer>
 
 <script>
 (() => {
@@ -417,7 +474,15 @@
   let isAdmin = false;
   let view = "home"; // "home" | "proj"
   let psort = { key: null, dir: 1 };
-  let editMode = false;
+  let editMode = false;   // projetos: arrastar linhas
+  let editItens = false;  // curiosidades/sites: arrastar e editar
+  const PERIODOS = [
+    ["", "Sem periodicidade"], ["semanal", "Semanal", 7, 0], ["quinzenal", "Quinzenal", 14, 0],
+    ["mensal", "Mensal", 0, 1], ["bimestral", "Bimestral", 0, 2], ["trimestral", "Trimestral", 0, 3],
+    ["semestral", "Semestral", 0, 6], ["anual", "Anual", 0, 12]
+  ];
+  let notasBy = new Map(); // projeto_id -> pontos de situação (mais recente primeiro)
+  let notaProj = null;     // projeto do diálogo de ponto de situação / histórico
   const ESTADOS = [
     ["ideia", "Ideia"], ["planeamento", "Planeamento"], ["desenvolvimento", "Em desenvolvimento"],
     ["testes", "Fase de testes"], ["producao", "Em produção"], ["standby", "Standby"],
@@ -466,6 +531,23 @@
     return r;
   }
 
+  /* ---------- Datas (AAAA-MM-DD, sem fusos horários) ---------- */
+  const hoje = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+  const fmtD = (iso) => iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(0, 4) : "—";
+  function proxima(p) {
+    const per = PERIODOS.find((x) => x[0] === p.periodicidade);
+    if (!p.data_info || !per || !per[0]) return null;
+    const [y, m, d] = p.data_info.split("-").map(Number);
+    let dt;
+    if (per[2]) dt = new Date(Date.UTC(y, m - 1, d + per[2]));
+    else {
+      const ult = new Date(Date.UTC(y, m - 1 + per[3] + 1, 0)).getUTCDate(); // último dia do mês de destino
+      dt = new Date(Date.UTC(y, m - 1 + per[3], Math.min(d, ult)));
+    }
+    return dt.toISOString().slice(0, 10);
+  }
+  const lastNota = (p) => (notasBy.get(p.id) || [])[0] || null;
+
   async function checkAdmin() {
     isAdmin = false;
     if (!session) return;
@@ -488,8 +570,16 @@
     projetos = [];
     if (!projOk) return;
     try {
-      const r = await api("/rest/v1/hub_projetos?select=*&order=ordem.asc,created_at.asc");
+      const [r, rn] = await Promise.all([
+        api("/rest/v1/hub_projetos?select=*&order=ordem.asc,created_at.asc"),
+        api("/rest/v1/hub_projeto_notas?select=*&order=data.desc,created_at.desc")
+      ]);
       if (r.ok) projetos = await r.json();
+      notasBy = new Map();
+      if (rn.ok) for (const n of await rn.json()) {
+        if (!notasBy.has(n.projeto_id)) notasBy.set(n.projeto_id, []);
+        notasBy.get(n.projeto_id).push(n);
+      }
     } catch (e) {}
   }
 
@@ -522,26 +612,18 @@
     a.href = URL_RE.test(i.url) ? i.url : "#";
     a.append(el("div", "card-title", i.titulo), el("div", "card-desc", i.descricao || ""));
     wrap.append(a);
-    if (isAdmin && i.id) {
-      wrap.classList.add("has-tools");
-      const tools = el("div", "tools");
+    if (editItens && isAdmin && i.id) {
+      wrap.dataset.id = i.id;
+      a.title = "Editar " + i.titulo;
+      a.addEventListener("click", (e) => { e.preventDefault(); openItem(i); });
       if (!searching()) {
-        for (const [txt, dir, lbl] of [["▲", -1, "Subir"], ["▼", 1, "Descer"]]) {
-          const m = el("button", "mv", txt);
-          m.type = "button";
-          m.title = lbl;
-          m.setAttribute("aria-label", lbl + " " + i.titulo);
-          m.addEventListener("click", () => move(i, dir));
-          tools.append(m);
-        }
+        const g = el("span", "grip", "☰");
+        g.title = "Arrastar para mudar a ordem";
+        g.setAttribute("aria-label", "Arrastar " + i.titulo);
+        g.addEventListener("pointerdown", (e) => startDrag(e, wrap, g, (ids) =>
+          persistOrder("hub_itens", itens.filter((x) => x.categoria === i.categoria), ids, load, () => store.set(LS_CACHE, itens))));
+        wrap.append(g);
       }
-      const b = el("button", "edit", "✎");
-      b.type = "button";
-      b.title = "Editar";
-      b.setAttribute("aria-label", "Editar " + i.titulo);
-      b.addEventListener("click", () => openItem(i));
-      tools.append(b);
-      wrap.append(tools);
     }
     return wrap;
   }
@@ -550,50 +632,25 @@
   const byOrdem = (a, b) => (a.ordem - b.ordem) || String(a.created_at || "").localeCompare(String(b.created_at || ""));
 
   let moving = false;
-  const move = (item, dir) => reorder(itens.filter((x) => x.categoria === item.categoria), item, dir, "hub_itens", load, () => store.set(LS_CACHE, itens));
-  async function reorder(all, item, dir, table, reload, persistLocal) {
-    if (moving) return;
-    const list = all.slice().sort(byOrdem);
-    const from = list.findIndex((x) => x.id === item.id);
-    const to = from + dir;
-    if (from < 0 || to < 0 || to >= list.length) return;
-    list.splice(to, 0, list.splice(from, 1)[0]);
-    const changed = [];
-    list.forEach((x, idx) => {
-      const o = (idx + 1) * 10;
-      if (x.ordem !== o) { x.ordem = o; changed.push(x); }
-    });
-    persistLocal();
-    render();
-    moving = true;
-    try {
-      const rs = await Promise.all(changed.map((x) =>
-        api("/rest/v1/" + table + "?id=eq." + encodeURIComponent(x.id), {
-          method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ ordem: x.ordem })
-        }).then(async (r) => r.ok && (await r.json()).length > 0)
-      ));
-      if (rs.some((ok) => !ok)) throw new Error("save");
-      setStatus("");
-    } catch (e) {
-      await reload();
-      setStatus("Não foi possível guardar a nova ordem.");
-    } finally {
-      moving = false;
-    }
-  }
 
   const norm = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
   const PCOLS = [
     ["titulo", "Título"], ["estado", "Estado"], ["responsavel", "Responsável"],
-    ["pessoas", "Pessoas envolvidas"], ["notas", "Notas"], ["link", "Link"]
+    ["pessoas", "Pessoas envolvidas"], ["notas", "Ponto de situação"],
+    ["data_info", "Últ. informação"], ["proxima", "Próx. informação"]
   ];
+  const sortVal = (p, k) => k === "notas" ? (lastNota(p) || {}).texto : k === "proxima" ? proxima(p) : p[k];
 
   function pCompare(a, b) {
     const k = psort.key;
     let r;
     if (k === "estado") r = estIdx(a.estado) - estIdx(b.estado);
-    else r = String(a[k] || "").localeCompare(String(b[k] || ""), "pt", { sensitivity: "base", numeric: true });
+    else {
+      const va = sortVal(a, k) || "", vb = sortVal(b, k) || "";
+      if (!va !== !vb) return va ? -1 : 1; // vazios sempre no fim
+      r = String(va).localeCompare(String(vb), "pt", { sensitivity: "base", numeric: true });
+    }
     return r * psort.dir || byOrdem(a, b);
   }
 
@@ -648,11 +705,18 @@
       const g = el("span", "grip", "☰");
       g.title = "Arrastar para mudar a ordem";
       g.setAttribute("aria-label", "Arrastar " + p.titulo);
-      g.addEventListener("pointerdown", (e) => startDrag(e, tr, g));
+      g.addEventListener("pointerdown", (e) => startDrag(e, tr, g, (ids) => persistOrder("hub_projetos", projetos, ids, loadProj, () => {})));
       h.append(g);
       tr.append(h);
     }
-    tr.append(el("td", "t", p.titulo));
+    const t = el("td", "t");
+    if (p.link && URL_RE.test(p.link)) {
+      const a = el("a", null, p.titulo);
+      a.href = p.link; a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.title = p.link.replace(/^https?:\/\//, "");
+      t.append(a);
+    } else t.textContent = p.titulo;
+    tr.append(t);
     const st = el("td");
     const wrap = el("span", "estwrap st-" + (p.estado || "desenvolvimento"));
     const sel = el("select", "estsel");
@@ -665,14 +729,28 @@
     tr.append(st);
     tr.append(el("td", null, p.responsavel || "—"));
     tr.append(el("td", null, p.pessoas || ""));
-    tr.append(el("td", "n", p.notas || ""));
-    const l = el("td", "l");
-    if (p.link && URL_RE.test(p.link)) {
-      const a = el("a", null, p.link.replace(/^https?:\/\//, ""));
-      a.href = p.link; a.target = "_blank"; a.rel = "noopener noreferrer";
-      l.append(a);
+    const n = el("td", "n");
+    const nw = el("div", "nwrap");
+    const add = el("button", "nadd", "+");
+    add.type = "button"; add.title = "Novo ponto de situação";
+    add.setAttribute("aria-label", "Novo ponto de situação de " + p.titulo);
+    add.addEventListener("click", () => openNota(p));
+    nw.append(add);
+    const ln = lastNota(p);
+    if (ln) {
+      const nb = el("button", "nlast");
+      nb.type = "button"; nb.title = "Ver todos os pontos de situação";
+      nb.append(el("span", "nd", fmtD(ln.data)), el("span", "nt", ln.texto));
+      const total = (notasBy.get(p.id) || []).length;
+      if (total > 1) nb.append(el("span", "nmais", "+ " + (total - 1) + (total === 2 ? " anterior" : " anteriores")));
+      nb.addEventListener("click", () => openHist(p));
+      nw.append(nb);
     }
-    tr.append(l);
+    n.append(nw);
+    tr.append(n);
+    tr.append(el("td", "d", fmtD(p.data_info)));
+    const px = proxima(p);
+    tr.append(el("td", "d" + (px && px < hoje() ? " atraso" : ""), fmtD(px)));
     const ac = el("td", "a");
     const b = el("button", "edit", "✎");
     b.type = "button"; b.title = "Editar";
@@ -689,12 +767,12 @@
     const body = $("pBody");
     body.replaceChildren();
     const rows = projetos
-      .filter((p) => !nq || [p.titulo, p.responsavel, p.pessoas, p.notas, p.link, estLabel(p.estado)].some((t) => norm(t).includes(nq)))
+      .filter((p) => !nq || [p.titulo, p.responsavel, p.pessoas, p.link, estLabel(p.estado), ...(notasBy.get(p.id) || []).map((x) => x.texto)].some((t) => norm(t).includes(nq)))
       .sort(psort.key ? pCompare : byOrdem);
     rows.forEach((p) => body.append(projRow(p, canDrag)));
     if (!rows.length) {
       const tr = el("tr"); const td = el("td", "n", nq ? "Sem resultados." : "Ainda não há projetos.");
-      td.colSpan = PCOLS.length + 1; tr.append(td); body.append(tr);
+      td.colSpan = PCOLS.length + 1 + (canDrag ? 1 : 0); tr.append(td); body.append(tr);
     }
     $("pCount").textContent = rows.length + (rows.length === 1 ? " projeto" : " projetos");
     const eb = $("btnEditProj");
@@ -706,12 +784,13 @@
       : "";
   }
 
-  /* Arrastar linhas (rato e toque): a linha segue o dedo, o resto não se mexe até largares. */
-  function startDrag(e, tr, grip) {
+  /* Arrastar (rato e toque): o elemento segue o dedo, o resto não se mexe até largares.
+     Serve para as linhas dos projetos e para os cartões das curiosidades/sites. */
+  function startDrag(e, tr, grip, onDrop) {
     if (e.button != null && e.button !== 0) return;
     e.preventDefault();
-    const body = $("pBody"), wrap = body.closest(".twrap");
-    const others = [...body.children].filter((x) => x !== tr);
+    const body = tr.parentNode, wrap = body.closest(".twrap, .grid");
+    const others = [...body.children].filter((x) => x !== tr && x.dataset.id);
     const startY = e.clientY, startScroll = wrap.scrollTop;
     const h = tr.offsetHeight, top0 = tr.offsetTop;
     let target = others.indexOf(tr), dy = 0, lastY = startY, raf = 0;
@@ -749,7 +828,7 @@
       const ref = others[target] || null;
       if (ref === tr.nextSibling || (!ref && !tr.nextSibling)) return; // mesma posição
       body.insertBefore(tr, ref);
-      persistOrder([...body.children].map((r) => r.dataset.id));
+      onDrop([...body.children].map((r) => r.dataset.id).filter(Boolean));
     }
     const onUp = (ev) => end(ev, false);
     const onCancel = (ev) => end(ev, true);
@@ -759,27 +838,28 @@
     raf = requestAnimationFrame(tick);
   }
 
-  async function persistOrder(ids) {
+  async function persistOrder(table, list, ids, reload, persistLocal) {
     if (moving) return;
-    const byId = new Map(projetos.map((x) => [x.id, x]));
+    const byId = new Map(list.map((x) => [x.id, x]));
     const changed = [];
     ids.forEach((id, idx) => {
       const x = byId.get(id), o = (idx + 1) * 10;
       if (x && x.ordem !== o) { x.ordem = o; changed.push(x); }
     });
+    persistLocal();
     render();
     if (!changed.length) return;
     moving = true;
     try {
       const rs = await Promise.all(changed.map((x) =>
-        api("/rest/v1/hub_projetos?id=eq." + encodeURIComponent(x.id), {
+        api("/rest/v1/" + table + "?id=eq." + encodeURIComponent(x.id), {
           method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ ordem: x.ordem })
         }).then(async (r) => r.ok && (await r.json()).length > 0)
       ));
       if (rs.some((ok) => !ok)) throw new Error("save");
       setStatus("");
     } catch (e) {
-      await loadProj();
+      await reload();
       render();
       setStatus("Não foi possível guardar a nova ordem.");
     } finally {
@@ -799,6 +879,7 @@
     $("vtProj").classList.toggle("on", view === "proj");
     $("viewHome").hidden = view !== "home";
     $("viewProj").hidden = view !== "proj";
+    $("columns").classList.toggle("editing", editItens && isAdmin);
     document.body.classList.toggle("vp", view === "proj");
     $("q").placeholder = view === "proj" ? "Pesquisar por título, responsável, estado ou notas…" : "Pesquisar por título ou notas…";
     const nq = norm(($("q").value || "").trim());
@@ -817,10 +898,21 @@
     const tb = $("toolbar");
     tb.replaceChildren();
     if (isAdmin) {
-      const add = el("button", "primary", "+ site");
+      const add = el("button", editItens ? null : "primary", "+ site");
       add.type = "button";
       add.addEventListener("click", () => openItem(null));
       tb.append(add);
+      if (view === "home") {
+        const ed = el("button", editItens ? "primary" : null, editItens ? "Concluir" : "Editar");
+        ed.type = "button";
+        ed.title = editItens ? "Terminar edição" : "Editar e reordenar curiosidades e sites";
+        ed.addEventListener("click", () => {
+          editItens = !editItens;
+          setStatus(editItens ? "Toca num item para o editar ou arrasta ☰ para mudar a ordem." : "");
+          render();
+        });
+        tb.append(ed);
+      }
     }
     if (!isStandalone() && (installEv || isIOS())) {
       const ins = el("button", "ghost", "Instalar app");
@@ -939,7 +1031,10 @@
     $("pResp").value = p ? p.responsavel || "" : "";
     $("pPessoas").value = p ? p.pessoas || "" : "";
     $("pLink").value = p ? p.link || "" : "";
-    $("pNotas").value = p ? p.notas || "" : "";
+    $("pData").value = p ? p.data_info || "" : "";
+    $("pPer").value = p ? p.periodicidade || "" : "";
+    $("pNotas").value = "";
+    $("pNotaWrap").hidden = !!p; // pontos de situação de projetos existentes entram pelo "+"
     $("projErr").textContent = "";
     $("pDel").hidden = !p;
     $("projDlg").showModal();
@@ -953,12 +1048,14 @@
     const responsavel = $("pResp").value.trim();
     const pessoas = $("pPessoas").value.trim();
     const link = normUrl($("pLink").value);
-    const notas = $("pNotas").value.trim();
+    const nota = $("pNotas").value.trim();
+    let data_info = $("pData").value || null;
     if (!titulo) { err.textContent = "Indica o título."; return; }
+    if (!editingProj && nota && !data_info) data_info = hoje();
     if (link && (!URL_RE.test(link) || link.length > 500)) { err.textContent = "Link inválido. Usa https://… ou deixa em branco."; return; }
     $("pSave").disabled = true;
     try {
-      const body = { titulo, responsavel, pessoas, link, notas, estado: $("pEstado").value };
+      const body = { titulo, responsavel, pessoas, link, estado: $("pEstado").value, data_info, periodicidade: $("pPer").value };
       let r;
       if (editingProj) {
         body.updated_at = new Date().toISOString();
@@ -973,6 +1070,11 @@
       }
       const rows = r.ok ? await r.json() : [];
       if (!r.ok || !rows.length) { err.textContent = "Não foi possível guardar (sem permissão?)."; return; }
+      if (!editingProj && nota) {
+        await api("/rest/v1/hub_projeto_notas", {
+          method: "POST", body: JSON.stringify({ projeto_id: rows[0].id, data: data_info, texto: nota, autor: session.email || "" })
+        });
+      }
       $("projDlg").close();
       await loadProj();
       render();
@@ -996,6 +1098,83 @@
       render();
     } catch (e) {
       $("projErr").textContent = "Sem ligação. Tenta outra vez.";
+    }
+  }
+
+  /* ---------- Pontos de situação ---------- */
+  function openNota(p) {
+    notaProj = p;
+    $("notaDlgTitle").textContent = "Ponto de situação — " + p.titulo;
+    $("nData").value = hoje();
+    $("nTexto").value = "";
+    $("notaErr").textContent = "";
+    $("notaDlg").showModal();
+    $("nTexto").focus();
+  }
+
+  async function saveNota(ev) {
+    ev.preventDefault();
+    const p = notaProj, err = $("notaErr");
+    const texto = $("nTexto").value.trim(), data = $("nData").value || hoje();
+    if (!texto) { err.textContent = "Escreve o ponto de situação."; return; }
+    $("nSave").disabled = true;
+    try {
+      const r = await api("/rest/v1/hub_projeto_notas", {
+        method: "POST", headers: { Prefer: "return=representation" },
+        body: JSON.stringify({ projeto_id: p.id, data, texto, autor: session.email || "" })
+      });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) { err.textContent = "Não foi possível guardar (sem permissão?)."; return; }
+      if (!p.data_info || data > p.data_info) { // a informação mais recente passa a ser esta
+        await api("/rest/v1/hub_projetos?id=eq." + encodeURIComponent(p.id), {
+          method: "PATCH", body: JSON.stringify({ data_info: data, updated_at: new Date().toISOString() })
+        });
+      }
+      $("notaDlg").close();
+      await loadProj();
+      render();
+      if ($("histDlg").open) openHist(projetos.find((x) => x.id === p.id) || p);
+    } catch (e) {
+      err.textContent = "Sem ligação. Tenta outra vez.";
+    } finally {
+      $("nSave").disabled = false;
+    }
+  }
+
+  function openHist(p) {
+    notaProj = p;
+    $("histDlgTitle").textContent = "Pontos de situação — " + p.titulo;
+    $("histErr").textContent = "";
+    const list = $("histList");
+    list.replaceChildren();
+    const ns = notasBy.get(p.id) || [];
+    if (!ns.length) list.append(el("div", "empty", "Ainda não há pontos de situação."));
+    for (const n of ns) {
+      const it = el("div", "hitem");
+      const hd = el("div", "hd", fmtD(n.data));
+      if (n.autor) hd.append(el("span", null, " · " + n.autor));
+      const x = el("button", "hx", "✕");
+      x.type = "button"; x.title = "Apagar este ponto de situação";
+      x.addEventListener("click", () => deleteNota(n));
+      it.append(hd, el("div", "ht", n.texto), x);
+      list.append(it);
+    }
+    if (!$("histDlg").open) $("histDlg").showModal();
+  }
+
+  async function deleteNota(n) {
+    if (!confirm("Apagar o ponto de situação de " + fmtD(n.data) + "?")) return;
+    try {
+      const r = await api("/rest/v1/hub_projeto_notas?id=eq." + encodeURIComponent(n.id), {
+        method: "DELETE", headers: { Prefer: "return=representation" }
+      });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) { $("histErr").textContent = "Não foi possível apagar (sem permissão?)."; return; }
+      await loadProj();
+      render();
+      openHist(projetos.find((x) => x.id === n.projeto_id) || notaProj);
+    } catch (e) {
+      $("histErr").textContent = "Sem ligação. Tenta outra vez.";
     }
   }
 
@@ -1059,6 +1238,8 @@
     projetos = [];
     view = "home";
     editMode = false;
+    editItens = false;
+    notasBy = new Map();
     itens = itens.filter((i) => i.categoria === "curiosidade"); // não deixar sites em memória/cache
     store.set(LS_CACHE, itens);
     setStatus("");
@@ -1077,6 +1258,11 @@
   $("pCancel").addEventListener("click", () => $("projDlg").close());
   $("pDel").addEventListener("click", deleteProj);
   for (const [k, label] of ESTADOS) { const o = el("option", null, label); o.value = k; $("pEstado").append(o); }
+  for (const [k, label] of PERIODOS) { const o = el("option", null, label); o.value = k; $("pPer").append(o); }
+  $("notaForm").addEventListener("submit", saveNota);
+  $("nCancel").addEventListener("click", () => $("notaDlg").close());
+  $("hClose").addEventListener("click", () => $("histDlg").close());
+  $("hAdd").addEventListener("click", () => openNota(notaProj));
   $("btnEditProj").addEventListener("click", () => {
     editMode = !editMode;
     if (editMode) psort = { key: null, dir: 1 };
@@ -1085,7 +1271,7 @@
   $("vtHome").addEventListener("click", () => setView("home"));
   $("vtProj").addEventListener("click", () => setView("proj"));
   $("btnLoginCancel").addEventListener("click", () => $("loginDlg").close());
-  for (const id of ["itemDlg", "loginDlg", "projDlg"]) {
+  for (const id of ["itemDlg", "loginDlg", "projDlg", "notaDlg", "histDlg"]) {
     $(id).addEventListener("click", (e) => { if (e.target === $(id)) $(id).close(); });
   }
 
