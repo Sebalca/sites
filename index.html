@@ -14,6 +14,22 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121316" media="(prefers-color-scheme: dark)">
+<script>
+  // Aspeto (tema e cor) guardado neste dispositivo; aplicado já para não piscar.
+  window.HUB_CORES = {
+    azul: ["Azul", "#2f6fed", "#5b8dff"], roxo: ["Roxo", "#7c3aed", "#a78bfa"],
+    verde: ["Verde", "#1f8a4c", "#4cc582"], laranja: ["Laranja", "#c2410c", "#fb923c"],
+    rosa: ["Rosa", "#db2777", "#f472b6"], cinza: ["Cinzento", "#475569", "#94a3b8"]
+  };
+  window.hubAspeto = function (a) {
+    var r = document.documentElement, c = HUB_CORES[a.cor] || HUB_CORES.azul;
+    if (a.tema === "claro" || a.tema === "escuro") r.dataset.theme = a.tema === "claro" ? "light" : "dark";
+    else delete r.dataset.theme;
+    r.style.setProperty("--accent-l", c[1]);
+    r.style.setProperty("--accent-d", c[2]);
+  };
+  try { hubAspeto(JSON.parse(localStorage.getItem("hub.aspeto")) || {}); } catch (e) {}
+</script>
 <style>
   :root {
     color-scheme: light dark;
@@ -21,7 +37,7 @@
     --card-bg: #ffffff;
     --text: #1a1a1a;
     --muted: #5f6570;
-    --accent: #2f6fed;
+    --accent: var(--accent-l, #2f6fed);
     --accent-text: #ffffff;
     --accent2: #a020f0;
     --border: #e3e5e9;
@@ -29,12 +45,12 @@
     --danger: #c62828;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --bg: #121316;
       --card-bg: #1c1e22;
       --text: #f0f1f3;
       --muted: #9aa0aa;
-      --accent: #5b8dff;
+      --accent: var(--accent-d, #5b8dff);
       --accent-text: #0d1220;
       --accent2: #c27bff;
       --border: #2c2f34;
@@ -42,6 +58,20 @@
       --danger: #ff6b6b;
     }
   }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121316;
+    --card-bg: #1c1e22;
+    --text: #f0f1f3;
+    --muted: #9aa0aa;
+    --accent: var(--accent-d, #5b8dff);
+    --accent-text: #0d1220;
+    --accent2: #c27bff;
+    --border: #2c2f34;
+    --shadow: rgba(0,0,0,0.4);
+    --danger: #ff6b6b;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -67,9 +97,10 @@
   .toolbar button { padding: 7px 14px; white-space: nowrap; }
   @media (max-width: 720px) {
     header { grid-template-columns: 1fr auto; grid-template-areas: "t tb" "s s"; }
-    header h1 { grid-area: t; font-size: 1.2rem; }
-    header .toolbar { grid-area: tb; gap: 6px; }
-    header .toolbar button { padding: 6px 10px; font-size: 0.85rem; }
+    header h1 { grid-area: t; font-size: 1.05rem; }
+    header .toolbar { grid-area: tb; gap: 4px; flex-wrap: wrap; }
+    header .toolbar button { padding: 5px 8px; font-size: 0.8rem; }
+    header .toolbar .cfg { width: 30px; height: 30px; padding: 0; }
     header p { grid-area: s; font-size: 0.8rem; }
   }
   .status { color: var(--muted); font-size: 0.8rem; text-align: center; margin: 0 auto 6px; max-width: 1080px; min-height: 1em; flex: none; }
@@ -91,18 +122,23 @@
   button.ghost { background: transparent; color: var(--muted); }
   button:disabled { opacity: .6; cursor: default; }
 
-  .search { width: 100%; max-width: 1080px; margin: 0 auto 14px; }
+  .bar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px 12px; margin: 0 0 12px; flex: none; }
+  .search { width: 100%; max-width: 260px; margin: 0; justify-self: start; }
+  @media (max-width: 720px) {
+    .bar { grid-template-columns: 1fr; }
+    .bar .vtabs { order: -1; }
+    .search { max-width: none; }
+  }
   .search input {
     width: 100%; font: inherit; font-size: 16px;
-    padding: 10px 14px; border-radius: 10px;
+    padding: 6px 12px; border-radius: 999px;
     border: 1px solid var(--border); background: var(--card-bg); color: var(--text);
   }
   .search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .vtabs { display: flex; gap: 6px; margin: 0 0 12px; flex: none; justify-content: center; }
+  .vtabs { display: flex; gap: 6px; margin: 0; flex: none; justify-content: center; }
   .vtabs[hidden] { display: none; }
   .vtabs button { padding: 7px 16px; border-radius: 999px; color: var(--muted); }
   .vtabs button.on { border-color: var(--accent); color: var(--accent); font-weight: 600; }
-  body.vp .search { max-width: none; }
   .view { flex: 1; min-height: 0; display: flex; flex-direction: column; width: 100%; }
   .view[hidden] { display: none; }
   .ptools { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 8px; flex: none; }
@@ -124,7 +160,10 @@
   .twrap { flex: 1; min-height: 0; overflow: auto; border: 1px solid var(--border); border-radius: 14px; background: var(--card-bg); -webkit-overflow-scrolling: touch; }
   table.pt { width: 100%; border-collapse: collapse; min-width: 820px; font-size: 0.92rem; }
   .pt th, .pt td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
-  .pt thead th { position: sticky; top: 0; background: var(--card-bg); z-index: 2; box-shadow: 0 1px 0 var(--border); white-space: nowrap; }
+  .pt thead th { position: sticky; top: 0; background: color-mix(in srgb, var(--accent) 12%, var(--card-bg)); z-index: 2; box-shadow: 0 1px 0 var(--border); white-space: nowrap; }
+  .pt tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--text) 3.5%, var(--card-bg)); }
+  .respwrap { color: var(--text); }
+  .respwrap .estsel { min-width: 8.5rem; font-weight: 500; border-color: var(--border); }
   .pt th button.sort { all: unset; cursor: pointer; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
   .pt th button.sort:hover, .pt th button.sort:focus-visible { color: var(--accent); }
   .pt th .arr { font-size: 0.7rem; opacity: .35; }
@@ -140,9 +179,7 @@
   .nlast { all: unset; cursor: pointer; flex: 1; min-width: 0; color: var(--muted); }
   .nlast:hover .nt, .nlast:focus-visible .nt { color: var(--text); }
   .nlast:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
-  .nlast .nd { display: block; font-size: 0.75rem; font-weight: 600; color: var(--accent); }
   .nlast .nt { white-space: pre-wrap; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  .nlast .nmais { display: block; font-size: 0.75rem; margin-top: 2px; }
   .pt td.a { white-space: nowrap; text-align: right; }
   .pt td.a button { width: 32px; height: 32px; padding: 0; color: var(--muted); }
   .pt td.a button + button { margin-left: 4px; }
@@ -151,10 +188,13 @@
   .st-testes { color: #c26a00; } .st-producao { color: #1f8a4c; } .st-standby { color: #6b7280; }
   .st-concluido { color: #1f8a4c; opacity: .8; } .st-cancelado { color: #c93a3a; }
   @media (prefers-color-scheme: dark) {
-    .st-ideia { color: #e2c14a; } .st-planeamento { color: #b58cf0; } .st-desenvolvimento { color: #6fa0ff; }
-    .st-testes { color: #f0a44a; } .st-producao { color: #4cc582; } .st-standby { color: #9aa0aa; }
-    .st-concluido { color: #4cc582; } .st-cancelado { color: #ff7b7b; }
+    :root:not([data-theme="light"]) .st-ideia { color: #e2c14a; } :root:not([data-theme="light"]) .st-planeamento { color: #b58cf0; } :root:not([data-theme="light"]) .st-desenvolvimento { color: #6fa0ff; }
+    :root:not([data-theme="light"]) .st-testes { color: #f0a44a; } :root:not([data-theme="light"]) .st-producao { color: #4cc582; } :root:not([data-theme="light"]) .st-standby { color: #9aa0aa; }
+    :root:not([data-theme="light"]) .st-concluido { color: #4cc582; } :root:not([data-theme="light"]) .st-cancelado { color: #ff7b7b; }
   }
+  :root[data-theme="dark"] .st-ideia { color: #e2c14a; } :root[data-theme="dark"] .st-planeamento { color: #b58cf0; } :root[data-theme="dark"] .st-desenvolvimento { color: #6fa0ff; }
+    :root[data-theme="dark"] .st-testes { color: #f0a44a; } :root[data-theme="dark"] .st-producao { color: #4cc582; } :root[data-theme="dark"] .st-standby { color: #9aa0aa; }
+    :root[data-theme="dark"] .st-concluido { color: #4cc582; } :root[data-theme="dark"] .st-cancelado { color: #ff7b7b; }
   .columns {
     max-width: 1080px; width: 100%;
     margin: 0 auto;
@@ -261,6 +301,14 @@
   .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .actions .spacer { flex: 1; }
   label[hidden] { display: none; }
+  .seg { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 16px; }
+  .seg button { flex: 1; padding: 8px 10px; }
+  .seg button.on { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .cores { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0 18px; }
+  .cores button { width: 34px; height: 34px; padding: 0; border-radius: 50%; border: 2px solid transparent; background: var(--c); box-shadow: inset 0 0 0 2px var(--card-bg); }
+  .cores button.on { border-color: var(--c); }
+  .sub { font-size: 0.8rem; font-weight: 600; color: var(--muted); margin: 0; }
+  .toolbar .cfg { width: 34px; padding: 0; font-size: 1.05rem; line-height: 1; height: 34px; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
   #histDlg { width: min(580px, calc(100vw - 32px)); }
   .hist { max-height: 60vh; overflow: auto; margin: 0 0 14px; display: flex; flex-direction: column; gap: 10px; }
@@ -289,12 +337,13 @@
 
 <div class="status" id="status" role="status"></div>
 
-<div class="vtabs" id="vtabs" hidden>
-  <button type="button" id="vtHome">Curiosidades e Sites</button>
-  <button type="button" id="vtProj">Projetos</button>
+<div class="bar">
+  <div class="search"><input id="q" type="search" placeholder="Pesquisar…" aria-label="Pesquisar" autocomplete="off"></div>
+  <div class="vtabs" id="vtabs" hidden>
+    <button type="button" id="vtHome">Curiosidades e Sites</button>
+    <button type="button" id="vtProj">Projetos</button>
+  </div>
 </div>
-
-<div class="search"><input id="q" type="search" placeholder="Pesquisar por título ou notas…" aria-label="Pesquisar" autocomplete="off"></div>
 
 <div class="view" id="viewHome">
   <div class="columns" id="columns">
@@ -365,7 +414,8 @@
       <select id="pEstado"></select>
     </label>
     <label>Responsável
-      <input id="pResp" type="text" maxlength="80" autocomplete="off">
+      <input id="pResp" type="text" maxlength="80" autocomplete="off" list="pRespList">
+      <datalist id="pRespList"></datalist>
     </label>
     <label>Pessoas envolvidas
       <input id="pPessoas" type="text" maxlength="200" autocomplete="off" placeholder="Nomes separados por vírgula">
@@ -423,6 +473,22 @@
   </div>
 </dialog>
 
+<dialog id="setDlg" aria-labelledby="setDlgTitle">
+  <h2 id="setDlgTitle">Definições</h2>
+  <h3 class="sub">Aspeto</h3>
+  <div class="seg" id="setTema" role="group" aria-label="Tema">
+    <button type="button" data-tema="">Automático</button>
+    <button type="button" data-tema="claro">Claro</button>
+    <button type="button" data-tema="escuro">Escuro</button>
+  </div>
+  <h3 class="sub">Cor</h3>
+  <div class="cores" id="setCor" role="group" aria-label="Cor de destaque"></div>
+  <div class="actions">
+    <span class="spacer"></span>
+    <button type="button" class="primary" id="setClose">Fechar</button>
+  </div>
+</dialog>
+
 <dialog id="loginDlg" aria-labelledby="loginDlgTitle">
   <form id="loginForm">
     <h2 id="loginDlgTitle">Entrar</h2>
@@ -441,7 +507,7 @@
   </form>
 </dialog>
 
-<footer>v2.9</footer>
+<footer>v2.10</footer>
 
 <script>
 (() => {
@@ -536,8 +602,9 @@
   const fmtD = (iso) => iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(0, 4) : "—";
   function proxima(p) {
     const per = PERIODOS.find((x) => x[0] === p.periodicidade);
-    if (!p.data_info || !per || !per[0]) return null;
-    const [y, m, d] = p.data_info.split("-").map(Number);
+    const base = ultInfo(p);
+    if (!base || !per || !per[0]) return null;
+    const [y, m, d] = base.split("-").map(Number);
     let dt;
     if (per[2]) dt = new Date(Date.UTC(y, m - 1, d + per[2]));
     else {
@@ -547,6 +614,8 @@
     return dt.toISOString().slice(0, 10);
   }
   const lastNota = (p) => (notasBy.get(p.id) || [])[0] || null;
+  // Última informação = a mais recente entre a data do último ponto de situação e a data posta à mão.
+  const ultInfo = (p) => { const n = lastNota(p), a = n ? n.data : null, b = p.data_info; return a && b ? (a > b ? a : b) : a || b || null; };
 
   async function checkAdmin() {
     isAdmin = false;
@@ -640,7 +709,7 @@
     ["pessoas", "Pessoas envolvidas"], ["notas", "Ponto de situação"],
     ["data_info", "Últ. informação"], ["proxima", "Próx. informação"]
   ];
-  const sortVal = (p, k) => k === "notas" ? (lastNota(p) || {}).texto : k === "proxima" ? proxima(p) : p[k];
+  const sortVal = (p, k) => k === "notas" ? (lastNota(p) || {}).texto : k === "proxima" ? proxima(p) : k === "data_info" ? ultInfo(p) : p[k];
 
   function pCompare(a, b) {
     const k = psort.key;
@@ -675,6 +744,39 @@
       tr.append(th);
     }
     tr.append(el("th"));
+  }
+
+  // Nomes conhecidos: responsáveis e pessoas envolvidas de todos os projetos.
+  function nomes() {
+    const m = new Map();
+    for (const x of projetos) for (const n of [x.responsavel, ...String(x.pessoas || "").split(",")]) {
+      const t = String(n || "").trim();
+      if (t && !m.has(t.toLowerCase())) m.set(t.toLowerCase(), t);
+    }
+    return [...m.values()].sort((a, b) => a.localeCompare(b, "pt", { sensitivity: "base" }));
+  }
+
+  async function changeResp(p, sel) {
+    const old = p.responsavel || "";
+    let v = sel.value;
+    if (v === "__novo") {
+      v = (prompt("Nome do responsável:") || "").trim().slice(0, 80);
+      if (!v) { sel.value = old; return; }
+    }
+    p.responsavel = v;
+    try {
+      const r = await api("/rest/v1/hub_projetos?id=eq." + encodeURIComponent(p.id), {
+        method: "PATCH", headers: { Prefer: "return=representation" },
+        body: JSON.stringify({ responsavel: v, updated_at: new Date().toISOString() })
+      });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) throw new Error("save");
+      setStatus("");
+    } catch (e) {
+      p.responsavel = old;
+      setStatus("Não foi possível alterar o responsável.");
+    }
+    render();
   }
 
   async function changeEstado(p, sel) {
@@ -727,7 +829,19 @@
     wrap.append(sel);
     st.append(wrap);
     tr.append(st);
-    tr.append(el("td", null, p.responsavel || "—"));
+    const rc = el("td");
+    const rw = el("span", "estwrap respwrap");
+    const rs = el("select", "estsel");
+    rs.setAttribute("aria-label", "Responsável de " + p.titulo);
+    const ro = (v, t) => { const o = el("option", null, t); o.value = v; rs.append(o); };
+    ro("", "—");
+    for (const nome of nomes()) ro(nome, nome);
+    ro("__novo", "+ Outro…");
+    rs.value = p.responsavel || "";
+    rs.addEventListener("change", () => changeResp(p, rs));
+    rw.append(rs);
+    rc.append(rw);
+    tr.append(rc);
     tr.append(el("td", null, p.pessoas || ""));
     const n = el("td", "n");
     const nw = el("div", "nwrap");
@@ -740,15 +854,13 @@
     if (ln) {
       const nb = el("button", "nlast");
       nb.type = "button"; nb.title = "Ver todos os pontos de situação";
-      nb.append(el("span", "nd", fmtD(ln.data)), el("span", "nt", ln.texto));
-      const total = (notasBy.get(p.id) || []).length;
-      if (total > 1) nb.append(el("span", "nmais", "+ " + (total - 1) + (total === 2 ? " anterior" : " anteriores")));
+      nb.append(el("span", "nt", ln.texto));
       nb.addEventListener("click", () => openHist(p));
       nw.append(nb);
     }
     n.append(nw);
     tr.append(n);
-    tr.append(el("td", "d", fmtD(p.data_info)));
+    tr.append(el("td", "d", fmtD(ultInfo(p))));
     const px = proxima(p);
     tr.append(el("td", "d" + (px && px < hoje() ? " atraso" : ""), fmtD(px)));
     const ac = el("td", "a");
@@ -881,7 +993,7 @@
     $("viewProj").hidden = view !== "proj";
     $("columns").classList.toggle("editing", editItens && isAdmin);
     document.body.classList.toggle("vp", view === "proj");
-    $("q").placeholder = view === "proj" ? "Pesquisar por título, responsável, estado ou notas…" : "Pesquisar por título ou notas…";
+    $("q").placeholder = view === "proj" ? "Pesquisar projetos…" : "Pesquisar…";
     const nq = norm(($("q").value || "").trim());
     if (showProj) renderProj(nq);
     for (const [cat, gridId] of [["site", "siteGrid"], ["curiosidade", "curiosidadesGrid"]]) {
@@ -932,6 +1044,12 @@
       inn.addEventListener("click", () => { $("loginErr").textContent = ""; $("loginDlg").showModal(); $("lEmail").focus(); });
       tb.append(inn);
     }
+    const cfg = el("button", "ghost cfg", "⚙");
+    cfg.type = "button";
+    cfg.title = "Definições";
+    cfg.setAttribute("aria-label", "Definições");
+    cfg.addEventListener("click", openSet);
+    tb.append(cfg);
   }
 
   $("q").addEventListener("input", render);
@@ -1029,6 +1147,7 @@
     $("pTitulo").value = p ? p.titulo : "";
     $("pEstado").value = p ? p.estado || "desenvolvimento" : "ideia";
     $("pResp").value = p ? p.responsavel || "" : "";
+    $("pRespList").replaceChildren(...nomes().map((n) => { const o = el("option"); o.value = n; return o; }));
     $("pPessoas").value = p ? p.pessoas || "" : "";
     $("pLink").value = p ? p.link || "" : "";
     $("pData").value = p ? p.data_info || "" : "";
@@ -1178,6 +1297,32 @@
     }
   }
 
+  /* ---------- Definições (aspeto) ---------- */
+  let aspeto = store.get("hub.aspeto") || {};
+  const META_TC = [...document.querySelectorAll('meta[name="theme-color"]')].map((m) => [m, m.content]);
+  function aplicarAspeto() {
+    window.hubAspeto(aspeto);
+    const fundo = aspeto.tema === "claro" ? "#f4f5f7" : aspeto.tema === "escuro" ? "#121316" : null;
+    for (const [m, orig] of META_TC) m.content = fundo || orig;
+    for (const b of $("setTema").children) b.classList.toggle("on", (b.dataset.tema || "") === (aspeto.tema || ""));
+    const r = document.documentElement;
+    const escuro = r.dataset.theme === "dark" || (!r.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+    for (const b of $("setCor").children) {
+      b.style.setProperty("--c", window.HUB_CORES[b.dataset.cor][escuro ? 2 : 1]);
+      b.classList.toggle("on", b.dataset.cor === (aspeto.cor || "azul"));
+    }
+  }
+  function setAspeto(k, v) { aspeto[k] = v; store.set("hub.aspeto", aspeto); aplicarAspeto(); }
+  function openSet() { aplicarAspeto(); $("setDlg").showModal(); }
+  for (const [k, [nome, claro, escuro]] of Object.entries(window.HUB_CORES)) {
+    const b = el("button");
+    b.type = "button"; b.dataset.cor = k; b.title = nome; b.setAttribute("aria-label", nome);
+    b.addEventListener("click", () => setAspeto("cor", k));
+    $("setCor").append(b);
+  }
+  for (const b of $("setTema").children) b.addEventListener("click", () => setAspeto("tema", b.dataset.tema));
+  $("setClose").addEventListener("click", () => $("setDlg").close());
+
   /* ---------- Instalar como app (PWA) ---------- */
   let installEv = null;
   const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
@@ -1271,8 +1416,13 @@
   $("vtHome").addEventListener("click", () => setView("home"));
   $("vtProj").addEventListener("click", () => setView("proj"));
   $("btnLoginCancel").addEventListener("click", () => $("loginDlg").close());
-  for (const id of ["itemDlg", "loginDlg", "projDlg", "notaDlg", "histDlg"]) {
-    $(id).addEventListener("click", (e) => { if (e.target === $(id)) $(id).close(); });
+  // Fecha ao tocar fora só se o toque começou E acabou fora (arrastar a partir do diálogo não fecha).
+  const fora = (d, e) => { const r = d.getBoundingClientRect(); return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom; };
+  for (const id of ["itemDlg", "loginDlg", "projDlg", "notaDlg", "histDlg", "setDlg"]) {
+    const d = $(id);
+    let comecouFora = false;
+    d.addEventListener("pointerdown", (e) => { comecouFora = e.target === d && fora(d, e); });
+    d.addEventListener("click", (e) => { if (comecouFora && e.target === d && fora(d, e)) d.close(); comecouFora = false; });
   }
 
   render(); // mostra já a última lista guardada
