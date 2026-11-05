@@ -143,6 +143,8 @@
   .view[hidden] { display: none; }
   .ptools { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 8px; flex: none; }
   .ptools .count { color: var(--muted); font-size: 0.85rem; }
+  .ptools .visto { padding: 5px 12px; font-size: 0.85rem; }
+  .ptools .btns { margin-left: auto; }
   .ptools { flex-wrap: wrap; }
   .ptools .btns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
   .ptools .btns button { white-space: nowrap; }
@@ -173,7 +175,17 @@
   .pt td.t a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
   .pt td.n { color: var(--muted); min-width: 240px; }
   .pt td.d { white-space: nowrap; }
-  .atraso { color: var(--danger); font-weight: 600; }
+  .pt tbody td.d.atraso { background: color-mix(in srgb, var(--danger) 82%, var(--card-bg)); color: #fff; font-weight: 600; }
+  /* alterações feitas por outra pessoa e ainda não vistas */
+  :root { --novo: #9333ea; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --novo: #c084fc; } }
+  :root[data-theme="dark"] { --novo: #c084fc; }
+  .pt td.novo, .pt td.novo a, .pt td.novo .nt, .pt td.novo .estwrap { color: var(--novo); }
+  .pt td.novo { font-weight: 600; }
+  .hitem.novo { border-color: var(--novo); }
+  .hitem.novo .ht, .hitem.novo .hd { color: var(--novo); }
+  button.visto { border-color: var(--novo); color: var(--novo); font-weight: 600; }
+  .vtabs .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--novo); margin-left: 6px; vertical-align: middle; }
   .nwrap { display: flex; gap: 8px; align-items: flex-start; }
   .nadd { flex: none; width: 28px; height: 28px; padding: 0; border-radius: 8px; color: var(--accent); font-weight: 700; line-height: 1; }
   .nlast { all: unset; cursor: pointer; flex: 1; min-width: 0; color: var(--muted); }
@@ -361,6 +373,7 @@
 <div class="view" id="viewProj" hidden>
   <div class="ptools">
     <span class="count" id="pCount"></span>
+    <button type="button" class="visto" id="btnVisto" hidden title="Marcar todas as alterações como vistas">✓ Visto</button>
     <div class="btns">
       <span class="hint" id="pHint"></span>
       <button type="button" id="btnAddProj" class="primary">+ projeto</button>
@@ -414,8 +427,7 @@
       <select id="pEstado"></select>
     </label>
     <label>Responsável
-      <input id="pResp" type="text" maxlength="80" autocomplete="off" list="pRespList">
-      <datalist id="pRespList"></datalist>
+      <select id="pResp"></select>
     </label>
     <label>Pessoas envolvidas
       <input id="pPessoas" type="text" maxlength="200" autocomplete="off" placeholder="Nomes separados por vírgula">
@@ -507,7 +519,7 @@
   </form>
 </dialog>
 
-<footer>v2.10</footer>
+<footer>v2.11</footer>
 
 <script>
 (() => {
@@ -539,7 +551,9 @@
   let session = store.get(LS_SESSION);
   let isAdmin = false;
   let view = "home"; // "home" | "proj"
-  let psort = { key: null, dir: 1 };
+  let psort = { key: "data_info", dir: -1 }; // por defeito: última informação, mais recente primeiro
+  const RESPS = [["", "—"], ["Dinis", "Dinis"], ["Sebastião", "Sebastião"], ["2", "2"]];
+  let vistoEm = 0; // até quando esta conta já viu as alterações (ms)
   let editMode = false;   // projetos: arrastar linhas
   let editItens = false;  // curiosidades/sites: arrastar e editar
   const PERIODOS = [
@@ -614,6 +628,13 @@
     return dt.toISOString().slice(0, 10);
   }
   const lastNota = (p) => (notasBy.get(p.id) || [])[0] || null;
+  /* Não visto = feito por outra pessoa depois do último "Visto" desta conta. */
+  const eu = () => String((session && session.email) || "").toLowerCase();
+  const naoVisto = (a) => !!a && String(a.por || "").toLowerCase() !== eu() && Date.parse(a.em) > vistoEm;
+  const campoNovo = (p, ...cs) => { const al = p.alteracoes || {}; return naoVisto(al._novo) || cs.some((c) => naoVisto(al[c])); };
+  const notaNova = (n) => naoVisto({ por: n.autor, em: n.created_at });
+  const temNotaNova = (p) => (notasBy.get(p.id) || []).some(notaNova);
+  const projNovo = (p) => campoNovo(p, "titulo", "link", "estado", "responsavel", "pessoas", "data_info", "periodicidade") || temNotaNova(p);
   // Última informação = a mais recente entre a data do último ponto de situação e a data posta à mão.
   const ultInfo = (p) => { const n = lastNota(p), a = n ? n.data : null, b = p.data_info; return a && b ? (a > b ? a : b) : a || b || null; };
 
@@ -639,11 +660,13 @@
     projetos = [];
     if (!projOk) return;
     try {
-      const [r, rn] = await Promise.all([
+      const [r, rn, rv] = await Promise.all([
         api("/rest/v1/hub_projetos?select=*&order=ordem.asc,created_at.asc"),
-        api("/rest/v1/hub_projeto_notas?select=*&order=data.desc,created_at.desc")
+        api("/rest/v1/hub_projeto_notas?select=*&order=data.desc,created_at.desc"),
+        api("/rest/v1/hub_vistos?select=visto_em")
       ]);
       if (r.ok) projetos = await r.json();
+      if (rv.ok) { const v = (await rv.json())[0]; vistoEm = v ? Date.parse(v.visto_em) : 0; }
       notasBy = new Map();
       if (rn.ok) for (const n of await rn.json()) {
         if (!notasBy.has(n.projeto_id)) notasBy.set(n.projeto_id, []);
@@ -746,23 +769,18 @@
     tr.append(el("th"));
   }
 
-  // Nomes conhecidos: responsáveis e pessoas envolvidas de todos os projetos.
-  function nomes() {
-    const m = new Map();
-    for (const x of projetos) for (const n of [x.responsavel, ...String(x.pessoas || "").split(",")]) {
-      const t = String(n || "").trim();
-      if (t && !m.has(t.toLowerCase())) m.set(t.toLowerCase(), t);
-    }
-    return [...m.values()].sort((a, b) => a.localeCompare(b, "pt", { sensitivity: "base" }));
+  // Opções do responsável (mantém um valor antigo fora da lista para não o perder).
+  function respOpcoes(sel, atual) {
+    sel.replaceChildren();
+    const lista = RESPS.slice();
+    if (atual && !lista.some((x) => x[0] === atual)) lista.push([atual, atual]);
+    for (const [v, t] of lista) { const o = el("option", null, t); o.value = v; sel.append(o); }
+    sel.value = atual || "";
   }
 
   async function changeResp(p, sel) {
     const old = p.responsavel || "";
-    let v = sel.value;
-    if (v === "__novo") {
-      v = (prompt("Nome do responsável:") || "").trim().slice(0, 80);
-      if (!v) { sel.value = old; return; }
-    }
+    const v = sel.value;
     p.responsavel = v;
     try {
       const r = await api("/rest/v1/hub_projetos?id=eq." + encodeURIComponent(p.id), {
@@ -818,8 +836,9 @@
       a.title = p.link.replace(/^https?:\/\//, "");
       t.append(a);
     } else t.textContent = p.titulo;
+    if (campoNovo(p, "titulo", "link")) t.classList.add("novo");
     tr.append(t);
-    const st = el("td");
+    const st = el("td", campoNovo(p, "estado") ? "novo" : null);
     const wrap = el("span", "estwrap st-" + (p.estado || "desenvolvimento"));
     const sel = el("select", "estsel");
     sel.setAttribute("aria-label", "Estado de " + p.titulo);
@@ -829,20 +848,16 @@
     wrap.append(sel);
     st.append(wrap);
     tr.append(st);
-    const rc = el("td");
+    const rc = el("td", campoNovo(p, "responsavel") ? "novo" : null);
     const rw = el("span", "estwrap respwrap");
     const rs = el("select", "estsel");
     rs.setAttribute("aria-label", "Responsável de " + p.titulo);
-    const ro = (v, t) => { const o = el("option", null, t); o.value = v; rs.append(o); };
-    ro("", "—");
-    for (const nome of nomes()) ro(nome, nome);
-    ro("__novo", "+ Outro…");
-    rs.value = p.responsavel || "";
+    respOpcoes(rs, p.responsavel || "");
     rs.addEventListener("change", () => changeResp(p, rs));
     rw.append(rs);
     rc.append(rw);
     tr.append(rc);
-    tr.append(el("td", null, p.pessoas || ""));
+    tr.append(el("td", campoNovo(p, "pessoas") ? "novo" : null, p.pessoas || ""));
     const n = el("td", "n");
     const nw = el("div", "nwrap");
     const add = el("button", "nadd", "+");
@@ -859,10 +874,11 @@
       nw.append(nb);
     }
     n.append(nw);
+    if (temNotaNova(p) || campoNovo(p)) n.classList.add("novo");
     tr.append(n);
-    tr.append(el("td", "d", fmtD(ultInfo(p))));
+    tr.append(el("td", "d" + (temNotaNova(p) || campoNovo(p, "data_info") ? " novo" : ""), fmtD(ultInfo(p))));
     const px = proxima(p);
-    tr.append(el("td", "d" + (px && px < hoje() ? " atraso" : ""), fmtD(px)));
+    tr.append(el("td", "d" + (px && px < hoje() ? " atraso" : "") + (campoNovo(p, "periodicidade", "data_info") ? " novo" : ""), fmtD(px)));
     const ac = el("td", "a");
     const b = el("button", "edit", "✎");
     b.type = "button"; b.title = "Editar";
@@ -887,6 +903,9 @@
       td.colSpan = PCOLS.length + 1 + (canDrag ? 1 : 0); tr.append(td); body.append(tr);
     }
     $("pCount").textContent = rows.length + (rows.length === 1 ? " projeto" : " projetos");
+    const nNovos = projetos.filter(projNovo).length;
+    $("btnVisto").hidden = !nNovos;
+    $("btnVisto").textContent = "✓ Visto (" + nNovos + ")";
     const eb = $("btnEditProj");
     eb.textContent = editMode ? "Concluir" : "Editar";
     eb.classList.toggle("primary", editMode);
@@ -989,6 +1008,7 @@
     $("vtabs").hidden = !showProj;
     $("vtHome").classList.toggle("on", view === "home");
     $("vtProj").classList.toggle("on", view === "proj");
+    $("vtProj").replaceChildren("Projetos", ...(showProj && projetos.some(projNovo) ? [el("span", "dot")] : []));
     $("viewHome").hidden = view !== "home";
     $("viewProj").hidden = view !== "proj";
     $("columns").classList.toggle("editing", editItens && isAdmin);
@@ -1146,8 +1166,7 @@
     $("projDlgTitle").textContent = p ? "Editar projeto" : "Novo projeto";
     $("pTitulo").value = p ? p.titulo : "";
     $("pEstado").value = p ? p.estado || "desenvolvimento" : "ideia";
-    $("pResp").value = p ? p.responsavel || "" : "";
-    $("pRespList").replaceChildren(...nomes().map((n) => { const o = el("option"); o.value = n; return o; }));
+    respOpcoes($("pResp"), p ? p.responsavel || "" : "");
     $("pPessoas").value = p ? p.pessoas || "" : "";
     $("pLink").value = p ? p.link || "" : "";
     $("pData").value = p ? p.data_info || "" : "";
@@ -1220,6 +1239,21 @@
     }
   }
 
+  async function marcarVisto() {
+    $("btnVisto").disabled = true;
+    try {
+      const r = await api("/rest/v1/rpc/hub_marcar_visto", { method: "POST", body: "{}" });
+      if (!r.ok) throw new Error(r.status);
+      vistoEm = Date.parse(await r.json());
+      setStatus("");
+    } catch (e) {
+      setStatus("Não foi possível marcar como visto.");
+    } finally {
+      $("btnVisto").disabled = false;
+    }
+    render();
+  }
+
   /* ---------- Pontos de situação ---------- */
   function openNota(p) {
     notaProj = p;
@@ -1269,7 +1303,7 @@
     const ns = notasBy.get(p.id) || [];
     if (!ns.length) list.append(el("div", "empty", "Ainda não há pontos de situação."));
     for (const n of ns) {
-      const it = el("div", "hitem");
+      const it = el("div", "hitem" + (notaNova(n) ? " novo" : ""));
       const hd = el("div", "hd", fmtD(n.data));
       if (n.autor) hd.append(el("span", null, " · " + n.autor));
       const x = el("button", "hx", "✕");
@@ -1385,6 +1419,7 @@
     editMode = false;
     editItens = false;
     notasBy = new Map();
+    vistoEm = 0;
     itens = itens.filter((i) => i.categoria === "curiosidade"); // não deixar sites em memória/cache
     store.set(LS_CACHE, itens);
     setStatus("");
@@ -1400,6 +1435,7 @@
   $("loginForm").addEventListener("submit", doLogin);
   $("projForm").addEventListener("submit", saveProj);
   $("btnAddProj").addEventListener("click", () => openProj(null));
+  $("btnVisto").addEventListener("click", marcarVisto);
   $("pCancel").addEventListener("click", () => $("projDlg").close());
   $("pDel").addEventListener("click", deleteProj);
   for (const [k, label] of ESTADOS) { const o = el("option", null, label); o.value = k; $("pEstado").append(o); }
