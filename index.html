@@ -175,6 +175,7 @@
   .pt td.t a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
   .pt td.n { color: var(--muted); min-width: 240px; }
   .pt td.d { white-space: nowrap; }
+  .pt td .per { font-weight: 400; opacity: .75; }
   .pt tbody td.d.atraso { background: color-mix(in srgb, var(--danger) 82%, var(--card-bg)); color: #fff; font-weight: 600; }
   /* alterações feitas por outra pessoa e ainda não vistas */
   :root { --novo: #9333ea; }
@@ -430,7 +431,7 @@
       <select id="pResp"></select>
     </label>
     <label>Pessoas envolvidas
-      <input id="pPessoas" type="text" maxlength="200" autocomplete="off" placeholder="Nomes separados por vírgula">
+      <select id="pPessoas"></select>
     </label>
     <label>Link (opcional)
       <input id="pLink" type="text" inputmode="url" maxlength="500" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://…">
@@ -519,7 +520,7 @@
   </form>
 </dialog>
 
-<footer>v2.11</footer>
+<footer>v2.12</footer>
 
 <script>
 (() => {
@@ -556,10 +557,12 @@
   let vistoEm = 0; // até quando esta conta já viu as alterações (ms)
   let editMode = false;   // projetos: arrastar linhas
   let editItens = false;  // curiosidades/sites: arrastar e editar
+  // [chave, nome, dias, meses, n.º de dias mostrado na Próx. informação]
   const PERIODOS = [
-    ["", "Sem periodicidade"], ["semanal", "Semanal", 7, 0], ["quinzenal", "Quinzenal", 14, 0],
-    ["mensal", "Mensal", 0, 1], ["bimestral", "Bimestral", 0, 2], ["trimestral", "Trimestral", 0, 3],
-    ["semestral", "Semestral", 0, 6], ["anual", "Anual", 0, 12]
+    ["", "Sem periodicidade"], ["diaria", "Diariamente", 1, 0, 1], ["2dias", "A cada 2 dias", 2, 0, 2],
+    ["3dias", "A cada 3 dias", 3, 0, 3], ["semanal", "Semanal", 7, 0, 7], ["quinzenal", "Quinzenal", 14, 0, 14],
+    ["mensal", "Mensal", 0, 1, 30], ["bimestral", "Bimestral", 0, 2, 60], ["trimestral", "Trimestral", 0, 3, 90],
+    ["semestral", "Semestral", 0, 6, 180], ["anual", "Anual", 0, 12, 365]
   ];
   let notasBy = new Map(); // projeto_id -> pontos de situação (mais recente primeiro)
   let notaProj = null;     // projeto do diálogo de ponto de situação / histórico
@@ -778,21 +781,44 @@
     sel.value = atual || "";
   }
 
-  async function changeResp(p, sel) {
-    const old = p.responsavel || "";
-    const v = sel.value;
-    p.responsavel = v;
+  // Pessoas envolvidas: nomes já escritos noutros projetos + "Escrever novo…".
+  const NOVO = "__novo";
+  function pessoasNomes() {
+    const m = new Map();
+    for (const x of projetos) { const t = String(x.pessoas || "").trim(); if (t && !m.has(t.toLowerCase())) m.set(t.toLowerCase(), t); }
+    return [...m.values()].sort((a, b) => a.localeCompare(b, "pt", { sensitivity: "base" }));
+  }
+  function pessoasOpcoes(sel, atual) {
+    sel.replaceChildren();
+    const lista = [["", "—"], ...pessoasNomes().map((n) => [n, n])];
+    if (atual && !lista.some((x) => x[0] === atual)) lista.push([atual, atual]);
+    lista.push([NOVO, "+ Escrever novo…"]);
+    for (const [v, t] of lista) { const o = el("option", null, t); o.value = v; sel.append(o); }
+    sel.value = atual || "";
+  }
+  // No select, "Escrever novo…" pede o nome; devolve null se cancelar.
+  function lerNovo(sel, atual) {
+    if (sel.value !== NOVO) return sel.value;
+    const v = (prompt("Pessoas envolvidas:") || "").trim().slice(0, 200);
+    if (!v) { sel.value = atual || ""; return null; }
+    pessoasOpcoes(sel, v);
+    return v;
+  }
+
+  async function changeCampo(p, campo, v, erro) {
+    const old = p[campo] || "";
+    p[campo] = v;
     try {
       const r = await api("/rest/v1/hub_projetos?id=eq." + encodeURIComponent(p.id), {
         method: "PATCH", headers: { Prefer: "return=representation" },
-        body: JSON.stringify({ responsavel: v, updated_at: new Date().toISOString() })
+        body: JSON.stringify({ [campo]: v, updated_at: new Date().toISOString() })
       });
       const rows = r.ok ? await r.json() : [];
       if (!rows.length) throw new Error("save");
       setStatus("");
     } catch (e) {
-      p.responsavel = old;
-      setStatus("Não foi possível alterar o responsável.");
+      p[campo] = old;
+      setStatus(erro);
     }
     render();
   }
@@ -853,11 +879,22 @@
     const rs = el("select", "estsel");
     rs.setAttribute("aria-label", "Responsável de " + p.titulo);
     respOpcoes(rs, p.responsavel || "");
-    rs.addEventListener("change", () => changeResp(p, rs));
+    rs.addEventListener("change", () => changeCampo(p, "responsavel", rs.value, "Não foi possível alterar o responsável."));
     rw.append(rs);
     rc.append(rw);
     tr.append(rc);
-    tr.append(el("td", campoNovo(p, "pessoas") ? "novo" : null, p.pessoas || ""));
+    const pc = el("td", campoNovo(p, "pessoas") ? "novo" : null);
+    const pw = el("span", "estwrap respwrap");
+    const ps = el("select", "estsel");
+    ps.setAttribute("aria-label", "Pessoas envolvidas em " + p.titulo);
+    pessoasOpcoes(ps, p.pessoas || "");
+    ps.addEventListener("change", () => {
+      const v = lerNovo(ps, p.pessoas);
+      if (v !== null && v !== (p.pessoas || "")) changeCampo(p, "pessoas", v, "Não foi possível alterar as pessoas envolvidas.");
+    });
+    pw.append(ps);
+    pc.append(pw);
+    tr.append(pc);
     const n = el("td", "n");
     const nw = el("div", "nwrap");
     const add = el("button", "nadd", "+");
@@ -878,7 +915,10 @@
     tr.append(n);
     tr.append(el("td", "d" + (temNotaNova(p) || campoNovo(p, "data_info") ? " novo" : ""), fmtD(ultInfo(p))));
     const px = proxima(p);
-    tr.append(el("td", "d" + (px && px < hoje() ? " atraso" : "") + (campoNovo(p, "periodicidade", "data_info") ? " novo" : ""), fmtD(px)));
+    const per = PERIODOS.find((x) => x[0] === p.periodicidade);
+    const pxTd = el("td", "d" + (px && px < hoje() ? " atraso" : "") + (campoNovo(p, "periodicidade", "data_info") ? " novo" : ""), fmtD(px));
+    if (px && per) { pxTd.append(el("span", "per", " (" + per[4] + ")")); pxTd.title = per[1]; }
+    tr.append(pxTd);
     const ac = el("td", "a");
     const b = el("button", "edit", "✎");
     b.type = "button"; b.title = "Editar";
@@ -1167,7 +1207,8 @@
     $("pTitulo").value = p ? p.titulo : "";
     $("pEstado").value = p ? p.estado || "desenvolvimento" : "ideia";
     respOpcoes($("pResp"), p ? p.responsavel || "" : "");
-    $("pPessoas").value = p ? p.pessoas || "" : "";
+    pessoasOpcoes($("pPessoas"), p ? p.pessoas || "" : "");
+    $("pPessoas").dataset.atual = p ? p.pessoas || "" : "";
     $("pLink").value = p ? p.link || "" : "";
     $("pData").value = p ? p.data_info || "" : "";
     $("pPer").value = p ? p.periodicidade || "" : "";
@@ -1184,7 +1225,7 @@
     const err = $("projErr");
     const titulo = $("pTitulo").value.trim();
     const responsavel = $("pResp").value.trim();
-    const pessoas = $("pPessoas").value.trim();
+    const pessoas = $("pPessoas").value === NOVO ? "" : $("pPessoas").value.trim();
     const link = normUrl($("pLink").value);
     const nota = $("pNotas").value.trim();
     let data_info = $("pData").value || null;
@@ -1436,6 +1477,7 @@
   $("projForm").addEventListener("submit", saveProj);
   $("btnAddProj").addEventListener("click", () => openProj(null));
   $("btnVisto").addEventListener("click", marcarVisto);
+  $("pPessoas").addEventListener("change", (e) => { e.target.dataset.atual = lerNovo(e.target, e.target.dataset.atual) ?? e.target.dataset.atual ?? ""; });
   $("pCancel").addEventListener("click", () => $("projDlg").close());
   $("pDel").addEventListener("click", deleteProj);
   for (const [k, label] of ESTADOS) { const o = el("option", null, label); o.value = k; $("pEstado").append(o); }
