@@ -150,6 +150,20 @@
   .ptools .btns button { white-space: nowrap; }
   .ptools .hint { color: var(--muted); font-size: 0.8rem; }
   .pt td.h, .pt th.h { width: 36px; padding-right: 0; }
+  /* cronómetro no início de cada linha */
+  .pt td.tm, .pt th.tm { width: 1%; white-space: nowrap; padding-right: 4px; }
+  .tmw { display: inline-flex; gap: 4px; align-items: center; }
+  .tmw button { width: 30px; height: 30px; padding: 0; border-radius: 8px; line-height: 1; font-size: 0.85rem; color: var(--muted); }
+  .tmw button.play { color: var(--accent); }
+  .tmw button.stop { color: #fff; background: var(--danger); border-color: var(--danger); }
+  .tmw .corre { font-variant-numeric: tabular-nums; font-size: 0.8rem; font-weight: 600; color: var(--danger); min-width: 3.6em; }
+  #tempoDlg { width: min(620px, calc(100vw - 32px)); }
+  .ttotal { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: -6px 0 12px; color: var(--muted); font-size: 0.9rem; }
+  .ttotal b { font-size: 1.35rem; color: var(--text); font-variant-numeric: tabular-nums; }
+  .titem .hd b { color: var(--text); font-variant-numeric: tabular-nums; }
+  .titem .tnota { display: block; width: 100%; margin-top: 6px; }
+  .titem .tnota textarea { margin-top: 0; font-size: 0.92rem; min-height: 2.6em; }
+  .titem .tsv { margin-top: 6px; padding: 4px 10px; font-size: 0.8rem; }
   .grip { cursor: grab; touch-action: none; user-select: none; color: var(--muted); font-size: 1.1rem; line-height: 1; padding: 6px 8px; display: inline-block; border-radius: 8px; }
   .grip:active { cursor: grabbing; }
   .pt tr.dragging { position: relative; z-index: 3; background: var(--card-bg); box-shadow: 0 6px 18px var(--shadow); opacity: .95; }
@@ -486,6 +500,17 @@
   </div>
 </dialog>
 
+<dialog id="tempoDlg" aria-labelledby="tempoDlgTitle">
+  <h2 id="tempoDlgTitle">Tempo</h2>
+  <div class="ttotal"><span id="tempoN"></span><span>Total <b id="tempoTot">0h00</b></span></div>
+  <div class="hist" id="tempoList"></div>
+  <p class="err" id="tempoErr" role="alert"></p>
+  <div class="actions">
+    <span class="spacer"></span>
+    <button type="button" class="primary" id="tClose">Fechar</button>
+  </div>
+</dialog>
+
 <dialog id="setDlg" aria-labelledby="setDlgTitle">
   <h2 id="setDlgTitle">Definições</h2>
   <h3 class="sub">Aspeto</h3>
@@ -520,7 +545,7 @@
   </form>
 </dialog>
 
-<footer>v2.12</footer>
+<footer>v2.13</footer>
 
 <script>
 (() => {
@@ -555,6 +580,8 @@
   let psort = { key: "data_info", dir: -1 }; // por defeito: última informação, mais recente primeiro
   const RESPS = [["", "—"], ["Dinis", "Dinis"], ["Sebastião", "Sebastião"], ["2", "2"]];
   let vistoEm = 0; // até quando esta conta já viu as alterações (ms)
+  let temposBy = new Map(); // projeto_id -> registos de tempo (mais recente primeiro)
+  let tempoProj = null;     // projeto aberto no diálogo de tempo
   let editMode = false;   // projetos: arrastar linhas
   let editItens = false;  // curiosidades/sites: arrastar e editar
   // [chave, nome, dias, meses, n.º de dias mostrado na Próx. informação]
@@ -663,13 +690,19 @@
     projetos = [];
     if (!projOk) return;
     try {
-      const [r, rn, rv] = await Promise.all([
+      const [r, rn, rv, rt] = await Promise.all([
         api("/rest/v1/hub_projetos?select=*&order=ordem.asc,created_at.asc"),
         api("/rest/v1/hub_projeto_notas?select=*&order=data.desc,created_at.desc"),
-        api("/rest/v1/hub_vistos?select=visto_em")
+        api("/rest/v1/hub_vistos?select=visto_em"),
+        api("/rest/v1/hub_tempos?select=*&order=inicio.desc")
       ]);
       if (r.ok) projetos = await r.json();
       if (rv.ok) { const v = (await rv.json())[0]; vistoEm = v ? Date.parse(v.visto_em) : 0; }
+      temposBy = new Map();
+      if (rt.ok) for (const t of await rt.json()) {
+        if (!temposBy.has(t.projeto_id)) temposBy.set(t.projeto_id, []);
+        temposBy.get(t.projeto_id).push(t);
+      }
       notasBy = new Map();
       if (rn.ok) for (const n of await rn.json()) {
         if (!notasBy.has(n.projeto_id)) notasBy.set(n.projeto_id, []);
@@ -753,6 +786,7 @@
     const tr = $("pHead");
     tr.replaceChildren();
     if (canDrag) tr.append(el("th", "h"));
+    tr.append(el("th", "tm"));
     for (const [k, label] of PCOLS) {
       const th = el("th");
       th.setAttribute("aria-sort", psort.key === k ? (psort.dir === 1 ? "ascending" : "descending") : "none");
@@ -855,6 +889,7 @@
       h.append(g);
       tr.append(h);
     }
+    tr.append(tempoCell(p));
     const t = el("td", "t");
     if (p.link && URL_RE.test(p.link)) {
       const a = el("a", null, p.titulo);
@@ -940,7 +975,7 @@
     rows.forEach((p) => body.append(projRow(p, canDrag)));
     if (!rows.length) {
       const tr = el("tr"); const td = el("td", "n", nq ? "Sem resultados." : "Ainda não há projetos.");
-      td.colSpan = PCOLS.length + 1 + (canDrag ? 1 : 0); tr.append(td); body.append(tr);
+      td.colSpan = PCOLS.length + 2 + (canDrag ? 1 : 0); tr.append(td); body.append(tr);
     }
     $("pCount").textContent = rows.length + (rows.length === 1 ? " projeto" : " projetos");
     const nNovos = projetos.filter(projNovo).length;
@@ -1035,6 +1070,125 @@
       setStatus("Não foi possível guardar a nova ordem.");
     } finally {
       moving = false;
+    }
+  }
+
+  /* ---------- Registo de tempo ---------- */
+  const dur = (ms) => { if (ms > 0 && ms < 60000) return "<1 min"; const m = Math.max(0, Math.floor(ms / 60000)); return Math.floor(m / 60) + "h" + String(m % 60).padStart(2, "0"); };
+  const durSeg = (ms) => { const s = Math.max(0, Math.floor(ms / 1000)); return Math.floor(s / 3600) + ":" + String(Math.floor(s / 60) % 60).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); };
+  const msDe = (t) => (t.fim ? Date.parse(t.fim) : Date.now()) - Date.parse(t.inicio);
+  const hora = (iso) => { const d = new Date(iso); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); };
+  const diaLocal = (iso) => { const d = new Date(iso); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+  // o meu cronómetro a correr (no máximo um)
+  const meuAberto = () => { for (const ts of temposBy.values()) for (const t of ts) if (!t.fim && String(t.autor).toLowerCase() === eu()) return t; return null; };
+  const totalProj = (p) => (temposBy.get(p.id) || []).reduce((a, t) => a + msDe(t), 0);
+
+  function tempoCell(p) {
+    const td = el("td", "tm");
+    const w = el("span", "tmw");
+    const ab = meuAberto();
+    const aqui = ab && ab.projeto_id === p.id;
+    const b = el("button", aqui ? "stop" : "play", aqui ? "■" : "▶");
+    b.type = "button";
+    b.title = aqui ? "Parar o registo de tempo" : (ab ? "Começar aqui (para o que está a correr noutro projeto)" : "Começar a registar tempo");
+    b.setAttribute("aria-label", (aqui ? "Parar tempo de " : "Começar tempo de ") + p.titulo);
+    b.addEventListener("click", () => (aqui ? pararTempo() : iniciarTempo(p)));
+    const v = el("button", null, "⏱");
+    v.type = "button";
+    v.title = "Registos de tempo · total " + dur(totalProj(p));
+    v.setAttribute("aria-label", "Registos de tempo de " + p.titulo);
+    v.addEventListener("click", () => openTempo(p));
+    w.append(b, v);
+    if (aqui) { const c = el("span", "corre", durSeg(msDe(ab))); c.dataset.inicio = ab.inicio; w.append(c); }
+    td.append(w);
+    return td;
+  }
+
+  // atualiza os cronómetros visíveis a cada segundo
+  setInterval(() => {
+    for (const c of document.querySelectorAll(".corre[data-inicio]")) c.textContent = durSeg(Date.now() - Date.parse(c.dataset.inicio));
+    if ($("tempoDlg").open && tempoProj && meuAberto() && meuAberto().projeto_id === tempoProj.id) $("tempoTot").textContent = dur(totalProj(tempoProj));
+  }, 1000);
+
+  async function rpcTempo(path, body, erro) {
+    try {
+      const r = await api("/rest/v1/rpc/" + path, { method: "POST", body: JSON.stringify(body || {}) });
+      if (!r.ok) throw new Error(r.status);
+      setStatus("");
+    } catch (e) {
+      setStatus(erro);
+    }
+    await loadProj();
+    render();
+    if ($("tempoDlg").open && tempoProj) openTempo(tempoProj);
+  }
+  const iniciarTempo = (p) => rpcTempo("hub_tempo_iniciar", { p_projeto: p.id }, "Não foi possível começar o registo de tempo.");
+  const pararTempo = () => rpcTempo("hub_tempo_parar", {}, "Não foi possível parar o registo de tempo.");
+
+  function openTempo(p) {
+    tempoProj = p;
+    $("tempoDlgTitle").textContent = "Tempo — " + p.titulo;
+    $("tempoErr").textContent = "";
+    const ts = temposBy.get(p.id) || [];
+    $("tempoN").textContent = ts.length + (ts.length === 1 ? " registo" : " registos");
+    $("tempoTot").textContent = dur(totalProj(p));
+    const list = $("tempoList");
+    list.replaceChildren();
+    if (!ts.length) list.append(el("div", "empty", "Ainda não há tempo registado. Usa ▶ na linha do projeto."));
+    for (const t of ts) {
+      const it = el("div", "hitem titem");
+      const hd = el("div", "hd", fmtD(diaLocal(t.inicio)) + " · " + hora(t.inicio) + "–" + (t.fim ? hora(t.fim) : "a correr") + " · ");
+      hd.append(el("b", null, dur(msDe(t))));
+      if (t.autor) hd.append(el("span", null, " · " + t.autor));
+      const x = el("button", "hx", "✕");
+      x.type = "button"; x.title = "Apagar este registo";
+      x.addEventListener("click", () => deleteTempo(t));
+      const lab = el("label", "tnota");
+      const ta = el("textarea");
+      ta.rows = 2; ta.maxLength = 2000; ta.placeholder = "Nota sobre este tempo…"; ta.value = t.nota || "";
+      ta.setAttribute("aria-label", "Nota do registo de " + fmtD(diaLocal(t.inicio)) + " " + hora(t.inicio));
+      const sv = el("button", "tsv", "Guardar nota");
+      sv.type = "button"; sv.hidden = true;
+      ta.addEventListener("input", () => { sv.hidden = ta.value === (t.nota || ""); });
+      sv.addEventListener("click", () => saveTempoNota(t, ta.value.trim(), sv));
+      lab.append(ta);
+      it.append(hd, lab, sv, x);
+      list.append(it);
+    }
+    if (!$("tempoDlg").open) $("tempoDlg").showModal();
+  }
+
+  async function saveTempoNota(t, nota, sv) {
+    sv.disabled = true;
+    try {
+      const r = await api("/rest/v1/hub_tempos?id=eq." + encodeURIComponent(t.id), {
+        method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ nota })
+      });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) throw new Error("save");
+      t.nota = nota;
+      sv.hidden = true;
+      $("tempoErr").textContent = "";
+    } catch (e) {
+      $("tempoErr").textContent = "Não foi possível guardar a nota.";
+    } finally {
+      sv.disabled = false;
+    }
+  }
+
+  async function deleteTempo(t) {
+    if (!confirm("Apagar o registo de " + fmtD(diaLocal(t.inicio)) + " (" + dur(msDe(t)) + ")?")) return;
+    try {
+      const r = await api("/rest/v1/hub_tempos?id=eq." + encodeURIComponent(t.id), {
+        method: "DELETE", headers: { Prefer: "return=representation" }
+      });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) { $("tempoErr").textContent = "Não foi possível apagar (sem permissão?)."; return; }
+      await loadProj();
+      render();
+      openTempo(projetos.find((x) => x.id === t.projeto_id) || tempoProj);
+    } catch (e) {
+      $("tempoErr").textContent = "Sem ligação. Tenta outra vez.";
     }
   }
 
@@ -1461,6 +1615,7 @@
     editItens = false;
     notasBy = new Map();
     vistoEm = 0;
+    temposBy = new Map();
     itens = itens.filter((i) => i.categoria === "curiosidade"); // não deixar sites em memória/cache
     store.set(LS_CACHE, itens);
     setStatus("");
@@ -1477,6 +1632,7 @@
   $("projForm").addEventListener("submit", saveProj);
   $("btnAddProj").addEventListener("click", () => openProj(null));
   $("btnVisto").addEventListener("click", marcarVisto);
+  $("tClose").addEventListener("click", () => $("tempoDlg").close());
   $("pPessoas").addEventListener("change", (e) => { e.target.dataset.atual = lerNovo(e.target, e.target.dataset.atual) ?? e.target.dataset.atual ?? ""; });
   $("pCancel").addEventListener("click", () => $("projDlg").close());
   $("pDel").addEventListener("click", deleteProj);
@@ -1496,7 +1652,7 @@
   $("btnLoginCancel").addEventListener("click", () => $("loginDlg").close());
   // Fecha ao tocar fora só se o toque começou E acabou fora (arrastar a partir do diálogo não fecha).
   const fora = (d, e) => { const r = d.getBoundingClientRect(); return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom; };
-  for (const id of ["itemDlg", "loginDlg", "projDlg", "notaDlg", "histDlg", "setDlg"]) {
+  for (const id of ["itemDlg", "loginDlg", "projDlg", "notaDlg", "histDlg", "setDlg", "tempoDlg"]) {
     const d = $(id);
     let comecouFora = false;
     d.addEventListener("pointerdown", (e) => { comecouFora = e.target === d && fora(d, e); });
