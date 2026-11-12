@@ -157,13 +157,29 @@
   .tmw button.play { color: var(--accent); }
   .tmw button.stop { color: #fff; background: var(--danger); border-color: var(--danger); }
   .tmw .corre { font-variant-numeric: tabular-nums; font-size: 0.8rem; font-weight: 600; color: var(--danger); min-width: 3.6em; }
-  #tempoDlg { width: min(620px, calc(100vw - 32px)); }
+  #tempoDlg { width: min(980px, calc(100vw - 32px)); }
   .ttotal { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: -6px 0 12px; color: var(--muted); font-size: 0.9rem; }
   .ttotal b { font-size: 1.35rem; color: var(--text); font-variant-numeric: tabular-nums; }
-  .titem .hd b { color: var(--text); font-variant-numeric: tabular-nums; }
-  .titem .tnota { display: block; width: 100%; margin-top: 6px; }
-  .titem .tnota textarea { margin-top: 0; font-size: 0.92rem; min-height: 2.6em; }
-  .titem .tsv { margin-top: 6px; padding: 4px 10px; font-size: 0.8rem; }
+  /* registar horas à mão */
+  .tman { display: grid; grid-template-columns: 150px 110px 1fr auto; gap: 8px; align-items: end; margin: 0 0 14px; padding: 12px; border: 1px dashed var(--border); border-radius: 12px; }
+  .tman label { margin: 0; }
+  .tman button { height: 42px; white-space: nowrap; }
+  @media (max-width: 640px) { .tman { grid-template-columns: 1fr 1fr; } .tman .tmn, .tman button { grid-column: 1 / -1; } }
+  /* lista de registos: tudo na mesma linha */
+  .twrap2 { max-height: 55vh; overflow: auto; border: 1px solid var(--border); border-radius: 12px; margin: 0 0 12px; }
+  table.tt { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 640px; }
+  .tt th, .tt td { padding: 7px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; white-space: nowrap; }
+  .tt thead th { position: sticky; top: 0; z-index: 1; background: color-mix(in srgb, var(--accent) 12%, var(--card-bg)); font-size: 0.72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .tt tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--text) 3.5%, var(--card-bg)); }
+  .tt tbody tr:last-child td { border-bottom: 0; }
+  .tt td.dur { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tt td.quem { color: var(--muted); font-size: 0.82rem; }
+  .tt td.nota { width: 100%; white-space: normal; }
+  .tt td.nota input { margin: 0; padding: 6px 10px; font-size: 0.9rem; background: transparent; }
+  .tt td.nota input:hover { border-color: var(--accent); }
+  .tt td.nota input.ok { border-color: #1f8a4c; }
+  .tt td.x button { width: 28px; height: 28px; padding: 0; color: var(--muted); }
+  .tt .manual { color: var(--muted); font-style: italic; }
   .grip { cursor: grab; touch-action: none; user-select: none; color: var(--muted); font-size: 1.1rem; line-height: 1; padding: 6px 8px; display: inline-block; border-radius: 8px; }
   .grip:active { cursor: grabbing; }
   .pt tr.dragging { position: relative; z-index: 3; background: var(--card-bg); box-shadow: 0 6px 18px var(--shadow); opacity: .95; }
@@ -503,12 +519,45 @@
 <dialog id="tempoDlg" aria-labelledby="tempoDlgTitle">
   <h2 id="tempoDlgTitle">Tempo</h2>
   <div class="ttotal"><span id="tempoN"></span><span>Total <b id="tempoTot">0h00</b></span></div>
-  <div class="hist" id="tempoList"></div>
+  <form class="tman" id="tmForm" novalidate>
+    <label>Dia
+      <input id="tmData" type="date" required>
+    </label>
+    <label>Horas
+      <input id="tmHoras" type="text" inputmode="decimal" placeholder="1:30 ou 1,5" autocomplete="off" required>
+    </label>
+    <label class="tmn">Nota
+      <input id="tmNota" type="text" maxlength="2000" placeholder="O que fizeste (opcional)" autocomplete="off">
+    </label>
+    <button type="submit" class="primary" id="tmAdd">+ Registar</button>
+  </form>
+  <div class="twrap2">
+    <table class="tt">
+      <thead><tr><th>Dia</th><th>Horas</th><th>Duração</th><th>Quem</th><th>Nota</th><th></th></tr></thead>
+      <tbody id="tempoList"></tbody>
+    </table>
+  </div>
   <p class="err" id="tempoErr" role="alert"></p>
   <div class="actions">
     <span class="spacer"></span>
     <button type="button" class="primary" id="tClose">Fechar</button>
   </div>
+</dialog>
+
+<dialog id="pararDlg" aria-labelledby="pararDlgTitle">
+  <form id="pararForm" novalidate>
+    <h2 id="pararDlgTitle">Tempo registado</h2>
+    <p class="ttotal" style="margin:0 0 12px"><span id="pararProj"></span><b id="pararDur"></b></p>
+    <label>Nota
+      <textarea id="pararNota" rows="4" maxlength="2000" placeholder="O que fizeste neste tempo?"></textarea>
+    </label>
+    <p class="err" id="pararErr" role="alert"></p>
+    <div class="actions">
+      <span class="spacer"></span>
+      <button type="button" id="pararSem">Sem nota</button>
+      <button type="submit" class="primary" id="pararSave">Guardar nota</button>
+    </div>
+  </form>
 </dialog>
 
 <dialog id="setDlg" aria-labelledby="setDlgTitle">
@@ -545,7 +594,7 @@
   </form>
 </dialog>
 
-<footer>v2.13</footer>
+<footer>v2.14</footer>
 
 <script>
 (() => {
@@ -1111,9 +1160,11 @@
   }, 1000);
 
   async function rpcTempo(path, body, erro) {
+    let res = null;
     try {
       const r = await api("/rest/v1/rpc/" + path, { method: "POST", body: JSON.stringify(body || {}) });
       if (!r.ok) throw new Error(r.status);
+      res = await r.json();
       setStatus("");
     } catch (e) {
       setStatus(erro);
@@ -1121,9 +1172,80 @@
     await loadProj();
     render();
     if ($("tempoDlg").open && tempoProj) openTempo(tempoProj);
+    return res;
   }
   const iniciarTempo = (p) => rpcTempo("hub_tempo_iniciar", { p_projeto: p.id }, "Não foi possível começar o registo de tempo.");
-  const pararTempo = () => rpcTempo("hub_tempo_parar", {}, "Não foi possível parar o registo de tempo.");
+  let pararReg = null; // registo acabado de parar, à espera de nota
+  async function pararTempo() {
+    const rows = await rpcTempo("hub_tempo_parar", {}, "Não foi possível parar o registo de tempo.");
+    const t = Array.isArray(rows) ? rows[0] : rows;
+    if (!t || !t.id) return;
+    pararReg = t;
+    const p = projetos.find((x) => x.id === t.projeto_id);
+    $("pararProj").textContent = p ? p.titulo : "";
+    $("pararDur").textContent = dur(msDe(t));
+    $("pararNota").value = t.nota || "";
+    $("pararErr").textContent = "";
+    $("pararDlg").showModal();
+    $("pararNota").focus();
+  }
+  async function savePararNota(ev) {
+    ev.preventDefault();
+    const nota = $("pararNota").value.trim();
+    if (!pararReg || !nota) { $("pararDlg").close(); return; }
+    $("pararSave").disabled = true;
+    try {
+      const r = await api("/rest/v1/hub_tempos?id=eq." + encodeURIComponent(pararReg.id), {
+        method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ nota })
+      });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) throw new Error("save");
+      $("pararDlg").close();
+      await loadProj();
+      render();
+    } catch (e) {
+      $("pararErr").textContent = "Não foi possível guardar a nota.";
+    } finally {
+      $("pararSave").disabled = false;
+    }
+  }
+
+  // "1:30", "1h30", "1,5", "1.5" ou "90m" -> milissegundos
+  function lerHoras(txt) {
+    const t = String(txt || "").trim().toLowerCase().replace(",", ".");
+    let m;
+    if ((m = t.match(/^(\d+)\s*[:h]\s*(\d{1,2})?\s*m?$/))) return (+m[1] * 60 + +(m[2] || 0)) * 60000;
+    if ((m = t.match(/^(\d+)\s*m(in)?$/))) return +m[1] * 60000;
+    if ((m = t.match(/^\d*\.?\d+$/))) return Math.round(parseFloat(t) * 60) * 60000;
+    return NaN;
+  }
+
+  async function addTempoManual(ev) {
+    ev.preventDefault();
+    const err = $("tempoErr");
+    const dia = $("tmData").value || hoje();
+    const ms = lerHoras($("tmHoras").value);
+    if (!(ms > 0) || ms > 24 * 3600000) { err.textContent = "Horas inválidas. Escreve por exemplo 1:30, 1,5 ou 45m (até 24 horas)."; return; }
+    const [y, mo, d] = dia.split("-").map(Number);
+    const ini = new Date(y, mo - 1, d, 9, 0, 0); // conta só a duração; a hora é indicativa
+    $("tmAdd").disabled = true;
+    try {
+      const r = await api("/rest/v1/hub_tempos", {
+        method: "POST", headers: { Prefer: "return=representation" },
+        body: JSON.stringify({ projeto_id: tempoProj.id, inicio: ini.toISOString(), fim: new Date(ini.getTime() + ms).toISOString(), nota: $("tmNota").value.trim(), manual: true })
+      });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) throw new Error("save");
+      $("tmHoras").value = ""; $("tmNota").value = ""; err.textContent = "";
+      await loadProj();
+      render();
+      openTempo(projetos.find((x) => x.id === tempoProj.id) || tempoProj);
+    } catch (e) {
+      err.textContent = "Não foi possível registar as horas.";
+    } finally {
+      $("tmAdd").disabled = false;
+    }
+  }
 
   function openTempo(p) {
     tempoProj = p;
@@ -1134,32 +1256,44 @@
     $("tempoTot").textContent = dur(totalProj(p));
     const list = $("tempoList");
     list.replaceChildren();
-    if (!ts.length) list.append(el("div", "empty", "Ainda não há tempo registado. Usa ▶ na linha do projeto."));
+    if (!ts.length) {
+      const tr = el("tr"); const td = el("td", "manual", "Ainda não há tempo registado. Usa ▶ na linha do projeto ou regista as horas acima.");
+      td.colSpan = 6; tr.append(td); list.append(tr);
+    }
     for (const t of ts) {
-      const it = el("div", "hitem titem");
-      const hd = el("div", "hd", fmtD(diaLocal(t.inicio)) + " · " + hora(t.inicio) + "–" + (t.fim ? hora(t.fim) : "a correr") + " · ");
-      hd.append(el("b", null, dur(msDe(t))));
-      if (t.autor) hd.append(el("span", null, " · " + t.autor));
-      const x = el("button", "hx", "✕");
+      const tr = el("tr");
+      tr.append(el("td", null, fmtD(diaLocal(t.inicio))));
+      tr.append(t.manual ? el("td", "manual", "à mão") : el("td", null, hora(t.inicio) + "–" + (t.fim ? hora(t.fim) : "a correr")));
+      tr.append(el("td", "dur", dur(msDe(t))));
+      const quem = el("td", "quem", String(t.autor || "").split("@")[0]);
+      quem.title = t.autor || "";
+      tr.append(quem);
+      const nt = el("td", "nota");
+      const inp = el("input");
+      inp.type = "text"; inp.maxLength = 2000; inp.placeholder = "Escrever nota…"; inp.value = t.nota || "";
+      inp.setAttribute("aria-label", "Nota do registo de " + fmtD(diaLocal(t.inicio)));
+      inp.title = t.nota || "";
+      // guarda ao sair da caixa ou com Enter
+      inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); inp.blur(); } });
+      inp.addEventListener("change", () => saveTempoNota(t, inp.value.trim(), inp));
+      nt.append(inp);
+      tr.append(nt);
+      const xc = el("td", "x");
+      const x = el("button", null, "✕");
       x.type = "button"; x.title = "Apagar este registo";
       x.addEventListener("click", () => deleteTempo(t));
-      const lab = el("label", "tnota");
-      const ta = el("textarea");
-      ta.rows = 2; ta.maxLength = 2000; ta.placeholder = "Nota sobre este tempo…"; ta.value = t.nota || "";
-      ta.setAttribute("aria-label", "Nota do registo de " + fmtD(diaLocal(t.inicio)) + " " + hora(t.inicio));
-      const sv = el("button", "tsv", "Guardar nota");
-      sv.type = "button"; sv.hidden = true;
-      ta.addEventListener("input", () => { sv.hidden = ta.value === (t.nota || ""); });
-      sv.addEventListener("click", () => saveTempoNota(t, ta.value.trim(), sv));
-      lab.append(ta);
-      it.append(hd, lab, sv, x);
-      list.append(it);
+      xc.append(x);
+      tr.append(xc);
+      list.append(tr);
     }
-    if (!$("tempoDlg").open) $("tempoDlg").showModal();
+    if (!$("tempoDlg").open) {
+      $("tmData").value = hoje(); $("tmHoras").value = ""; $("tmNota").value = "";
+      $("tempoDlg").showModal();
+    }
   }
 
-  async function saveTempoNota(t, nota, sv) {
-    sv.disabled = true;
+  async function saveTempoNota(t, nota, inp) {
+    inp.classList.remove("ok");
     try {
       const r = await api("/rest/v1/hub_tempos?id=eq." + encodeURIComponent(t.id), {
         method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ nota })
@@ -1167,12 +1301,12 @@
       const rows = r.ok ? await r.json() : [];
       if (!rows.length) throw new Error("save");
       t.nota = nota;
-      sv.hidden = true;
+      inp.title = nota;
+      inp.classList.add("ok"); // contorno verde: guardado
+      setTimeout(() => inp.classList.remove("ok"), 1500);
       $("tempoErr").textContent = "";
     } catch (e) {
       $("tempoErr").textContent = "Não foi possível guardar a nota.";
-    } finally {
-      sv.disabled = false;
     }
   }
 
@@ -1633,6 +1767,9 @@
   $("btnAddProj").addEventListener("click", () => openProj(null));
   $("btnVisto").addEventListener("click", marcarVisto);
   $("tClose").addEventListener("click", () => $("tempoDlg").close());
+  $("tmForm").addEventListener("submit", addTempoManual);
+  $("pararForm").addEventListener("submit", savePararNota);
+  $("pararSem").addEventListener("click", () => $("pararDlg").close());
   $("pPessoas").addEventListener("change", (e) => { e.target.dataset.atual = lerNovo(e.target, e.target.dataset.atual) ?? e.target.dataset.atual ?? ""; });
   $("pCancel").addEventListener("click", () => $("projDlg").close());
   $("pDel").addEventListener("click", deleteProj);
@@ -1652,7 +1789,7 @@
   $("btnLoginCancel").addEventListener("click", () => $("loginDlg").close());
   // Fecha ao tocar fora só se o toque começou E acabou fora (arrastar a partir do diálogo não fecha).
   const fora = (d, e) => { const r = d.getBoundingClientRect(); return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom; };
-  for (const id of ["itemDlg", "loginDlg", "projDlg", "notaDlg", "histDlg", "setDlg", "tempoDlg"]) {
+  for (const id of ["itemDlg", "loginDlg", "projDlg", "notaDlg", "histDlg", "setDlg", "tempoDlg", "pararDlg"]) {
     const d = $(id);
     let comecouFora = false;
     d.addEventListener("pointerdown", (e) => { comecouFora = e.target === d && fora(d, e); });
