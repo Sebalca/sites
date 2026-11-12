@@ -153,6 +153,9 @@
   /* cronómetro no início de cada linha */
   .pt td.tm, .pt th.tm { width: 1%; white-space: nowrap; padding-right: 4px; }
   .tmw { display: inline-flex; gap: 4px; align-items: center; }
+  .tmcol { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+  .ttot { font-size: 0.75rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; padding-left: 2px; }
+  .ttot.corre-tot { color: var(--danger); }
   .tmw button { width: 30px; height: 30px; padding: 0; border-radius: 8px; line-height: 1; font-size: 0.85rem; color: var(--muted); }
   .tmw button.play { color: var(--accent); }
   .tmw button.stop { color: #fff; background: var(--danger); border-color: var(--danger); }
@@ -195,7 +198,10 @@
   .estsel option { color: var(--text); background: var(--card-bg); }
   .twrap { flex: 1; min-height: 0; overflow: auto; border: 1px solid var(--border); border-radius: 14px; background: var(--card-bg); -webkit-overflow-scrolling: touch; }
   table.pt { width: 100%; border-collapse: collapse; min-width: 820px; font-size: 0.92rem; }
-  .pt th, .pt td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .pt th, .pt td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; line-height: 1.35; }
+  /* todas as linhas com a mesma altura: cabem exatamente 3 linhas de texto */
+  .pt tbody td { height: calc(3 * 1.35em + 20px); }
+  .cl3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
   .pt thead th { position: sticky; top: 0; background: color-mix(in srgb, var(--accent) 12%, var(--card-bg)); z-index: 2; box-shadow: 0 1px 0 var(--border); white-space: nowrap; }
   .pt tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--text) 3.5%, var(--card-bg)); }
   .respwrap { color: var(--text); }
@@ -221,7 +227,7 @@
   .hitem.novo .ht, .hitem.novo .hd { color: var(--novo); }
   button.visto { border-color: var(--novo); color: var(--novo); font-weight: 600; }
   .vtabs .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--novo); margin-left: 6px; vertical-align: middle; }
-  .nwrap { display: flex; gap: 8px; align-items: flex-start; }
+  .nwrap { display: flex; gap: 8px; align-items: center; }
   .nadd { flex: none; width: 28px; height: 28px; padding: 0; border-radius: 8px; color: var(--accent); font-weight: 700; line-height: 1; }
   .nlast { all: unset; cursor: pointer; flex: 1; min-width: 0; color: var(--muted); }
   .nlast:hover .nt, .nlast:focus-visible .nt { color: var(--text); }
@@ -634,7 +640,7 @@
   </form>
 </dialog>
 
-<footer>v2.15</footer>
+<footer>v2.16</footer>
 
 <script>
 (() => {
@@ -981,11 +987,11 @@
     tr.append(tempoCell(p));
     const t = el("td", "t");
     if (p.link && URL_RE.test(p.link)) {
-      const a = el("a", null, p.titulo);
+      const a = el("a", "cl3", p.titulo);
       a.href = p.link; a.target = "_blank"; a.rel = "noopener noreferrer";
       a.title = p.link.replace(/^https?:\/\//, "");
       t.append(a);
-    } else t.textContent = p.titulo;
+    } else t.append(el("span", "cl3", p.titulo));
     if (campoNovo(p, "titulo", "link")) t.classList.add("novo");
     tr.append(t);
     const st = el("td", campoNovo(p, "estado") ? "novo" : null);
@@ -1190,13 +1196,19 @@
     v.addEventListener("click", () => openTempo(p));
     w.append(b, v);
     if (aqui) { const c = el("span", "corre", durSeg(msDe(ab))); c.dataset.inicio = ab.inicio; w.append(c); }
-    td.append(w);
+    const col = el("div", "tmcol");
+    const tot = el("span", "ttot" + (aqui ? " corre-tot" : ""), totalProj(p) ? dur(totalProj(p)) : "");
+    tot.dataset.pid = p.id;
+    tot.title = "Tempo total do projeto";
+    col.append(w, tot);
+    td.append(col);
     return td;
   }
 
   // atualiza os cronómetros visíveis a cada segundo
   setInterval(() => {
     for (const c of document.querySelectorAll(".corre[data-inicio]")) c.textContent = durSeg(Date.now() - Date.parse(c.dataset.inicio));
+    for (const c of document.querySelectorAll(".ttot.corre-tot[data-pid]")) { const pj = projetos.find((x) => x.id === c.dataset.pid); if (pj) c.textContent = dur(totalProj(pj)); }
     if ($("tempoDlg").open && tempoProj && meuAberto(tempoProj.id)) $("tempoTot").textContent = dur(totalProj(tempoProj));
   }, 1000);
 
