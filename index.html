@@ -178,7 +178,11 @@
   .tt td.nota input { margin: 0; padding: 6px 10px; font-size: 0.9rem; background: transparent; }
   .tt td.nota input:hover { border-color: var(--accent); }
   .tt td.nota input.ok { border-color: #1f8a4c; }
+  .tt td.x { white-space: nowrap; }
   .tt td.x button { width: 28px; height: 28px; padding: 0; color: var(--muted); }
+  .tt td.x button + button { margin-left: 4px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 10px; }
+  @media (max-width: 480px) { .row3 { grid-template-columns: 1fr 1fr; } .row3 label:first-child { grid-column: 1 / -1; } }
   .tt .manual { color: var(--muted); font-style: italic; }
   .grip { cursor: grab; touch-action: none; user-select: none; color: var(--muted); font-size: 1.1rem; line-height: 1; padding: 6px 8px; display: inline-block; border-radius: 8px; }
   .grip:active { cursor: grabbing; }
@@ -344,6 +348,7 @@
   .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .actions .spacer { flex: 1; }
   label[hidden] { display: none; }
+  .row2[hidden], .row3[hidden] { display: none; }
   .seg { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 16px; }
   .seg button { flex: 1; padding: 8px 10px; }
   .seg button.on { border-color: var(--accent); color: var(--accent); font-weight: 600; }
@@ -544,6 +549,41 @@
   </div>
 </dialog>
 
+<dialog id="edTDlg" aria-labelledby="edTDlgTitle">
+  <form id="edTForm" novalidate>
+    <h2 id="edTDlgTitle">Editar registo de tempo</h2>
+    <div class="row3" id="edTReal">
+      <label>Dia
+        <input id="edTDia" type="date" required>
+      </label>
+      <label>Início
+        <input id="edTIni" type="time" required>
+      </label>
+      <label>Fim
+        <input id="edTFim" type="time">
+      </label>
+    </div>
+    <div class="row2" id="edTMan">
+      <label>Dia
+        <input id="edTDiaM" type="date" required>
+      </label>
+      <label>Horas
+        <input id="edTHoras" type="text" inputmode="decimal" placeholder="1:30 ou 1,5" autocomplete="off">
+      </label>
+    </div>
+    <label>Nota
+      <textarea id="edTNota" rows="3" maxlength="2000"></textarea>
+    </label>
+    <p class="hint" id="edTHint"></p>
+    <p class="err" id="edTErr" role="alert"></p>
+    <div class="actions">
+      <span class="spacer"></span>
+      <button type="button" id="edTCancel">Cancelar</button>
+      <button type="submit" class="primary" id="edTSave">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="pararDlg" aria-labelledby="pararDlgTitle">
   <form id="pararForm" novalidate>
     <h2 id="pararDlgTitle">Tempo registado</h2>
@@ -594,7 +634,7 @@
   </form>
 </dialog>
 
-<footer>v2.14</footer>
+<footer>v2.15</footer>
 
 <script>
 (() => {
@@ -1129,19 +1169,20 @@
   const hora = (iso) => { const d = new Date(iso); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); };
   const diaLocal = (iso) => { const d = new Date(iso); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
   // o meu cronómetro a correr (no máximo um)
-  const meuAberto = () => { for (const ts of temposBy.values()) for (const t of ts) if (!t.fim && String(t.autor).toLowerCase() === eu()) return t; return null; };
+  // o meu cronómetro a correr neste projeto (pode haver vários, um por projeto)
+  const meuAberto = (pid) => (temposBy.get(pid) || []).find((t) => !t.fim && String(t.autor).toLowerCase() === eu()) || null;
   const totalProj = (p) => (temposBy.get(p.id) || []).reduce((a, t) => a + msDe(t), 0);
 
   function tempoCell(p) {
     const td = el("td", "tm");
     const w = el("span", "tmw");
-    const ab = meuAberto();
-    const aqui = ab && ab.projeto_id === p.id;
+    const ab = meuAberto(p.id);
+    const aqui = !!ab;
     const b = el("button", aqui ? "stop" : "play", aqui ? "■" : "▶");
     b.type = "button";
-    b.title = aqui ? "Parar o registo de tempo" : (ab ? "Começar aqui (para o que está a correr noutro projeto)" : "Começar a registar tempo");
+    b.title = aqui ? "Parar o registo de tempo" : "Começar a registar tempo";
     b.setAttribute("aria-label", (aqui ? "Parar tempo de " : "Começar tempo de ") + p.titulo);
-    b.addEventListener("click", () => (aqui ? pararTempo() : iniciarTempo(p)));
+    b.addEventListener("click", () => (aqui ? pararTempo(p) : iniciarTempo(p)));
     const v = el("button", null, "⏱");
     v.type = "button";
     v.title = "Registos de tempo · total " + dur(totalProj(p));
@@ -1156,7 +1197,7 @@
   // atualiza os cronómetros visíveis a cada segundo
   setInterval(() => {
     for (const c of document.querySelectorAll(".corre[data-inicio]")) c.textContent = durSeg(Date.now() - Date.parse(c.dataset.inicio));
-    if ($("tempoDlg").open && tempoProj && meuAberto() && meuAberto().projeto_id === tempoProj.id) $("tempoTot").textContent = dur(totalProj(tempoProj));
+    if ($("tempoDlg").open && tempoProj && meuAberto(tempoProj.id)) $("tempoTot").textContent = dur(totalProj(tempoProj));
   }, 1000);
 
   async function rpcTempo(path, body, erro) {
@@ -1176,13 +1217,13 @@
   }
   const iniciarTempo = (p) => rpcTempo("hub_tempo_iniciar", { p_projeto: p.id }, "Não foi possível começar o registo de tempo.");
   let pararReg = null; // registo acabado de parar, à espera de nota
-  async function pararTempo() {
-    const rows = await rpcTempo("hub_tempo_parar", {}, "Não foi possível parar o registo de tempo.");
+  async function pararTempo(p) {
+    const rows = await rpcTempo("hub_tempo_parar", { p_projeto: p.id }, "Não foi possível parar o registo de tempo.");
     const t = Array.isArray(rows) ? rows[0] : rows;
     if (!t || !t.id) return;
     pararReg = t;
-    const p = projetos.find((x) => x.id === t.projeto_id);
-    $("pararProj").textContent = p ? p.titulo : "";
+    const pj = projetos.find((x) => x.id === t.projeto_id) || p;
+    $("pararProj").textContent = pj ? pj.titulo : "";
     $("pararDur").textContent = dur(msDe(t));
     $("pararNota").value = t.nota || "";
     $("pararErr").textContent = "";
@@ -1279,6 +1320,10 @@
       nt.append(inp);
       tr.append(nt);
       const xc = el("td", "x");
+      const ed = el("button", null, "✎");
+      ed.type = "button"; ed.title = "Editar este registo";
+      ed.addEventListener("click", () => openEdTempo(t));
+      xc.append(ed);
       const x = el("button", null, "✕");
       x.type = "button"; x.title = "Apagar este registo";
       x.addEventListener("click", () => deleteTempo(t));
@@ -1307,6 +1352,70 @@
       $("tempoErr").textContent = "";
     } catch (e) {
       $("tempoErr").textContent = "Não foi possível guardar a nota.";
+    }
+  }
+
+  /* Editar um registo: dia, início e fim (ou dia e horas, se foi à mão) */
+  let edT = null;
+  const hhmm = (iso) => hora(iso);
+  function openEdTempo(t) {
+    edT = t;
+    const real = !t.manual;
+    $("edTReal").hidden = !real;
+    $("edTMan").hidden = real;
+    $("edTDia").value = $("edTDiaM").value = diaLocal(t.inicio);
+    $("edTIni").value = hhmm(t.inicio);
+    $("edTFim").value = t.fim ? hhmm(t.fim) : "";
+    $("edTFim").required = !!t.fim;
+    $("edTHoras").value = t.manual ? dur(msDe(t)).replace("h", ":") : "";
+    $("edTNota").value = t.nota || "";
+    $("edTHint").textContent = !t.fim ? "Este tempo ainda está a correr: podes mudar a hora de início; o fim fica quando carregares em ■." :
+      real ? "Se o fim for antes do início, conta como tendo acabado no dia seguinte." : "";
+    $("edTErr").textContent = "";
+    $("edTDlg").showModal();
+  }
+  async function saveEdTempo(ev) {
+    ev.preventDefault();
+    const t = edT, err = $("edTErr");
+    let inicio, fim = t.fim;
+    if (t.manual) {
+      const ms = lerHoras($("edTHoras").value);
+      if (!(ms > 0) || ms > 24 * 3600000) { err.textContent = "Horas inválidas. Escreve por exemplo 1:30, 1,5 ou 45m."; return; }
+      const [y, mo, d] = ($("edTDiaM").value || diaLocal(t.inicio)).split("-").map(Number);
+      const ini = new Date(y, mo - 1, d, 9, 0, 0);
+      inicio = ini.toISOString(); fim = new Date(ini.getTime() + ms).toISOString();
+    } else {
+      const dia = $("edTDia").value, hi = $("edTIni").value, hf = $("edTFim").value;
+      if (!dia || !hi) { err.textContent = "Indica o dia e a hora de início."; return; }
+      const [y, mo, d] = dia.split("-").map(Number);
+      const [h1, m1] = hi.split(":").map(Number);
+      const ini = new Date(y, mo - 1, d, h1, m1, 0);
+      inicio = ini.toISOString();
+      if (t.fim) {
+        if (!hf) { err.textContent = "Indica a hora de fim."; return; }
+        const [h2, m2] = hf.split(":").map(Number);
+        let f = new Date(y, mo - 1, d, h2, m2, 0);
+        if (f < ini) f = new Date(f.getTime() + 24 * 3600000); // passou a meia-noite
+        fim = f.toISOString();
+      } else if (ini > new Date()) { err.textContent = "O início não pode ser no futuro."; return; }
+    }
+    $("edTSave").disabled = true;
+    try {
+      const body = { inicio, nota: $("edTNota").value.trim() };
+      if (t.fim) body.fim = fim;
+      const r = await api("/rest/v1/hub_tempos?id=eq." + encodeURIComponent(t.id), {
+        method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify(body)
+      });
+      const rows = r.ok ? await r.json() : [];
+      if (!rows.length) throw new Error("save");
+      $("edTDlg").close();
+      await loadProj();
+      render();
+      openTempo(projetos.find((x) => x.id === t.projeto_id) || tempoProj);
+    } catch (e) {
+      err.textContent = "Não foi possível guardar o registo.";
+    } finally {
+      $("edTSave").disabled = false;
     }
   }
 
@@ -1770,6 +1879,8 @@
   $("tmForm").addEventListener("submit", addTempoManual);
   $("pararForm").addEventListener("submit", savePararNota);
   $("pararSem").addEventListener("click", () => $("pararDlg").close());
+  $("edTForm").addEventListener("submit", saveEdTempo);
+  $("edTCancel").addEventListener("click", () => $("edTDlg").close());
   $("pPessoas").addEventListener("change", (e) => { e.target.dataset.atual = lerNovo(e.target, e.target.dataset.atual) ?? e.target.dataset.atual ?? ""; });
   $("pCancel").addEventListener("click", () => $("projDlg").close());
   $("pDel").addEventListener("click", deleteProj);
@@ -1789,7 +1900,7 @@
   $("btnLoginCancel").addEventListener("click", () => $("loginDlg").close());
   // Fecha ao tocar fora só se o toque começou E acabou fora (arrastar a partir do diálogo não fecha).
   const fora = (d, e) => { const r = d.getBoundingClientRect(); return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom; };
-  for (const id of ["itemDlg", "loginDlg", "projDlg", "notaDlg", "histDlg", "setDlg", "tempoDlg", "pararDlg"]) {
+  for (const id of ["itemDlg", "loginDlg", "projDlg", "notaDlg", "histDlg", "setDlg", "tempoDlg", "pararDlg", "edTDlg"]) {
     const d = $(id);
     let comecouFora = false;
     d.addEventListener("pointerdown", (e) => { comecouFora = e.target === d && fora(d, e); });
