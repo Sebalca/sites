@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leitura de cartas em tempo real</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: cabeçalho compacto, barra de separadores, cada separador = texto à esquerda + bancada de experiências */
+:root{
+  --bg:#f2f4f6; --surface:#ffffff; --ink:#16212b; --muted:#566573; --line:#d5dbe1;
+  --accent:#0b7480; --accent-ink:#ffffff; --soft:#e3f1f2;
+  --tech:#6238c9; --tech-bg:#f1ecfc;
+  --good:#1c7c3c; --warn:#9a5a00; --bad:#b3261e;
+  --display:"Bricolage Grotesque","Trebuchet MS",sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101820; --surface:#18232d; --ink:#e7edf2; --muted:#9aa9b6; --line:#2c3a47;
+    --accent:#4cc3cf; --accent-ink:#06262a; --soft:#16313a;
+    --tech:#b79cff; --tech-bg:#231d3a;
+    --good:#5fd08a; --warn:#f0b24a; --bad:#ff8a80; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101820; --surface:#18232d; --ink:#e7edf2; --muted:#9aa9b6; --line:#2c3a47;
+  --accent:#4cc3cf; --accent-ink:#06262a; --soft:#16313a;
+  --tech:#b79cff; --tech-bg:#231d3a;
+  --good:#5fd08a; --warn:#f0b24a; --bad:#ff8a80; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+.wrap{max-width:1080px;margin:0 auto;padding:20px 16px 56px;display:flex;flex-direction:column;gap:18px}
+header.top{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between}
+h1{font-family:var(--display);font-size:clamp(1.55rem,4.6vw,2.2rem);line-height:1.1;margin:0;text-wrap:balance}
+.lede{margin:6px 0 0;color:var(--muted);max-width:60ch}
+h2{font-family:var(--display);font-size:1.3rem;line-height:1.2;margin:0;text-wrap:balance}
+h3{font-size:1rem;margin:0;font-weight:600}
+p{margin:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:3px}
+.seg button{border:0;background:none;color:var(--muted);font:500 .9rem var(--body);padding:7px 14px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--tech);color:var(--surface)}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);padding-bottom:0}
+nav.tabs button{border:0;background:none;color:var(--muted);font:500 .95rem var(--body);padding:10px 12px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+section.tab{display:flex;flex-direction:column;gap:18px}
+section.tab[hidden]{display:none}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.prose{display:flex;flex-direction:column;gap:10px;max-width:68ch}
+.prose ul{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:4px}
+.tech-only{display:none}
+body.tech .tech-only{display:flex;flex-direction:column;gap:8px}
+.techbox{background:var(--tech-bg);border-left:3px solid var(--tech);border-radius:0 8px 8px 0;padding:12px 14px;font-size:.93rem}
+.techbox ul{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:4px}
+.tag{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--tech)}
+code,.mono{font-family:var(--mono);font-size:.9em}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.tile b{display:block;font:700 1.35rem var(--display);font-variant-numeric:tabular-nums}
+.tile span{font-size:.8rem;color:var(--muted)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.step .n{font:500 .8rem var(--mono);color:var(--accent)}
+.bench{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.bench{grid-template-columns:minmax(0,1fr)}}
+.controls{display:flex;flex-direction:column;gap:10px}
+.ctl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;font-size:.88rem;align-items:center}
+.ctl label{color:var(--muted)}
+.ctl output{font:500 .82rem var(--mono);font-variant-numeric:tabular-nums}
+.ctl input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--accent)}
+select,input[type=text]{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+.btn{font:500 .9rem var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 12px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.check{display:flex;gap:8px;align-items:center;font-size:.9rem}
+.check input{accent-color:var(--accent);width:17px;height:17px}
+canvas{max-width:100%;display:block}
+.cam{border-radius:8px;width:100%;max-width:300px;height:auto;border:1px solid var(--line)}
+.px{image-rendering:pixelated;border:1px solid var(--line);border-radius:4px;background:var(--bg)}
+.maps{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.maps figure{margin:0;display:flex;flex-direction:column;gap:4px}
+.maps canvas{width:100%;height:auto;aspect-ratio:3/4}
+figcaption,.cap{font-size:.76rem;color:var(--muted);line-height:1.3}
+.strip{width:100%;height:26px}
+.striplbl{display:grid;grid-template-columns:192fr 384fr 288fr;font:400 .72rem var(--mono);color:var(--muted);gap:2px}
+.striplbl span{border-top:2px solid var(--line);padding-top:3px;overflow-wrap:anywhere}
+.rank{display:flex;flex-direction:column;gap:6px}
+.rk{display:grid;grid-template-columns:30px minmax(0,1fr) 46px;gap:8px;align-items:center;font-size:.86rem}
+.rk img{width:30px;height:40px;border-radius:3px;display:block}
+.rk .nm{display:flex;justify-content:space-between;gap:6px}
+.bar{position:relative;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;margin-top:3px}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--muted);border-radius:4px}
+.rk.top .bar i{background:var(--accent)}
+.bar u{position:absolute;top:0;bottom:0;width:2px;background:var(--bad)}
+.rk b{font:500 .85rem var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.verdict{border-radius:8px;padding:10px 12px;border:1px solid var(--line);display:flex;flex-direction:column;gap:4px;font-size:.92rem}
+.verdict.ok{border-color:var(--good)} .verdict.no{border-color:var(--bad)}
+.verdict strong.ok{color:var(--good)} .verdict strong.no{color:var(--bad)}
+.rule{display:flex;gap:8px;font-size:.86rem;font-variant-numeric:tabular-nums}
+.rule .y{color:var(--good);font-weight:600}.rule .x{color:var(--bad);font-weight:600}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:500 .78rem var(--mono);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--bg);min-width:54px;text-align:center}
+.chip.hit{background:var(--soft);border-color:var(--accent)}
+.chip.miss{color:var(--muted)}
+.note{font-size:.84rem;color:var(--muted)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:.88rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+tr.me td{background:var(--soft)}
+.spec{width:100%;height:auto;image-rendering:pixelated;border-radius:6px;border:1px solid var(--line)}
+.kv{font:500 .88rem var(--mono);font-variant-numeric:tabular-nums}
+.good{color:var(--good)} .bad{color:var(--bad)} .warnc{color:var(--warn)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div>
+    <h1>Como a app reconhece cartas em tempo real</h1>
+    <p class="lede">A mesma ideia serve para imagem, vídeo e som: resumir o que se capta numa impressão digital, comparar com as guardadas e só aceitar com certeza.</p>
+  </div>
+  <div class="seg" role="group" aria-label="Nível de explicação">
+    <button id="modeSimple" aria-pressed="true">Simples</button>
+    <button id="modeTech" aria-pressed="false">Técnico</button>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" id="tabs">
+  <button role="tab" data-tab="visao-geral">Visão geral</button>
+  <button role="tab" data-tab="imagem">Imagem</button>
+  <button role="tab" data-tab="video">Vídeo</button>
+  <button role="tab" data-tab="som">Som</button>
+  <button role="tab" data-tab="texto">Texto e códigos</button>
+  <button role="tab" data-tab="metodos">Outros métodos e limites</button>
+</nav>
+
+<!-- ============ VISÃO GERAL ============ -->
+<section class="tab" id="t-visao-geral">
+  <div class="tiles">
+    <div class="tile"><b>449</b><span>impressões na base de dados</span></div>
+    <div class="tile"><b>864</b><span>números por carta</span></div>
+    <div class="tile"><b>48×64</b><span>píxeis depois de reduzir</span></div>
+    <div class="tile"><b>~7/s</b><span>leituras da câmara</span></div>
+    <div class="tile"><b>0,60</b><span>semelhança mínima</span></div>
+    <div class="tile"><b>0,08</b><span>margem sobre a 2.ª</span></div>
+    <div class="tile"><b>3 de 5</b><span>leituras iguais</span></div>
+  </div>
+  <div class="steps">
+    <div class="panel step"><span class="n">1 · uma vez, no PC</span><h3>Preparação</h3>
+      <p>O <code>tools/build-db.mjs</code> pega na imagem de cada uma das 449 impressões e calcula uma impressão digital: 864 números que resumem o aspeto da carta. Ficam no <code>data/cards.json</code>.</p>
+      <div class="tech-only techbox"><span class="tag">Técnico</span><p>É um índice offline. O trabalho pesado fica feito antes; o telemóvel só carrega 449 × 864 ≈ 388 mil números. Em Float32 seriam cerca de 1,5 MB, menos se forem quantizados para inteiros de 8 bits.</p></div>
+    </div>
+    <div class="panel step"><span class="n">2 · a receita</span><h3>Impressão digital em três partes</h3>
+      <p>A carta perde 5% de margem, é corrigida na cor da luz e reduzida a 48×64. Depois mede-se a luminosidade, a cor e a direção dos contornos, em grelha.</p>
+      <div class="tech-only techbox"><span class="tag">Técnico</span><p>12×16 = 192 valores de luminosidade, 192 × 2 = 384 de cor e 6×8 células de contornos. O total só dá 864 se cada célula tiver 6 direções: 48 × 6 = 288. Este último número é deduzido da conta, confirma no teu script.</p></div>
+    </div>
+    <div class="panel step"><span class="n">3 · ~7 vezes por segundo</span><h3>Na câmara</h3>
+      <p>Recorta o que está na moldura tracejada, calcula a impressão digital e compara com as 449. Repete com o recorte um pouco deslocado ou maior, para a carta não ter de estar perfeita.</p>
+      <div class="tech-only techbox"><span class="tag">Técnico</span><p>Busca exaustiva (força bruta). Com 449 cartas não compensa usar índices aproximados: são poucos milhões de multiplicações por leitura.</p></div>
+    </div>
+    <div class="panel step"><span class="n">4 · decisão</span><h3>Só aceita com certeza</h3>
+      <p>Semelhança de pelo menos 0,60, pelo menos 0,08 acima da melhor carta com outra arte, e a mesma carta em 3 das últimas 5 leituras.</p>
+      <div class="tech-only techbox"><span class="tag">Técnico</span><p>Três filtros para três erros diferentes: limiar absoluto (nada parecido na base), margem relativa (duas candidatas quase empatadas) e voto temporal (ruído de um único fotograma).</p></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>O que quer dizer “parecida”</h2>
+    <div class="bench">
+      <div class="controls">
+        <canvas id="cosCv" width="300" height="170" style="width:100%;max-width:300px;height:auto"></canvas>
+        <div class="ctl"><label for="cosAng">Ângulo entre as duas setas</label><output id="cosAngO"></output><input type="range" id="cosAng" min="0" max="180" value="35"></div>
+      </div>
+      <div class="prose">
+        <p>Cada impressão digital é uma seta num espaço com 864 direções. A semelhança de cosseno mede o ângulo entre duas setas: <b>1,0</b> é a mesma direção e <b>0</b> é nada a ver. O tamanho das setas não conta, e é por isso que uma foto mais escura ou mais clara dá quase o mesmo resultado.</p>
+        <p class="kv">Semelhança: <span id="cosVal"></span> <span id="cosTxt"></span></p>
+        <div class="tech-only techbox"><span class="tag">Técnico</span><p><code>cos(a,b) = a·b / (|a|·|b|)</code>. Se as impressões forem guardadas já normalizadas (comprimento 1), comparar é só um produto escalar: 864 multiplicações e somas. Valores negativos existem (direções opostas) e contam como “nada a ver”.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ IMAGEM ============ -->
+<section class="tab" id="t-imagem" hidden>
+  <div class="prose">
+    <h2>Uma imagem parada: da fotografia aos 864 números</h2>
+    <p>Mexe nos controlos e vê a impressão digital mudar. As cartas são inventadas para esta página e a base de dados tem 7 entradas em vez de 449, mas as contas são feitas a sério no teu browser.</p>
+  </div>
+  <div class="bench">
+    <div class="panel controls">
+      <canvas id="imgCam" class="cam" width="300" height="400"></canvas>
+      <div><label for="imgCard" class="note">Carta à frente da câmara</label><select id="imgCard"></select></div>
+      <div class="row"><label class="btn" for="imgFile">Usar uma imagem minha</label><input type="file" id="imgFile" accept="image/*" hidden><span class="note" id="imgFileN"></span></div>
+      <div class="ctl"><label for="iBright">Luz (escuro ↔ claro)</label><output id="iBrightO"></output><input type="range" id="iBright" min="-100" max="100" value="0"></div>
+      <div class="ctl"><label for="iTemp">Cor da luz (azul ↔ amarela)</label><output id="iTempO"></output><input type="range" id="iTemp" min="-100" max="100" value="0"></div>
+      <div class="ctl"><label for="iDx">Desvio para o lado</label><output id="iDxO"></output><input type="range" id="iDx" min="-15" max="15" value="0"></div>
+      <div class="ctl"><label for="iDy">Desvio para cima/baixo</label><output id="iDyO"></output><input type="range" id="iDy" min="-15" max="15" value="0"></div>
+      <div class="ctl"><label for="iZoom">Distância (tamanho)</label><output id="iZoomO"></output><input type="range" id="iZoom" min="80" max="115" value="100"></div>
+      <div class="ctl"><label for="iRot">Inclinação</label><output id="iRotO"></output><input type="range" id="iRot" min="-25" max="25" value="0"></div>
+      <div class="ctl"><label for="iNoise">Ruído da câmara</label><output id="iNoiseO"></output><input type="range" id="iNoise" min="0" max="100" value="0"></div>
+      <label class="check"><input type="checkbox" id="iFinger"> Dedo a segurar na margem</label>
+      <label class="check"><input type="checkbox" id="iSearch" checked> Procurar à volta (acima, abaixo, lados, maior)</label>
+      <button class="btn" id="iReset">Repor</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <div class="panel">
+        <h3>O que a app vê</h3>
+        <div class="maps">
+          <figure><canvas class="px" id="mRaw" width="48" height="64"></canvas><figcaption>Recorte reduzido a 48×64</figcaption></figure>
+          <figure><canvas class="px" id="mFix" width="48" height="64"></canvas><figcaption>Depois de corrigir a cor da luz</figcaption></figure>
+          <figure><canvas class="px" id="mLum" width="12" height="16"></canvas><figcaption>Luminosidade, 12×16</figcaption></figure>
+          <figure><canvas class="px" id="mRG" width="12" height="16"></canvas><figcaption>Cor: vermelho ↔ verde</figcaption></figure>
+          <figure><canvas class="px" id="mYB" width="12" height="16"></canvas><figcaption>Cor: amarelo ↔ azul</figcaption></figure>
+          <figure><canvas id="mEdg" width="144" height="192" style="border:1px solid var(--line);border-radius:4px"></canvas><figcaption>Contornos, 6×8</figcaption></figure>
+        </div>
+        <div>
+          <canvas class="px strip" id="mStrip" width="864" height="1"></canvas>
+          <div class="striplbl"><span>192 luminosidade</span><span>384 cor</span><span>288 contornos</span></div>
+        </div>
+        <p class="cap">A faixa é a impressão digital completa: 864 números, laranja acima da média e azul abaixo.</p>
+      </div>
+      <div class="panel">
+        <h3>Comparação com a base de dados</h3>
+        <div class="verdict" id="iVerdict"></div>
+        <div class="rank" id="iRank"></div>
+        <p class="cap">O traço vermelho em cada barra marca os 0,60. <span id="iCand"></span></p>
+      </div>
+    </div>
+  </div>
+  <div class="prose">
+    <h3>Experiências que valem a pena</h3>
+    <ul>
+      <li>Põe a luz bem amarela: a segunda miniatura fica quase igual à normal e a semelhança mal mexe.</li>
+      <li>Desvia a carta com a procura à volta ligada e desligada.</li>
+      <li>Escolhe o Corvo de Vidro R e o SR: ficam empatadas, é a limitação das paralelas.</li>
+      <li>Escolhe a carta fora da base ou uma imagem tua: a app tem de dizer que não sabe.</li>
+      <li>Inclina a carta até ao máximo: a semelhança cai depressa, este método não aguenta rotações grandes.</li>
+    </ul>
+    <div class="tech-only techbox"><span class="tag">Técnico</span>
+      <ul>
+        <li><b>Reduzir para 48×64</b> é um filtro passa-baixo: apaga ruído, textura do cartão e desfocagem ligeira. Ficam 3072 píxeis, na proporção 3:4 da carta.</li>
+        <li><b>Cortar 5%</b> tira da conta a zona onde costumam estar dedos, mangas e o fundo da mesa.</li>
+        <li><b>Cor da luz</b>: aqui usa-se a hipótese do mundo cinzento, que escala R, G e B até terem a mesma média. É um balanço de brancos barato.</li>
+        <li><b>Luminosidade relativa</b>: a cada quadrado subtrai-se a média da carta, por isso mais ou menos luz não altera o padrão.</li>
+        <li><b>Cor</b> em dois eixos oponentes, <code>R−G</code> e <code>(R+G)/2−B</code>, parecidos com os canais a* e b* do espaço Lab.</li>
+        <li><b>Contornos</b>: histograma de orientações do gradiente por célula, da família HOG. A direção de uma linha não muda quando a luz muda, só a força.</li>
+        <li>Cada parte é normalizada antes de juntar, para nenhuma mandar sozinha no resultado. Os pesos desta demo são iguais e podem ser diferentes dos do teu <code>build-db.mjs</code>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VÍDEO ============ -->
+<section class="tab" id="t-video" hidden>
+  <div class="prose">
+    <h2>Vídeo: muitas imagens seguidas, e a paciência de esperar</h2>
+    <p>Um vídeo é uma fila de fotografias. A app não olha para todas: tira cerca de 7 por segundo, lê cada uma como no separador Imagem e só anuncia a carta quando várias leituras seguidas concordam. A câmara abaixo é simulada, porque este visualizador não deixa uma página usar a câmara verdadeira.</p>
+  </div>
+  <div class="bench">
+    <div class="panel controls">
+      <canvas id="vidCam" class="cam" width="300" height="400"></canvas>
+      <div class="row">
+        <button class="btn primary" id="vPlay">Iniciar</button>
+        <button class="btn" id="vHand">Passar a mão à frente</button>
+        <button class="btn" id="vFake">Forçar 1 leitura errada</button>
+      </div>
+      <div class="ctl"><label for="vFps">Leituras por segundo</label><output id="vFpsO"></output><input type="range" id="vFps" min="1" max="15" value="7"></div>
+      <div class="ctl"><label for="vShake">Tremor da mão</label><output id="vShakeO"></output><input type="range" id="vShake" min="0" max="100" value="35"></div>
+      <div class="ctl"><label for="vNoise">Ruído da câmara</label><output id="vNoiseO"></output><input type="range" id="vNoise" min="0" max="100" value="15"></div>
+      <div class="ctl"><label for="vT">Semelhança mínima</label><output id="vTO"></output><input type="range" id="vT" min="30" max="90" value="60"></div>
+      <div class="ctl"><label for="vM">Margem sobre a 2.ª</label><output id="vMO"></output><input type="range" id="vM" min="0" max="20" value="8"></div>
+      <div class="ctl"><label for="vN">Leituras iguais nas últimas 5</label><output id="vNO"></output><input type="range" id="vN" min="1" max="5" value="3"></div>
+      <button class="btn" id="vReset">Repor valores da app</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <div class="panel">
+        <h3>Estado</h3>
+        <div class="verdict" id="vVerdict"></div>
+        <div><p class="cap">Últimas 5 leituras (a mais recente à direita)</p><div class="chips" id="vChips"></div></div>
+        <canvas id="vChart" width="640" height="200" style="width:100%;height:auto"></canvas>
+        <p class="cap">Semelhança da melhor candidata em cada leitura. Pontos cheios passaram os dois limites; a linha tracejada é a semelhança mínima.</p>
+        <p class="kv" id="vBudget"></p>
+      </div>
+      <div class="prose">
+        <ul>
+          <li>Põe “leituras iguais” em 1 e força uma leitura errada: a app aceita logo a carta errada. Com 3 em 5, ignora-a.</li>
+          <li>Sobe o tremor e o ruído e vê quando a linha começa a cair abaixo do limite.</li>
+          <li>A terceira carta do ciclo não está na base de dados: deve ficar sempre “à procura”.</li>
+        </ul>
+        <div class="tech-only techbox"><span class="tag">Técnico</span>
+          <ul>
+            <li><b>Cadência</b>: a câmara entrega 30 fotogramas por segundo; ler 7 poupa bateria e deixa o ecrã fluido. No browser o caminho é <code>getUserMedia</code> → <code>&lt;video&gt;</code> → <code>drawImage</code> para um canvas → <code>getImageData</code>.</li>
+            <li><b>Custo por leitura</b>: 449 cartas × 864 números × 6 recortes ≈ 2,3 milhões de multiplicações. Um telemóvel faz isto em poucos milissegundos.</li>
+            <li><b>Erros que só existem em vídeo</b>: desfocagem de movimento, foco e exposição ainda a ajustar, reflexos que passam, fotogramas apanhados a meio da troca de carta.</li>
+            <li><b>Voto 3 em 5</b> é um filtro temporal com histerese. O preço é atraso: no mínimo 3 leituras antes de aceitar.</li>
+            <li>Se os erros de fotogramas diferentes forem independentes, exigir 3 leituras iguais corta a taxa de falsos positivos de <code>p</code> para a ordem de <code>p³</code>. Na prática não são totalmente independentes, por isso a margem de 0,08 continua a ser precisa.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SOM ============ -->
+<section class="tab" id="t-som" hidden>
+  <div class="prose">
+    <h2>Som: a mesma ideia, com um desenho do som em vez de uma foto</h2>
+    <p>É assim que as apps que identificam músicas funcionam. O som é transformado num desenho (tempo na horizontal, grave a agudo na vertical), marcam-se os pontos mais fortes e compara-se o padrão desses pontos com os guardados. Bastam uns segundos, mesmo com barulho por cima.</p>
+  </div>
+  <div class="bench">
+    <div class="panel controls">
+      <div><label for="sSong" class="note">O que o microfone está a ouvir</label><select id="sSong"></select></div>
+      <div class="ctl"><label for="sOff">Começa a ouvir aos</label><output id="sOffO"></output><input type="range" id="sOff" min="0" max="250" step="5" value="125"></div>
+      <div class="ctl"><label for="sNoise">Barulho ambiente</label><output id="sNoiseO"></output><input type="range" id="sNoise" min="0" max="100" value="20"></div>
+      <div class="row">
+        <button class="btn primary" id="sPlayQ">Ouvir o excerto</button>
+        <button class="btn" id="sPlayS">Ouvir a melodia inteira</button>
+      </div>
+      <p class="note" id="sAudioMsg">As melodias são geradas pela página. Confirma o volume antes de ouvir.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <div class="panel">
+        <h3>Melodia guardada (4 s)</h3>
+        <canvas class="spec" id="sSpecS" width="496" height="150"></canvas>
+        <h3>Excerto ouvido (1,5 s), com os pontos fortes marcados</h3>
+        <canvas class="spec" id="sSpecQ" width="496" height="150"></canvas>
+        <p class="cap">Horizontal: tempo. Vertical: do grave (em baixo) ao agudo. O retângulo na melodia guardada mostra onde o excerto encaixou.</p>
+      </div>
+      <div class="panel">
+        <h3>Comparação com a base de dados</h3>
+        <div class="verdict" id="sVerdict"></div>
+        <div class="rank" id="sRank"></div>
+      </div>
+    </div>
+  </div>
+  <div class="prose">
+    <p>O paralelo com as cartas é direto: impressão digital, comparação, e um limite para dizer “não conheço”. A diferença é que o som só existe ao longo do tempo, por isso a própria impressão digital já junta vários instantes.</p>
+    <div class="tech-only techbox"><span class="tag">Técnico</span>
+      <ul>
+        <li><b>Espectrograma</b>: transformada de Fourier em janelas curtas (STFT). Aqui: 8 kHz, janela de Hann de 512 amostras (64 ms), salto de 256, 15,6 Hz por linha.</li>
+        <li><b>Constelação</b>: em cada instante fica só o pico de cada banda de frequência, e só no momento em que a nota arranca. Barulho espalhado raramente cria picos tão fortes.</li>
+        <li><b>Hashes</b>: pares de picos próximos viram uma chave <code>(f1, f2, Δt)</code>. A base de dados é um dicionário chave → (melodia, instante).</li>
+        <li><b>Alinhamento</b>: para cada chave encontrada calcula-se a diferença de tempo entre a base e o excerto. Na melodia certa muitas chaves dão a mesma diferença. Esse pico no histograma é a pontuação, e também diz em que segundo da melodia estamos.</li>
+        <li>Em tempo real usa-se um buffer deslizante de alguns segundos (<code>AudioWorklet</code> ou <code>AnalyserNode</code>) e repete-se a procura a cada meio segundo.</li>
+        <li>Para voz e comandos falados a receita muda: coeficientes MFCC e uma rede neuronal pequena, porque ninguém diz a mesma palavra duas vezes da mesma maneira.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TEXTO ============ -->
+<section class="tab" id="t-texto" hidden>
+  <div class="prose">
+    <h2>Texto e códigos: ler em vez de comparar</h2>
+    <p>Comparar imagens diz “esta carta parece-se com aquela”. Ler o código impresso (por exemplo <code>EBP01-004</code>) diz exatamente qual é. A v0.1 da app <b>não</b> faz isto, só compara imagens. Seria o reforço natural para separar cartas com a mesma arte, se o código for diferente entre elas.</p>
+  </div>
+  <div class="bench">
+    <div class="panel controls">
+      <h3>1. Separar a tinta do fundo</h3>
+      <div class="ctl"><label for="oThr">Limiar (o que conta como preto)</label><output id="oThrO"></output><input type="range" id="oThr" min="0" max="255" value="128"></div>
+      <div class="ctl"><label for="oLight">Luz desigual</label><output id="oLightO"></output><input type="range" id="oLight" min="0" max="100" value="55"></div>
+      <div class="ctl"><label for="oNoise">Ruído</label><output id="oNoiseO"></output><input type="range" id="oNoise" min="0" max="100" value="25"></div>
+      <div class="row"><button class="btn" id="oOtsu">Escolher limiar automático</button></div>
+      <label class="check"><input type="checkbox" id="oAdapt"> Limiar por zona (adaptativo)</label>
+    </div>
+    <div class="panel" style="min-width:0">
+      <canvas id="oSrc" width="340" height="96" style="width:100%;height:auto;border-radius:6px;border:1px solid var(--line)"></canvas>
+      <p class="cap">O que a câmara capta</p>
+      <canvas id="oBin" width="340" height="96" style="width:100%;height:auto;border-radius:6px;border:1px solid var(--line)"></canvas>
+      <p class="cap">Depois de passar a preto e branco. Com luz desigual, um único limiar apaga metade do código; o limiar por zona resolve.</p>
+    </div>
+  </div>
+  <div class="bench">
+    <div class="panel controls">
+      <h3>2. Desconfiar do que se leu</h3>
+      <div><label for="oCode" class="note">Escreve o que o leitor “viu”</label><input type="text" id="oCode" value="EBPO1-OO4" autocomplete="off" spellcheck="false"></div>
+      <div class="verdict" id="oCodeV"></div>
+      <p class="note">Formato do exemplo: 3 letras, 2 algarismos, hífen, 3 algarismos.</p>
+    </div>
+    <div class="panel controls">
+      <h3>3. Códigos feitos para máquinas</h3>
+      <div><label for="oEan" class="note">Código de barras EAN-13</label><input type="text" id="oEan" inputmode="numeric" autocomplete="off"></div>
+      <div class="verdict" id="oEanV"></div>
+      <p class="note">Troca um algarismo qualquer: o código denuncia o erro sozinho. Uma imagem de carta não tem esta rede de segurança.</p>
+    </div>
+  </div>
+  <div class="tech-only techbox"><span class="tag">Técnico</span>
+    <ul>
+      <li><b>Cadeia de OCR</b>: localizar a zona do texto → binarizar (Otsu para luz uniforme, média local para luz desigual) → separar caracteres → classificar cada um → validar.</li>
+      <li><b>Validar</b> é metade do trabalho: uma expressão regular para o formato, trocas típicas (O↔0, I↔1, S↔5, B↔8) decididas pela posição, e no fim confirmar que o código existe na base de dados.</li>
+      <li><b>Custo</b>: o código numa carta ocupa poucos píxeis de altura. Precisa de foco e de muito mais resolução do que os 48×64 da comparação de imagens, e é mais lento. Faz sentido correr só depois de a imagem já ter apontado candidatas.</li>
+      <li><b>No browser</b>: Tesseract.js corre em WebAssembly; as APIs nativas <code>TextDetector</code> e <code>BarcodeDetector</code> não existem em todos os browsers.</li>
+      <li><b>EAN-13</b>: o 13.º algarismo é calculado dos outros 12 com pesos 1 e 3. Os códigos QR vão mais longe e levam correção de erros Reed–Solomon, que recupera o conteúdo com parte do código tapada.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ MÉTODOS ============ -->
+<section class="tab" id="t-metodos" hidden>
+  <div class="prose">
+    <h2>Limitações da v0.1</h2>
+    <ul>
+      <li><b>R e SR com a mesma arte</b>: a imagem é igual e só muda o brilho, por isso a app não as distingue. Mostra as versões em botões para escolheres.</li>
+      <li><b>A carta tem de estar na base de dados</b>: uma carta que não esteja lá nunca é reconhecida. No máximo é confundida com outra parecida, e é por isso que existem os limites de 0,60 e 0,08.</li>
+      <li><b>Correção ao que se disse antes</b>: falou-se em reforçar o reconhecimento com a leitura do código impresso (ex.: EBP01-004). Isso não foi feito. A v0.1 só compara imagens.</li>
+      <li><b>Carta muito inclinada ou em perspetiva</b>: a grelha fixa assume a carta direita dentro da moldura. A procura à volta só cobre pequenos desvios.</li>
+    </ul>
+  </div>
+  <div class="panel">
+    <h2>Outras formas de reconhecer imagens em tempo real</h2>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Método</th><th>O que compara</th><th>Ponto forte</th><th>Ponto fraco</th><th>Peso</th></tr></thead>
+      <tbody>
+        <tr class="me"><td><b>Grelha de luz, cor e contornos</b><br><span class="note">o que a app usa</span></td><td>864 números por carta, cosseno</td><td>Simples, rápido, sem treino, aguenta mudanças de luz</td><td>Rotação, perspetiva, artes iguais</td><td>Muito leve</td></tr>
+        <tr><td><b>Hash percetual</b> (pHash, dHash)</td><td>64 bits, distância de Hamming</td><td>Minúsculo e instantâneo, bom para duplicados</td><td>Pouco detalhe: confunde cartas parecidas, sofre com cortes</td><td>Mínimo</td></tr>
+        <tr><td><b>Pontos-chave</b> (ORB, SIFT) com homografia</td><td>Centenas de cantos e manchas, cada um com descritor</td><td>Aguenta rotação, perspetiva e carta meio tapada</td><td>Mais lento, falha em artes lisas ou desfocadas</td><td>Médio</td></tr>
+        <tr><td><b>Rede neuronal</b> (embeddings)</td><td>Vetor aprendido, cosseno</td><td>A mais robusta; treinada para isso, separa diferenças subtis</td><td>Precisa de dados e treino; modelo de vários MB no telemóvel</td><td>Pesado</td></tr>
+        <tr><td><b>OCR do código impresso</b></td><td>Texto lido contra a lista de códigos</td><td>Identificação exata</td><td>Precisa de foco e resolução; lento</td><td>Médio a pesado</td></tr>
+        <tr><td><b>Código de barras ou QR</b></td><td>Padrão desenhado para máquinas</td><td>Quase infalível, com deteção de erros</td><td>Só serve se o objeto o trouxer impresso</td><td>Leve</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="note">Na prática combinam-se: um método leve escolhe candidatas a cada fotograma e um mais caro desempata só quando é preciso.</p>
+  </div>
+  <div class="tech-only techbox"><span class="tag">Técnico</span>
+    <ul>
+      <li><b>Separar R de SR</b>: além do código impresso, dá para comparar só a zona onde a raridade está escrita, em resolução maior, ou medir como o brilho muda entre fotogramas quando a carta se inclina (o holográfico varia, o cartão normal não).</li>
+      <li><b>Escalar a base de dados</b>: com milhares de cartas a força bruta ainda chega. Com milhões passa-se a índices aproximados (HNSW, IVF) e vetores quantizados.</li>
+      <li><b>Afinar limites</b>: grava leituras reais de cartas certas e erradas, desenha as duas distribuições de semelhança e escolhe o limiar onde se cruzam o menos possível. Os valores 0,60 e 0,08 dependem da receita da impressão digital.</li>
+    </ul>
+  </div>
+</section>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const tok=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const pt=(v,d=2)=>v.toFixed(d).replace('.',',');
+function rng(seed){let s=seed>>>0;return()=>{s=(s+0x6D2B79F5)|0;let t=Math.imul(s^(s>>>15),1|s);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null;}}
+
+/* ---------- modo e separadores ---------- */
+function setMode(tech){document.body.classList.toggle('tech',tech);$('modeTech').setAttribute('aria-pressed',tech);$('modeSimple').setAttribute('aria-pressed',!tech);store('lcMode',tech?'t':'s');}
+$('modeTech').onclick=()=>setMode(true);$('modeSimple').onclick=()=>setMode(false);
+setMode(store('lcMode')==='t');
+const TABS=['visao-geral','imagem','video','som','texto','metodos'];
+let curTab='visao-geral';
+function showTab(t){if(!TABS.includes(t))t='visao-geral';curTab=t;
+  TABS.forEach(x=>{$('t-'+x).hidden=x!==t;});
+  document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+  if(t!=='video')vid.playing&&vToggle(false);
+  if(t==='video')vDraw();
+}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{try{location.hash=b.dataset.tab;}catch(e){}showTab(b.dataset.tab);});
+window.addEventListener('hashchange',()=>showTab(location.hash.slice(1)));
+
+/* ---------- cartas inventadas ---------- */
+const CARDS=[
+ {id:'c1',name:'Lontra de Bronze',art:11},{id:'c2',name:'Farol Azul',art:23},{id:'c3',name:'Raposa Solar',art:37},
+ {id:'c4',name:'Musgo Antigo',art:41},{id:'c5',name:'Torre de Sal',art:59},
+ {id:'c6r',name:'Corvo de Vidro',art:73,variant:'R'},{id:'c6s',name:'Corvo de Vidro',art:73,variant:'SR'}];
+const OUTSIDE={id:'x',name:'Carta fora da base',art:97};
+const label=c=>c.name+(c.variant?' ('+c.variant+')':'');
+function rr(ctx,x,y,w,h,r){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h);}
+function drawCard(ctx,card){const W=240,H=320,r=rng(card.art*7919+13);const hue=r()*360,hue2=(hue+60+r()*180)%360;
+  ctx.fillStyle='#e9e2c8';rr(ctx,0,0,W,H,12);ctx.fill();
+  const g=ctx.createLinearGradient(0,0,W*(.3+r()*.7),H);g.addColorStop(0,`hsl(${hue},62%,${38+r()*20}%)`);g.addColorStop(1,`hsl(${(hue+30+r()*60)%360},66%,${18+r()*14}%)`);
+  ctx.fillStyle=g;rr(ctx,7,7,W-14,H-14,8);ctx.fill();
+  ctx.fillStyle='rgba(10,14,20,.72)';rr(ctx,16,14,W-32,28,5);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='700 15px Arial, sans-serif';ctx.textBaseline='middle';ctx.fillText(card.name,24,29);
+  ctx.save();rr(ctx,18,50,W-36,150,6);ctx.clip();
+  ctx.fillStyle=`hsl(${hue2},55%,${62+r()*22}%)`;ctx.fillRect(18,50,W-36,150);
+  const n=6+Math.floor(r()*4);
+  for(let i=0;i<n;i++){const k=r(),x=18+r()*(W-36),y=50+r()*150,s=18+r()*46;ctx.fillStyle=`hsl(${r()*360},${50+r()*35}%,${22+r()*55}%)`;
+    if(k<.35){ctx.beginPath();ctx.arc(x,y,s*.7,0,7);ctx.fill();}
+    else if(k<.6){ctx.beginPath();ctx.moveTo(x,y-s);ctx.lineTo(x+s,y+s*.8);ctx.lineTo(x-s,y+s*.8);ctx.closePath();ctx.fill();}
+    else if(k<.8){ctx.save();ctx.translate(x,y);ctx.rotate(r()*3);ctx.fillRect(-s*2,-s*.18,s*4,s*.36);ctx.restore();}
+    else{ctx.save();ctx.translate(x,y);ctx.rotate(r()*3);ctx.fillRect(-s*.6,-s*.6,s*1.2,s*1.2);ctx.restore();}}
+  ctx.restore();
+  ctx.fillStyle='rgba(255,255,255,.88)';rr(ctx,18,210,W-36,92,6);ctx.fill();
+  ctx.fillStyle=`hsl(${r()*360},70%,40%)`;ctx.beginPath();ctx.arc(36+r()*20,230,9,0,7);ctx.fill();
+  ctx.fillStyle='#39424d';const ln=3+Math.floor(r()*3);for(let i=0;i<ln;i++){ctx.fillRect(28,248+i*11,60+r()*130,4);}
+  if(card.variant==='SR'){ctx.save();rr(ctx,0,0,W,H,12);ctx.clip();ctx.globalAlpha=.13;ctx.fillStyle='#fff';ctx.rotate(-.5);for(let x=-200;x<400;x+=46)ctx.fillRect(x,0,16,700);ctx.restore();}
+}
+const cardCv={};
+function mk(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
+[...CARDS,OUTSIDE].forEach(c=>{const cv=mk(240,320);drawCard(cv.getContext('2d'),c);cardCv[c.id]=cv;});
+const thumb={};CARDS.forEach(c=>{const t=mk(60,80);t.getContext('2d').drawImage(cardCv[c.id],0,0,60,80);thumb[c.id]=t.toDataURL();});
+
+/* ---------- cena da câmara ---------- */
+const FR={x:30,y:40,w:240,h:320};
+const noiseRng=rng(4242);
+function renderScene(ctx,src,p){const W=300,H=400;ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+  ctx.fillStyle='#5d4a3a';ctx.fillRect(0,0,W,H);ctx.fillStyle='#6a5645';for(let y=0;y<H;y+=57)ctx.fillRect(0,y,W,26);ctx.fillStyle='#4f3f31';for(let y=26;y<H;y+=57)ctx.fillRect(0,y,W,2);
+  if(src){ctx.save();ctx.translate(FR.x+FR.w/2+(p.dx||0)*FR.w,FR.y+FR.h/2+(p.dy||0)*FR.h);ctx.rotate((p.rot||0)*Math.PI/180);const z=p.zoom||1;ctx.scale(z,z);ctx.drawImage(src,-120,-160,240,320);ctx.restore();}
+  if(p.finger){ctx.fillStyle='#d9a383';ctx.save();ctx.translate(FR.x-10,FR.y+FR.h-52);ctx.rotate(.25);ctx.beginPath();ctx.ellipse(0,0,25,62,0,0,7);ctx.fill();ctx.restore();}
+  if(p.hand){ctx.fillStyle='#d9a383';ctx.beginPath();ctx.ellipse(150,230,130,150,.2,0,7);ctx.fill();}
+  const t=p.temp||0;if(t){ctx.globalCompositeOperation='multiply';const a=Math.abs(t);ctx.fillStyle=t>0?`rgb(255,${255-75*a|0},${255-165*a|0})`:`rgb(${255-135*a|0},${255-55*a|0},255)`;ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='source-over';}
+  const b=p.bright||0;if(b<0){ctx.fillStyle=`rgba(0,0,0,${-b*.65})`;ctx.fillRect(0,0,W,H);}else if(b>0){ctx.globalCompositeOperation='screen';ctx.fillStyle=`rgba(255,255,255,${b*.5})`;ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='source-over';}
+  if(p.noise>0){const im=ctx.getImageData(0,0,W,H),d=im.data,a=p.noise*110;for(let i=0;i<d.length;i+=4){const n=(noiseRng()-.5)*a;d[i]+=n;d[i+1]+=n*(.6+noiseRng()*.8);d[i+2]+=n;}ctx.putImageData(im,0,0);}
+}
+function overlay(ctx,cand,ok){ctx.save();ctx.setLineDash([8,6]);ctx.lineWidth=2;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.strokeRect(FR.x,FR.y,FR.w,FR.h);
+  if(cand&&(cand.dx||cand.dy||cand.s!==1)){const r=candRect(cand);ctx.setLineDash([]);ctx.strokeStyle=ok?'#5fd08a':'#f0b24a';ctx.strokeRect(r.x,r.y,r.w,r.h);}ctx.restore();}
+
+/* ---------- impressão digital ---------- */
+const tmp=mk(48,64),tctx=tmp.getContext('2d',{willReadFrequently:true});tctx.imageSmoothingQuality='high';
+function l2(a){let s=0;for(let i=0;i<a.length;i++)s+=a[i]*a[i];s=Math.sqrt(s)||1;for(let i=0;i<a.length;i++)a[i]/=s;return a;}
+function fingerprint(src,r){
+  const m=.05;tctx.clearRect(0,0,48,64);tctx.drawImage(src,r.x+r.w*m,r.y+r.h*m,r.w*(1-2*m),r.h*(1-2*m),0,0,48,64);
+  const im=tctx.getImageData(0,0,48,64),d=im.data,N=3072;const raw=new Uint8ClampedArray(d);
+  let mr=0,mg=0,mb=0;for(let i=0;i<N;i++){mr+=d[i*4];mg+=d[i*4+1];mb+=d[i*4+2];}mr/=N;mg/=N;mb/=N;const mm=(mr+mg+mb)/3;
+  const kr=mm/(mr||1),kg=mm/(mg||1),kb=mm/(mb||1);
+  const R=new Float32Array(N),G=new Float32Array(N),B=new Float32Array(N),Y=new Float32Array(N);const fix=new Uint8ClampedArray(N*4);
+  for(let i=0;i<N;i++){R[i]=d[i*4]*kr;G[i]=d[i*4+1]*kg;B[i]=d[i*4+2]*kb;Y[i]=.299*R[i]+.587*G[i]+.114*B[i];fix[i*4]=R[i];fix[i*4+1]=G[i];fix[i*4+2]=B[i];fix[i*4+3]=255;}
+  const lum=new Float32Array(192),rg=new Float32Array(192),yb=new Float32Array(192);
+  for(let cy=0;cy<16;cy++)for(let cx=0;cx<12;cx++){let a=0,b=0,c=0;for(let y=0;y<4;y++)for(let x=0;x<4;x++){const i=(cy*4+y)*48+cx*4+x;a+=Y[i];b+=R[i]-G[i];c+=(R[i]+G[i])/2-B[i];}const k=cy*12+cx;lum[k]=a/16;rg[k]=b/16;yb[k]=c/16;}
+  let ml=0;for(let i=0;i<192;i++)ml+=lum[i];ml/=192;const lumN=new Float32Array(192);for(let i=0;i<192;i++)lumN[i]=lum[i]-ml;l2(lumN);
+  const col=new Float32Array(384);col.set(rg,0);col.set(yb,192);l2(col);
+  const edg=new Float32Array(288);
+  for(let y=1;y<63;y++)for(let x=1;x<47;x++){const i=y*48+x,gx=Y[i+1]-Y[i-1],gy=Y[i+48]-Y[i-48],mg2=Math.hypot(gx,gy);if(mg2<2)continue;let an=Math.atan2(gy,gx);if(an<0)an+=Math.PI;const bin=Math.min(5,Math.floor(an/Math.PI*6));edg[((y>>3)*6+(x>>3))*6+bin]+=mg2;}
+  for(let i=0;i<288;i++)edg[i]=Math.sqrt(edg[i]);l2(edg);
+  const vec=new Float32Array(864),w=1/Math.sqrt(3);for(let i=0;i<192;i++)vec[i]=lumN[i]*w;for(let i=0;i<384;i++)vec[192+i]=col[i]*w;for(let i=0;i<288;i++)vec[576+i]=edg[i]*w;
+  return{vec,raw,fix,lum,rg,yb,edg};
+}
+const dot=(a,b)=>{let s=0;for(let i=0;i<a.length;i++)s+=a[i]*b[i];return s;};
+const DB=CARDS.map(c=>({card:c,vec:fingerprint(cardCv[c.id],{x:0,y:0,w:240,h:320}).vec}));
+const CANDS=[{n:'ao centro',dx:0,dy:0,s:1},{n:'mais acima',dx:0,dy:-.06,s:1},{n:'mais abaixo',dx:0,dy:.06,s:1},{n:'à esquerda',dx:-.06,dy:0,s:1},{n:'à direita',dx:.06,dy:0,s:1},{n:'maior',dx:0,dy:0,s:1.1}];
+function candRect(c){const w=FR.w*c.s,h=FR.h*c.s;return{x:FR.x+FR.w/2-w/2+c.dx*FR.w,y:FR.y+FR.h/2-h/2+c.dy*FR.h,w,h};}
+function recognise(scene,search,T,M){let best=null;const list=search?CANDS:[CANDS[0]];
+  for(const c of list){const fp=fingerprint(scene,candRect(c));const sims=DB.map(e=>({card:e.card,sim:dot(fp.vec,e.vec)})).sort((a,b)=>b.sim-a.sim);if(!best||sims[0].sim>best.sims[0].sim)best={cand:c,fp,sims};}
+  const top=best.sims[0],other=best.sims.find(s=>s.card.art!==top.card.art);best.top=top;best.margin=top.sim-other.sim;best.okT=top.sim>=T;best.okM=best.margin>=M;best.ok=best.okT&&best.okM;return best;}
+
+/* ---------- separador Imagem ---------- */
+const scene=mk(300,400),sctx=scene.getContext('2d',{willReadFrequently:true});
+const imgSel=$('imgCard');[...CARDS,OUTSIDE].forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=label(c);imgSel.appendChild(o);});
+let userImg=null;
+const iIds=['iBright','iTemp','iDx','iDy','iZoom','iRot','iNoise'];
+function putPx(id,data,w,h){const c=$(id).getContext('2d');const im=c.createImageData(w,h);im.data.set(data);c.putImageData(im,0,0);}
+function mapCells(id,arr,fn){const out=new Uint8ClampedArray(192*4);let mx=1e-6,mean=0;for(const v of arr){mean+=v;}mean/=arr.length;for(const v of arr)mx=Math.max(mx,Math.abs(fn==='lum'?v-mean:v));
+  for(let i=0;i<192;i++){let r,g,b;if(fn==='lum'){const v=128+(arr[i]-mean)/mx*127;r=g=b=v;}else{const t=arr[i]/mx;const a=Math.abs(t);if(fn==='rg'){r=t>0?235:235-175*a;g=t>0?235-175*a:235-40*a;b=235-175*a;}else{r=t>0?235:235-175*a;g=t>0?235-35*a:235-135*a;b=t>0?235-200*a:235;}}
+    out[i*4]=r;out[i*4+1]=g;out[i*4+2]=b;out[i*4+3]=255;}putPx(id,out,12,16);}
+function drawEdges(edg){const c=$('mEdg').getContext('2d');c.fillStyle=tok('--surface');c.fillRect(0,0,144,192);let mx=1e-6;for(const v of edg)mx=Math.max(mx,v);c.strokeStyle=tok('--ink');c.lineWidth=2;c.lineCap='round';
+  for(let cy=0;cy<8;cy++)for(let cx=0;cx<6;cx++)for(let b=0;b<6;b++){const v=edg[(cy*6+cx)*6+b]/mx;if(v<.12)continue;const an=(b+.5)/6*Math.PI+Math.PI/2,x=cx*24+12,y=cy*24+12,l=10;c.globalAlpha=Math.min(1,v*1.2);c.beginPath();c.moveTo(x-Math.cos(an)*l,y-Math.sin(an)*l);c.lineTo(x+Math.cos(an)*l,y+Math.sin(an)*l);c.stroke();}c.globalAlpha=1;}
+function drawStrip(vec){const out=new Uint8ClampedArray(864*4);const seg=[[0,192],[192,576],[576,864]];for(const[a,b]of seg){let mx=1e-6,mean=0;for(let i=a;i<b;i++)mean+=vec[i];mean/=(b-a);for(let i=a;i<b;i++)mx=Math.max(mx,Math.abs(vec[i]-mean));
+    for(let i=a;i<b;i++){const t=(vec[i]-mean)/mx,k=Math.abs(t);out[i*4]=t>0?240:240-200*k;out[i*4+1]=t>0?240-110*k:240-110*k;out[i*4+2]=t>0?240-210*k:240-20*k;out[i*4+3]=255;}}putPx('mStrip',out,864,1);}
+function rankHTML(el,rows,max){el.innerHTML='';rows.forEach((r,i)=>{const d=document.createElement('div');d.className='rk'+(i===0?' top':'');const w=Math.max(0,Math.min(1,r.v/max))*100;
+    d.innerHTML=(r.img?`<img alt="" src="${r.img}">`:'<span></span>')+`<div><div class="nm"><span>${r.name}</span></div><div class="bar"><i style="width:${w}%"></i>${r.mark!=null?`<u style="left:${r.mark/max*100}%"></u>`:''}</div></div><b>${r.txt}</b>`;el.appendChild(d);});}
+function rule(ok,t){return`<div class="rule"><span class="${ok?'y':'x'}">${ok?'✓':'✗'}</span><span>${t}</span></div>`;}
+function imgParams(){return{bright:$('iBright').value/100,temp:$('iTemp').value/100,dx:$('iDx').value/100,dy:$('iDy').value/100,zoom:$('iZoom').value/100,rot:+$('iRot').value,noise:$('iNoise').value/100,finger:$('iFinger').checked};}
+function imgUpdate(){const p=imgParams();
+  $('iBrightO').value=(p.bright>0?'+':'')+Math.round(p.bright*100);$('iTempO').value=p.temp===0?'neutra':(p.temp>0?'amarela ':'azul ')+Math.abs(Math.round(p.temp*100));
+  $('iDxO').value=Math.round(p.dx*100)+'%';$('iDyO').value=Math.round(p.dy*100)+'%';$('iZoomO').value=Math.round(p.zoom*100)+'%';$('iRotO').value=p.rot+'°';$('iNoiseO').value=Math.round(p.noise*100);
+  const src=userImg||cardCv[imgSel.value];renderScene(sctx,src,p);
+  const res=recognise(scene,$('iSearch').checked,.60,.08);
+  const v=$('imgCam').getContext('2d');v.drawImage(scene,0,0);overlay(v,res.cand,res.ok);
+  putPx('mRaw',res.fp.raw,48,64);putPx('mFix',res.fp.fix,48,64);mapCells('mLum',res.fp.lum,'lum');mapCells('mRG',res.fp.rg,'rg');mapCells('mYB',res.fp.yb,'yb');drawEdges(res.fp.edg);drawStrip(res.fp.vec);
+  rankHTML($('iRank'),res.sims.map(s=>({name:label(s.card),img:thumb[s.card.id],v:s.sim,txt:pt(s.sim),mark:.6})),1);
+  const same=CARDS.filter(c=>c.art===res.top.card.art);
+  const vd=$('iVerdict');vd.className='verdict '+(res.ok?'ok':'no');
+  vd.innerHTML=(res.ok?`<strong class="ok">Passa nos limites: ${res.top.card.name}</strong>`:`<strong class="no">Não aceita. Melhor palpite: ${res.top.card.name}</strong>`)
+   +rule(res.okT,`Semelhança ${pt(res.top.sim)} (mínimo 0,60)`)+rule(res.okM,`Margem ${pt(res.margin)} sobre a melhor carta com outra arte (mínimo 0,08)`)
+   +(res.ok&&same.length>1?`<div class="rule"><span class="warnc">!</span><span>Há ${same.length} versões com esta arte. A app mostra botões para escolheres:</span></div><div class="chips">${same.map(c=>`<span class="chip hit">${c.variant}</span>`).join('')}</div>`:'')
+   +(res.ok?'<div class="note">Numa fotografia só. Na câmara ainda falta repetir em 3 das últimas 5 leituras.</div>':'');
+  $('iCand').textContent=$('iSearch').checked?'Melhor recorte: '+res.cand.n+'.':'Procura à volta desligada.';
+}
+[...iIds,'iFinger','iSearch'].forEach(id=>$(id).addEventListener('input',imgUpdate));
+imgSel.addEventListener('change',()=>{userImg=null;$('imgFileN').textContent='';imgUpdate();});
+$('iReset').onclick=()=>{iIds.forEach(id=>$(id).value=$(id).defaultValue);$('iFinger').checked=false;$('iSearch').checked=true;imgUpdate();};
+$('imgFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=()=>{const c=mk(240,320),x=c.getContext('2d');const s=Math.max(240/im.width,320/im.height);x.drawImage(im,(240-im.width*s)/2,(320-im.height*s)/2,im.width*s,im.height*s);userImg=c;$('imgFileN').textContent=f.name;imgUpdate();};im.onerror=()=>{$('imgFileN').textContent='Não consegui abrir esse ficheiro. Experimenta um JPG ou PNG.';};im.src=URL.createObjectURL(f);});
+
+/* ---------- cosseno ---------- */
+function cosDraw(){const a=+$('cosAng').value,c=$('cosCv').getContext('2d');c.clearRect(0,0,300,170);const ox=60,oy=150,L=125;
+  const arrow=(deg,col)=>{const r=deg*Math.PI/180,x=ox+Math.cos(r)*L,y=oy-Math.sin(r)*L;c.strokeStyle=col;c.fillStyle=col;c.lineWidth=3;c.beginPath();c.moveTo(ox,oy);c.lineTo(x,y);c.stroke();c.beginPath();c.arc(x,y,5,0,7);c.fill();};
+  c.strokeStyle=tok('--line');c.lineWidth=1;c.beginPath();c.arc(ox,oy,44,-(5+a)*Math.PI/180,-5*Math.PI/180);c.stroke();
+  arrow(5,tok('--muted'));arrow(5+a,tok('--accent'));
+  c.fillStyle=tok('--muted');c.font='12px '+tok('--body');c.fillText('carta guardada',ox+70,oy-14);c.fillStyle=tok('--accent');c.fillText('o que a câmara vê',Math.max(4,Math.min(170,ox+Math.cos((5+a)*Math.PI/180)*L-40)),Math.max(12,oy-Math.sin((5+a)*Math.PI/180)*L-10));
+  const v=Math.cos(a*Math.PI/180);$('cosAngO').value=a+'°';$('cosVal').textContent=pt(v);const t=$('cosTxt');
+  if(v>=.6){t.textContent='→ acima de 0,60, pode ser a mesma carta';t.className='good';}else{t.textContent='→ abaixo de 0,60, a app não aceita';t.className='bad';}}
+$('cosAng').addEventListener('input',cosDraw);
+
+/* ---------- separador Vídeo ---------- */
+const vscene=mk(300,400),vsctx=vscene.getContext('2d',{willReadFrequently:true});
+const SEQ=[CARDS[0],CARDS[3],OUTSIDE,CARDS[5],CARDS[1]];
+const vid={playing:false,t:0,last:0,acc:0,reads:[],buf:[],accepted:null,handUntil:-1,fake:false,ms:0};
+function vParams(){return{fps:+$('vFps').value,shake:$('vShake').value/100,noise:$('vNoise').value/100,T:$('vT').value/100,M:$('vM').value/100,N:+$('vN').value};}
+function vState(t){const cyc=5.5,k=Math.floor(t/cyc)%SEQ.length,u=t%cyc;let off=0,show=true;
+  if(u<.5)show=false;else if(u<1.3){off=1.3*(1-(u-.5)/.8);off=off*off/1.3;}else if(u<4.7)off=0;else{off=-((u-4.7)/.8);off=off*1.3*Math.abs(off);}
+  return{card:SEQ[k],show,off};}
+function vRender(){const p=vParams(),s=vState(vid.t),t=vid.t;
+  renderScene(vsctx,s.show?cardCv[s.card.id]:null,{dx:s.off+p.shake*(.035*Math.sin(t*11.3)+.025*Math.sin(t*23.1)),dy:p.shake*(.03*Math.sin(t*9.1+1)+.02*Math.sin(t*19.7)),rot:p.shake*(4*Math.sin(t*7.3)+2*Math.sin(t*17)),zoom:1+p.shake*.03*Math.sin(t*5.1),noise:p.noise*.8,hand:t<vid.handUntil});}
+function vRead(){const p=vParams();const t0=performance.now();const res=recognise(vscene,true,p.T,p.M);vid.ms=vid.ms*.8+(performance.now()-t0)*.2;
+  let rd={sim:res.top.sim,ok:res.ok,art:res.ok?res.top.card.art:null,name:res.ok?res.top.card.name:null,cand:res.cand};
+  if(vid.fake){vid.fake=false;const cur=vState(vid.t).card;const wrong=CARDS.find(c=>c.art!==cur.art&&c.art!==(vid.accepted&&vid.accepted.art));rd={sim:.71,ok:true,art:wrong.art,name:wrong.name,cand:CANDS[0],forced:true};}
+  vid.buf.push(rd);if(vid.buf.length>5)vid.buf.shift();vid.reads.push(rd);if(vid.reads.length>60)vid.reads.shift();
+  const cnt={};vid.buf.forEach(r=>{if(r.art!=null)cnt[r.art]=(cnt[r.art]||0)+1;});let acc=null;for(const a in cnt)if(cnt[a]>=p.N&&(!acc||cnt[a]>cnt[acc]))acc=a;
+  vid.accepted=acc?{art:+acc,name:CARDS.find(c=>c.art===+acc).name}:null;vid.lastRead=rd;}
+function vDraw(){vRender();const v=$('vidCam').getContext('2d');v.drawImage(vscene,0,0);overlay(v,vid.lastRead&&vid.lastRead.cand,vid.lastRead&&vid.lastRead.ok);vPanel();}
+function vPanel(){const p=vParams();$('vFpsO').value=p.fps+'/s';$('vShakeO').value=Math.round(p.shake*100);$('vNoiseO').value=Math.round(p.noise*100);$('vTO').value=pt(p.T);$('vMO').value=pt(p.M);$('vNO').value=p.N+' de 5';
+  const vd=$('vVerdict');if(vid.accepted){const same=CARDS.filter(c=>c.art===vid.accepted.art);vd.className='verdict ok';vd.innerHTML=`<strong class="ok">Aceite: ${vid.accepted.name}</strong>`+(same.length>1?`<div class="note">Duas versões com esta arte. Escolhe:</div><div class="chips">${same.map(c=>`<span class="chip hit">${c.variant}</span>`).join('')}</div>`:'');}
+  else{vd.className='verdict';vd.innerHTML='<strong>À procura…</strong><div class="note">'+(vid.playing||vid.reads.length?'Ainda não há leituras iguais suficientes.':'Carrega em Iniciar para ligar a câmara simulada.')+'</div>';}
+  const ch=$('vChips');ch.innerHTML='';for(let i=0;i<5;i++){const r=vid.buf[i-(5-vid.buf.length)];const s=document.createElement('span');s.className='chip '+(r&&r.art!=null?'hit':'miss');s.textContent=r?(r.art!=null?r.name.split(' ')[0]+(r.forced?' !':''):'—'):'·';ch.appendChild(s);}
+  const c=$('vChart'),x=c.getContext('2d'),W=640,H=200,L=40,B=22,T0=10;x.clearRect(0,0,W,H);x.font='12px '+tok('--body');x.fillStyle=tok('--muted');x.strokeStyle=tok('--line');x.lineWidth=1;x.setLineDash([]);
+  const yy=v=>T0+(1-Math.max(0,Math.min(1,v)))*(H-B-T0);[0,.5,1].forEach(v=>{x.beginPath();x.moveTo(L,yy(v));x.lineTo(W-6,yy(v));x.stroke();x.fillText(pt(v,1),8,yy(v)+4);});
+  x.setLineDash([6,5]);x.strokeStyle=tok('--bad');x.beginPath();x.moveTo(L,yy(p.T));x.lineTo(W-6,yy(p.T));x.stroke();x.setLineDash([]);x.fillStyle=tok('--bad');x.fillText(pt(p.T),W-40,yy(p.T)-5);
+  const n=vid.reads.length,step=(W-L-14)/59;if(n){x.strokeStyle=tok('--accent');x.lineWidth=2;x.beginPath();vid.reads.forEach((r,i)=>{const px=L+6+i*step,py=yy(r.sim);i?x.lineTo(px,py):x.moveTo(px,py);});x.stroke();
+    vid.reads.forEach((r,i)=>{const px=L+6+i*step,py=yy(r.sim);x.beginPath();x.arc(px,py,i===n-1?5:3.2,0,7);x.fillStyle=r.forced?tok('--warn'):r.ok?tok('--accent'):tok('--surface');x.fill();x.strokeStyle=r.forced?tok('--warn'):tok('--accent');x.lineWidth=1.5;x.stroke();});}
+  x.fillStyle=tok('--muted');x.fillText('leituras, da mais antiga para a mais recente',L,H-5);
+  const budget=1000/p.fps,ops=449*864*6;$('vBudget').innerHTML=`Tempo entre leituras: ${Math.round(budget)} ms · espera mínima até aceitar: ${pt(p.N/p.fps)} s`+(vid.ms?`<br>Esta demo (7 cartas): ${pt(vid.ms,1)} ms por leitura · com 449 seriam ${pt(ops/1e6,1)} M de multiplicações`:'');}
+function vLoop(ts){if(!vid.playing)return;const dt=Math.min(.1,(ts-vid.last)/1000||0);vid.last=ts;vid.t+=dt;vid.acc+=dt;const iv=1/vParams().fps;vRender();let read=false;if(vid.acc>=iv){vid.acc=vid.acc%iv;vRead();read=true;}
+  const v=$('vidCam').getContext('2d');v.drawImage(vscene,0,0);overlay(v,vid.lastRead&&vid.lastRead.cand,vid.lastRead&&vid.lastRead.ok);if(read)vPanel();requestAnimationFrame(vLoop);}
+function vToggle(on){vid.playing=on;$('vPlay').textContent=on?'Pausar':'Iniciar';if(on){vid.last=performance.now();requestAnimationFrame(vLoop);}else vPanel();}
+$('vPlay').onclick=()=>vToggle(!vid.playing);
+$('vHand').onclick=()=>{vid.handUntil=vid.t+.45;if(!vid.playing)vToggle(true);};
+$('vFake').onclick=()=>{vid.fake=true;if(!vid.playing)vToggle(true);};
+['vFps','vShake','vNoise','vT','vM','vN'].forEach(id=>$(id).addEventListener('input',()=>{if(!vid.playing)vPanel();}));
+$('vReset').onclick=()=>{['vFps','vShake','vNoise','vT','vM','vN'].forEach(id=>$(id).value=$(id).defaultValue);vPanel();};
+
+/* ---------- separador Som ---------- */
+const SR=8000,NF=512,HOP=256,BINS=150;
+function makeSong(seed){const r=rng(seed),n=SR*4,x=new Float32Array(n),sc=[0,2,4,7,9,12,14,16,19,21,24],base=220*Math.pow(2,Math.floor(r()*5)/12);
+  for(let k=0;k<16;k++){const f=base*Math.pow(2,sc[Math.floor(r()*11)]/12),f2=r()<.7?base*2*Math.pow(2,sc[Math.floor(r()*11)]/12):0,s0=k*SR/4;
+    for(let i=0;i<SR/4;i++){const t=i/SR,env=Math.exp(-5*t)*Math.min(1,t/.008);x[s0+i]=env*(.5*Math.sin(2*Math.PI*f*t)+.2*Math.sin(4*Math.PI*f*t)+(f2?.3*Math.sin(2*Math.PI*f2*t):0));}}return x;}
+const hann=new Float32Array(NF);for(let i=0;i<NF;i++)hann[i]=.5-.5*Math.cos(2*Math.PI*i/(NF-1));
+function fft(re,im){const n=re.length;for(let i=1,j=0;i<n;i++){let b=n>>1;for(;j&b;b>>=1)j^=b;j^=b;if(i<j){let t=re[i];re[i]=re[j];re[j]=t;t=im[i];im[i]=im[j];im[j]=t;}}
+  for(let len=2;len<=n;len<<=1){const a=-2*Math.PI/len,wr=Math.cos(a),wi=Math.sin(a);for(let i=0;i<n;i+=len){let cr=1,ci=0;for(let k=0;k<len/2;k++){const p=i+k,q=p+len/2,xr=re[q]*cr-im[q]*ci,xi=re[q]*ci+im[q]*cr;re[q]=re[p]-xr;im[q]=im[p]-xi;re[p]+=xr;im[p]+=xi;const t=cr*wr-ci*wi;ci=cr*wi+ci*wr;cr=t;}}}}
+function stft(x){const fr=Math.floor((x.length-NF)/HOP)+1,m=new Float32Array(fr*BINS),re=new Float32Array(NF),im=new Float32Array(NF);let mx=0;
+  for(let f=0;f<fr;f++){for(let i=0;i<NF;i++){re[i]=x[f*HOP+i]*hann[i];im[i]=0;}fft(re,im);for(let b=0;b<BINS;b++){const v=Math.hypot(re[b],im[b]);m[f*BINS+b]=v;if(v>mx)mx=v;}}return{fr,m,mx};}
+const BANDS=[[10,30],[30,55],[55,90],[90,148]];
+function peaks(sp){const out=[];for(let t=1;t<sp.fr-1;t++)for(const[a,b]of BANDS){let bb=-1,bv=0;for(let k=a;k<b;k++){const v=sp.m[t*BINS+k];if(v>bv){bv=v;bb=k;}}
+    if(bv>.18*sp.mx&&bv>sp.m[(t-1)*BINS+bb]*1.15&&bv>=sp.m[(t+1)*BINS+bb])out.push({t,f:bb});}return out;}
+function hashes(pk){const out=[];for(let i=0;i<pk.length;i++){let fan=0;for(let j=i+1;j<pk.length&&fan<5;j++){const dt=pk[j].t-pk[i].t;if(dt<1)continue;if(dt>20)break;out.push({k:pk[i].f<<14|pk[j].f<<6|dt,t:pk[i].t});fan++;}}return out;}
+const SONGS=[{name:'Melodia A',seed:101},{name:'Melodia B',seed:202},{name:'Melodia C',seed:303},{name:'Melodia D',seed:404}];
+const SOUT={name:'Som que não está na base',seed:909};
+const sIndex=new Map();
+[...SONGS,SOUT].forEach(s=>{s.x=makeSong(s.seed);s.sp=stft(s.x);});
+SONGS.forEach((s,si)=>{hashes(peaks(s.sp)).forEach(h=>{let l=sIndex.get(h.k);if(!l)sIndex.set(h.k,l=[]);l.push({si,t:h.t});});});
+const sSel=$('sSong');[...SONGS,SOUT].forEach((s,i)=>{const o=document.createElement('option');o.value=i;o.textContent=s.name;sSel.appendChild(o);});
+function specDraw(id,sp,pk,box){const cv=$(id),c=cv.getContext('2d');c.fillStyle='#0b1622';c.fillRect(0,0,cv.width,cv.height);const im=c.createImageData(sp.fr,BINS),d=im.data;
+  for(let t=0;t<sp.fr;t++)for(let b=0;b<BINS;b++){const v=Math.min(1,Math.log1p(sp.m[t*BINS+b]/sp.mx*60)/Math.log(61)),i=((BINS-1-b)*sp.fr+t)*4;d[i]=11+v*v*231;d[i+1]=22+v*190;d[i+2]=34+v*(v<.6?150:60);d[i+3]=255;}
+  const o=mk(sp.fr,BINS);o.getContext('2d').putImageData(im,0,0);c.imageSmoothingEnabled=false;c.drawImage(o,0,0,sp.fr*4,BINS);
+  if(pk){c.fillStyle='#fff';pk.forEach(p=>{c.beginPath();c.arc(p.t*4+2,BINS-1-p.f,3,0,7);c.fill();});}
+  if(box){c.strokeStyle='#fff';c.lineWidth=2;c.strokeRect(box.t*4,1,box.w*4,BINS-2);}}
+let sQuery=null;const sRng=rng(77);
+function sUpdate(){const si=+sSel.value,all=[...SONGS,SOUT],song=all[si],off=$('sOff').value/100,nz=$('sNoise').value/100;$('sOffO').value=pt(off)+' s';$('sNoiseO').value=Math.round(nz*100);
+  const s0=Math.round(off*SR),q=new Float32Array(SR*1.5);for(let i=0;i<q.length;i++)q[i]=song.x[s0+i]+(sRng()-.5)*2*nz*.4;sQuery=q;
+  const sp=stft(q),pk=peaks(sp),hs=hashes(pk);const hist=SONGS.map(()=>new Map());
+  hs.forEach(h=>{const l=sIndex.get(h.k);if(l)l.forEach(e=>{const d=e.t-h.t,m=hist[e.si];m.set(d,(m.get(d)||0)+1);});});
+  const sc=SONGS.map((s,i)=>{let best=0,bd=0;hist[i].forEach((v,d)=>{const tot=v+(hist[i].get(d-1)||0)+(hist[i].get(d+1)||0);if(tot>best){best=tot;bd=d;}});return{i,name:s.name,score:best,d:bd};}).sort((a,b)=>b.score-a.score);
+  const top=sc[0],ok=top.score>=8&&top.score>=2*sc[1].score;
+  specDraw('sSpecS',ok?SONGS[top.i].sp:song.sp,null,ok?{t:top.d,w:sp.fr}:null);specDraw('sSpecQ',sp,pk);
+  const max=Math.max(20,top.score);rankHTML($('sRank'),sc.map(s=>({name:s.name,v:s.score,txt:String(s.score),mark:8})),max);
+  const vd=$('sVerdict');vd.className='verdict '+(ok?'ok':'no');
+  vd.innerHTML=(ok?`<strong class="ok">Reconhecida: ${top.name}</strong>`:'<strong class="no">Não reconhece este som</strong>')
+   +rule(top.score>=8,`${top.score} pares de pontos alinhados (mínimo 8)`)+rule(top.score>=2*sc[1].score,`Pelo menos o dobro da segunda (${sc[1].score})`)
+   +(ok?`<div class="note">Posição encontrada: ${pt(top.d*HOP/SR)} s · posição verdadeira: ${pt(off)} s · ${pk.length} pontos fortes no excerto</div>`:`<div class="note">${pk.length} pontos fortes no excerto, sem padrão que bata certo.</div>`);}
+['sSong','sOff','sNoise'].forEach(id=>$(id).addEventListener('input',sUpdate));
+let actx=null,asrc=null;
+function playBuf(x){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();if(asrc){try{asrc.stop();}catch(e){}}
+    const b=actx.createBuffer(1,x.length,SR);const ch=b.getChannelData(0);for(let i=0;i<x.length;i++)ch[i]=Math.max(-1,Math.min(1,x[i]*.6));asrc=actx.createBufferSource();asrc.buffer=b;asrc.connect(actx.destination);asrc.start();$('sAudioMsg').textContent='A tocar…';asrc.onended=()=>{$('sAudioMsg').textContent='As melodias são geradas pela página.';};}
+  catch(e){$('sAudioMsg').textContent='Este visualizador não deixou tocar som. A demonstração continua a funcionar sem áudio.';}}
+$('sPlayQ').onclick=()=>sQuery&&playBuf(sQuery);$('sPlayS').onclick=()=>playBuf([...SONGS,SOUT][+sSel.value].x);
+
+/* ---------- separador Texto ---------- */
+const oGrey=new Float32Array(340*96);
+function oUpdate(){const W=340,H=96,c=$('oSrc').getContext('2d',{willReadFrequently:true}),L=$('oLight').value/100,nz=$('oNoise').value/100,r=rng(5);
+  c.fillStyle='#e8e2d2';c.fillRect(0,0,W,H);c.fillStyle='#2b2f36';c.font='700 46px "IBM Plex Mono", Consolas, monospace';c.textBaseline='middle';c.textAlign='center';c.fillText('EBP01-004',W/2,H/2+2);
+  const g=c.createLinearGradient(0,0,W,0);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,`rgba(0,0,0,${L*.82})`);c.fillStyle=g;c.fillRect(0,0,W,H);
+  const im=c.getImageData(0,0,W,H),d=im.data;for(let i=0;i<W*H;i++){const n=(r()-.5)*nz*120;d[i*4]+=n;d[i*4+1]+=n;d[i*4+2]+=n;oGrey[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];}c.putImageData(im,0,0);
+  const thr=+$('oThr').value,ad=$('oAdapt').checked;$('oThrO').value=ad?'por zona':thr;$('oLightO').value=Math.round(L*100);$('oNoiseO').value=Math.round(nz*100);$('oThr').disabled=ad;
+  const out=new Uint8ClampedArray(W*H*4);let I=null;if(ad){I=new Float64Array((W+1)*(H+1));for(let y=0;y<H;y++){let s=0;for(let x=0;x<W;x++){s+=oGrey[y*W+x];I[(y+1)*(W+1)+x+1]=I[y*(W+1)+x+1]+s;}}}
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){let t=thr;if(ad){const k=18,x0=Math.max(0,x-k),x1=Math.min(W,x+k+1),y0=Math.max(0,y-k),y1=Math.min(H,y+k+1);t=(I[y1*(W+1)+x1]-I[y0*(W+1)+x1]-I[y1*(W+1)+x0]+I[y0*(W+1)+x0])/((x1-x0)*(y1-y0))-14;}
+    const v=oGrey[y*W+x]<t?20:245,i=(y*W+x)*4;out[i]=out[i+1]=out[i+2]=v;out[i+3]=255;}
+  const b=$('oBin').getContext('2d'),bi=b.createImageData(W,H);bi.data.set(out);b.putImageData(bi,0,0);}
+function otsu(){const h=new Array(256).fill(0);for(const v of oGrey)h[Math.max(0,Math.min(255,v|0))]++;const tot=oGrey.length;let sum=0;for(let i=0;i<256;i++)sum+=i*h[i];let sb=0,wb=0,best=0,bt=128;
+  for(let t=0;t<256;t++){wb+=h[t];if(!wb)continue;const wf=tot-wb;if(!wf)break;sb+=t*h[t];const mb=sb/wb,mf=(sum-sb)/wf,v=wb*wf*(mb-mf)*(mb-mf);if(v>best){best=v;bt=t;}}return bt+1;}
+['oThr','oLight','oNoise','oAdapt'].forEach(id=>$(id).addEventListener('input',oUpdate));
+$('oOtsu').onclick=()=>{$('oAdapt').checked=false;$('oThr').value=otsu();oUpdate();};
+function codeUpdate(){const raw=$('oCode').value.trim().toUpperCase().replace(/\s+/g,'');const toD={O:'0',Q:'0',D:'0',I:'1',L:'1',Z:'2',S:'5',B:'8',G:'6'},toL={'0':'O','1':'I','5':'S','8':'B','2':'Z','6':'G'};
+  const pat='LLLDD-DDD';let fix='',changes=0,ok=raw.length===pat.length;
+  if(ok)for(let i=0;i<pat.length;i++){let ch=raw[i];const p=pat[i];if(p==='D'&&!/\d/.test(ch)){if(toD[ch]){ch=toD[ch];changes++;}else ok=false;}else if(p==='L'&&!/[A-Z]/.test(ch)){if(toL[ch]){ch=toL[ch];changes++;}else ok=false;}else if(p==='-'&&ch!=='-'){if(/[_.–—~]/.test(ch)){ch='-';changes++;}else ok=false;}fix+=ch;}
+  const vd=$('oCodeV');vd.className='verdict '+(ok?'ok':'no');
+  vd.innerHTML=!ok?'<strong class="no">Não tem o formato de um código</strong><div class="note">A leitura é rejeitada e tenta-se no fotograma seguinte.</div>'
+   :changes?`<strong class="ok">Corrigido para ${fix}</strong><div class="note">${changes} carácter(es) trocado(s) pela posição: onde só cabem algarismos, um O passa a 0. Falta confirmar que ${fix} existe na base de dados.</div>`
+   :`<strong class="ok">${fix} tem o formato certo</strong><div class="note">Falta confirmar que existe na base de dados.</div>`;}
+$('oCode').addEventListener('input',codeUpdate);
+function eanCheck(d12){let s=0;for(let i=0;i<12;i++)s+=(+d12[i])*(i%2?3:1);return(10-s%10)%10;}
+function eanUpdate(){const v=$('oEan').value.replace(/\D/g,''),vd=$('oEanV');if(v.length!==13){vd.className='verdict no';vd.innerHTML=`<strong class="no">Faltam algarismos</strong><div class="note">Um EAN-13 tem 13 algarismos; estão ${v.length}.</div>`;return;}
+  const c=eanCheck(v),ok=c===+v[12];vd.className='verdict '+(ok?'ok':'no');vd.innerHTML=ok?'<strong class="ok">Leitura coerente</strong><div class="note">O último algarismo bate certo com a conta feita aos outros 12.</div>':`<strong class="no">Erro de leitura detetado</strong><div class="note">Com estes 12 primeiros algarismos, o último devia ser ${c} e está ${v[12]}.</div>`;}
+$('oEan').value='560123456789'+eanCheck('560123456789');$('oEan').addEventListener('input',eanUpdate);
+
+/* ---------- arranque ---------- */
+function redraw(){cosDraw();imgUpdate();vDraw();}
+cosDraw();imgUpdate();sUpdate();oUpdate();codeUpdate();eanUpdate();
+showTab(location.hash.slice(1));
+try{new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redraw);}catch(e){}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{oUpdate();cosDraw();});
+})();
+</script>
+</body>
+</html>
