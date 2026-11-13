@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guia de Inteligência Artificial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: cabeçalho fixo com abas + coluna de leitura de ~70ch; blocos interativos em painéis. */
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --ink:#15202e; --muted:#5a6878; --line:#d5dbe3;
+  --accent:#c2410c; --accent-soft:#fde8dc; --tech:#0b6b7f; --tech-soft:#dcf1f4;
+  --ok:#2f7d4f; --warn:#a86a00; --bad:#b3261e;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f151d; --surface:#18212c; --ink:#e7ecf2; --muted:#9aa8b8; --line:#2c3948;
+    --accent:#ff8a4c; --accent-soft:#3a2418; --tech:#5cc8dc; --tech-soft:#143039;
+    --ok:#6fcf97; --warn:#e6b450; --bad:#ff8a80; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#18212c; --ink:#e7ecf2; --muted:#9aa8b8; --line:#2c3948;
+  --accent:#ff8a4c; --accent-soft:#3a2418; --tech:#5cc8dc; --tech-soft:#143039;
+  --ok:#6fcf97; --warn:#e6b450; --bad:#ff8a80; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.5rem,4vw,2.1rem);font-weight:700}
+h2{font-size:clamp(1.35rem,3.4vw,1.8rem);font-weight:700;margin-bottom:.4rem}
+h3{font-size:1.1rem;font-weight:700;margin-bottom:.35rem}
+p{margin:0 0 .9rem;max-width:70ch}
+a{color:var(--tech)}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--tech);outline-offset:2px}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+
+header.top{background:var(--surface);border-bottom:1px solid var(--line)}
+.head{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;padding:18px 0 14px}
+.head p{margin:.25rem 0 0;color:var(--muted);font-size:.95rem}
+.level{display:flex;flex-direction:column;gap:4px}
+.level small{font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--bg)}
+.seg button{border:0;background:transparent;padding:7px 16px;border-radius:999px;cursor:pointer;font-weight:600;font-size:.92rem}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+body[data-level="t"] .seg button[aria-pressed="true"]{background:var(--tech);color:#fff}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#10161d}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#10161d}}
+
+nav.tabs{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.tabrow{display:flex;gap:4px;overflow-x:auto;padding:8px 0;scrollbar-width:thin}
+.tabrow a{flex:none;text-decoration:none;color:var(--muted);font-weight:600;font-size:.92rem;padding:8px 13px;border-radius:8px;white-space:nowrap}
+.tabrow a:hover{color:var(--ink);background:var(--bg)}
+.tabrow a[aria-current="page"]{color:var(--ink);background:var(--bg);box-shadow:inset 0 -3px 0 var(--accent)}
+body[data-level="t"] .tabrow a[aria-current="page"]{box-shadow:inset 0 -3px 0 var(--tech)}
+
+main{padding:28px 0 60px}
+section.view{display:none}
+section.view.on{display:block}
+.lead{font-size:1.08rem;color:var(--muted);margin-bottom:1.4rem}
+body[data-level="s"] .t{display:none!important}
+body[data-level="t"] .s{display:none!important}
+.tag{display:inline-block;font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:4px;background:var(--accent-soft);color:var(--accent)}
+.tag.tk{background:var(--tech-soft);color:var(--tech)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin:0 0 20px}
+.panel>h3{margin-bottom:.6rem}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card p{margin:0;font-size:.95rem}
+.card h3{font-size:1rem}
+.note{border-left:4px solid var(--tech);background:var(--tech-soft);padding:12px 14px;border-radius:0 8px 8px 0;margin:0 0 20px}
+.note p{margin:0}
+.hint{color:var(--muted);font-size:.88rem}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* Linha do tempo */
+.tl{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:16px}
+@media (max-width:720px){.tl{grid-template-columns:1fr}}
+.tl-list{display:flex;flex-direction:column;gap:2px;max-height:520px;overflow-y:auto;padding-right:4px}
+@media (max-width:720px){.tl-list{flex-direction:row;overflow-x:auto;max-height:none;padding-bottom:6px}}
+.tl-list button{flex:none;text-align:left;border:1px solid transparent;background:transparent;border-radius:8px;padding:7px 10px;cursor:pointer;display:flex;gap:10px;align-items:baseline}
+.tl-list button .y{font-family:var(--mono);font-size:.82rem;color:var(--muted);min-width:3.2em}
+.tl-list button .n{font-weight:600;font-size:.93rem}
+.tl-list button[aria-pressed="true"]{background:var(--surface);border-color:var(--line);box-shadow:inset 4px 0 0 var(--accent)}
+.tl-list button.winter .n{color:var(--tech)}
+@media (max-width:720px){.tl-list button{flex-direction:column;gap:0;min-width:120px}.tl-list button .n{white-space:normal}}
+.tl-detail .yr{font-family:var(--display);font-size:2.6rem;font-weight:700;color:var(--accent);line-height:1}
+.eras{display:flex;height:30px;border-radius:6px;overflow:hidden;margin:6px 0 4px;font-family:var(--mono);font-size:.68rem}
+.eras div{display:flex;align-items:center;justify-content:center;color:#fff;white-space:nowrap;overflow:hidden}
+.eras .e1{background:#8a6d3b}.eras .ew{background:#4a7186}.eras .e2{background:#a85a2a}.eras .e3{background:#c2410c}
+
+/* Conceitos */
+.nest{display:flex;flex-direction:column;gap:0}
+.nest button{display:block;width:100%;text-align:left;border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:600}
+.nest .lvl{border:2px solid var(--line);border-radius:14px;padding:8px;background:var(--bg)}
+.nest .lvl>.lvl{margin-top:8px}
+.nest .lbl{display:block;width:100%;text-align:left;border:0;background:transparent;font-weight:700;font-family:var(--display);cursor:pointer;padding:4px 6px;border-radius:6px}
+.nest .lbl[aria-pressed="true"]{background:var(--accent);color:#fff}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:720px){.two{grid-template-columns:1fr}}
+.ctl{display:grid;grid-template-columns:minmax(0,1fr) 3.4em;gap:2px 10px;align-items:center;margin-bottom:8px}
+.ctl label{grid-column:1/-1;font-size:.88rem;font-weight:600}
+.ctl input[type=range]{width:100%;accent-color:var(--accent)}
+.ctl output{font-family:var(--mono);font-size:.85rem;text-align:right}
+.bigout{font-family:var(--display);font-size:2.2rem;font-weight:700;line-height:1}
+.meter{height:12px;background:var(--bg);border:1px solid var(--line);border-radius:99px;overflow:hidden;margin:8px 0}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .15s}
+.formula{font-family:var(--mono);font-size:.82rem;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;overflow-x:auto;white-space:nowrap}
+.bars{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.bar{display:grid;grid-template-columns:5.5em minmax(0,1fr) 3.6em;gap:8px;align-items:center;font-size:.9rem}
+.bar .trk{height:16px;background:var(--bg);border-radius:4px;overflow:hidden}
+.bar .trk i{display:block;height:100%;background:var(--tech);transition:width .2s}
+.bar.hit .trk i{background:var(--accent)}
+.bar.hit b{color:var(--accent)}
+.bar .pc{font-family:var(--mono);font-size:.8rem;text-align:right}
+.btn{border:1px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink)}
+.sentence{font-size:1.15rem;margin:10px 0}
+.sentence mark{background:var(--accent-soft);color:var(--accent);padding:1px 6px;border-radius:4px;font-weight:600}
+.steps{counter-reset:s;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.steps .card{position:relative;padding-top:34px}
+.steps .card::before{counter-increment:s;content:counter(s);position:absolute;top:10px;left:16px;font-family:var(--mono);font-size:.8rem;color:var(--accent);border:1px solid var(--accent);border-radius:99px;width:1.6em;height:1.6em;display:flex;align-items:center;justify-content:center}
+
+/* Gráfico de parâmetros */
+.pchart{display:flex;flex-direction:column;gap:8px}
+.prow{display:grid;grid-template-columns:9.5em minmax(0,1fr);gap:10px;align-items:center;font-size:.88rem}
+.prow .trk{position:relative;height:22px;background:var(--bg);border-radius:4px}
+.prow .trk i{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:4px}
+.prow .trk span{position:absolute;right:6px;top:1px;font-family:var(--mono);font-size:.78rem}
+.axis{display:grid;grid-template-columns:9.5em minmax(0,1fr);gap:10px;font-family:var(--mono);font-size:.7rem;color:var(--muted)}
+.axis div{display:flex;justify-content:space-between}
+@media (max-width:480px){.prow,.axis{grid-template-columns:7em minmax(0,1fr)}}
+
+/* Capacidades */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.chips button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 13px;cursor:pointer;font-size:.9rem;font-weight:500}
+.chips button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cap ul{margin:.3rem 0 0;padding-left:1.1rem;font-size:.92rem}
+.cap .good{color:var(--ok);font-weight:600;font-size:.8rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em}
+.cap .weak{color:var(--warn);font-weight:600;font-size:.8rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-top:.5rem;display:block}
+.pill{display:inline-block;font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;border-radius:99px;padding:2px 9px;border:1px solid currentColor;margin-bottom:6px}
+.pill.now{color:var(--ok)}.pill.soon{color:var(--warn)}.pill.open{color:var(--bad)}
+
+/* Espaço */
+.scale{position:relative;height:54px;margin:26px 0 30px}
+.scale .line{position:absolute;left:0;right:0;top:24px;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--ok),var(--warn) 30%,var(--bad))}
+.scale .mk{position:absolute;top:0;transform:translateX(-50%);font-family:var(--mono);font-size:.66rem;color:var(--muted);text-align:center;white-space:nowrap}
+.scale .mk::after{content:"";display:block;width:1px;height:14px;background:var(--muted);margin:2px auto 0}
+.scale .me{position:absolute;top:17px;width:20px;height:20px;border-radius:50%;background:var(--ink);border:3px solid var(--surface);transform:translateX(-50%)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:10px}
+.kv div{border-top:2px solid var(--line);padding-top:6px}
+.kv b{display:block;font-family:var(--display);font-size:1.5rem;line-height:1.1}
+.kv span{font-size:.82rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.tw{overflow-x:auto}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+
+/* Glossário */
+.search{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-bottom:12px}
+dl.gl{margin:0;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+dl.gl div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+dl.gl dt{font-family:var(--display);font-weight:700}
+dl.gl dt small{font-family:var(--mono);font-weight:400;color:var(--muted);font-size:.74rem;margin-left:6px}
+dl.gl dd{margin:.25rem 0 0;font-size:.93rem}
+.src li{margin-bottom:.35rem;font-size:.92rem}
+footer{color:var(--muted);font-size:.82rem;padding:0 0 40px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body data-level="s">
+<header class="top">
+  <div class="wrap head">
+    <div>
+      <h1>Guia de Inteligência Artificial</h1>
+      <p>Da ideia de 1950 aos centros de dados em órbita. Atualizado em novembro de 2026.</p>
+    </div>
+    <div class="level">
+      <small>Nível da explicação</small>
+      <div class="seg" role="group" aria-label="Nível da explicação">
+        <button type="button" id="lvS" aria-pressed="true">Simples</button>
+        <button type="button" id="lvT" aria-pressed="false">Técnico</button>
+      </div>
+    </div>
+  </div>
+</header>
+<nav class="tabs" aria-label="Secções">
+  <div class="wrap tabrow" id="tabrow">
+    <a href="#origem">Origem</a>
+    <a href="#conceitos">Conceitos base</a>
+    <a href="#crescimento">Porquê agora</a>
+    <a href="#capacidades">O que faz</a>
+    <a href="#futuro">Próximos passos</a>
+    <a href="#espaco">IA no espaço</a>
+    <a href="#riscos">Limites e riscos</a>
+    <a href="#glossario">Glossário</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ORIGEM -->
+<section class="view" id="v-origem">
+  <h2>Como surgiu</h2>
+  <p class="lead s">A IA não nasceu com o ChatGPT. É uma ideia com mais de 70 anos que passou por dois períodos de desilusão antes de funcionar a sério.</p>
+  <p class="lead t">Setenta anos de alternância entre duas escolas (simbólica e conexionista), dois invernos de financiamento e uma viragem em 2012, quando dados, GPU e redes profundas se juntaram.</p>
+
+  <div class="eras" aria-hidden="true">
+    <div class="e1" style="flex:24">1950–74 Pioneiros</div>
+    <div class="ew" style="flex:6">Inverno</div>
+    <div class="e2" style="flex:7">Periciais</div>
+    <div class="ew" style="flex:6">Inverno</div>
+    <div class="e2" style="flex:19">1993–2011 ML estatístico</div>
+    <div class="e3" style="flex:14">2012– Deep learning</div>
+  </div>
+  <p class="hint">Escolhe um momento para ver o que aconteceu.</p>
+
+  <div class="tl">
+    <div class="tl-list" id="tlList"></div>
+    <div class="panel tl-detail" id="tlDetail" aria-live="polite"></div>
+  </div>
+
+  <div class="note">
+    <p class="s"><b>O padrão que se repete:</b> promessas enormes, resultados abaixo do prometido, corte de financiamento. Desta vez a diferença é que os sistemas são usados todos os dias por centenas de milhões de pessoas.</p>
+    <p class="t"><b>A "lição amarga" (Rich Sutton, 2019):</b> métodos gerais que escalam com computação e dados acabam por bater o conhecimento codificado à mão. Xadrez, visão, voz e linguagem seguiram todos este caminho.</p>
+  </div>
+</section>
+
+<!-- CONCEITOS -->
+<section class="view" id="v-conceitos">
+  <h2>Conceitos base</h2>
+  <p class="lead s">Quatro ideias chegam para perceber quase tudo: o que está dentro de quê, como uma máquina aprende, o que é um neurónio artificial e como um chatbot escolhe a palavra seguinte.</p>
+  <p class="lead t">Hierarquia de termos, paradigmas de aprendizagem, a unidade de cálculo de uma rede e o ciclo de inferência autorregressiva de um LLM.</p>
+
+  <div class="panel">
+    <h3>1. O que está dentro de quê</h3>
+    <div class="two">
+      <div class="nest" id="nest">
+        <div class="lvl"><button class="lbl" data-k="ia" aria-pressed="true">Inteligência Artificial</button>
+          <div class="lvl"><button class="lbl" data-k="ml" aria-pressed="false">Aprendizagem automática (ML)</button>
+            <div class="lvl"><button class="lbl" data-k="dl" aria-pressed="false">Aprendizagem profunda (DL)</button>
+              <div class="lvl"><button class="lbl" data-k="gen" aria-pressed="false">IA generativa</button>
+                <div class="lvl"><button class="lbl" data-k="llm" aria-pressed="false">LLM (ChatGPT, Claude, Gemini…)</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="nestOut" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>2. Como uma máquina aprende</h3>
+    <div class="grid g2">
+      <div class="card"><h3>Supervisionada</h3>
+        <p class="s">Aprende com exemplos já corrigidos. Mostras 10 000 fotos marcadas "gato" ou "cão" e ela descobre a regra.</p>
+        <p class="t">Minimiza uma função de perda entre a previsão f(x) e o rótulo y em pares (x, y). Classificação e regressão.</p></div>
+      <div class="card"><h3>Não supervisionada</h3>
+        <p class="s">Recebe dados sem respostas e procura grupos e padrões sozinha, como separar clientes por hábitos.</p>
+        <p class="t">Estima a estrutura de p(x): clustering, redução de dimensionalidade, estimação de densidade.</p></div>
+      <div class="card"><h3>Por reforço</h3>
+        <p class="s">Aprende por tentativa e erro, com recompensas. Foi assim que o AlphaGo aprendeu a jogar Go.</p>
+        <p class="t">Um agente aprende uma política π(a|s) que maximiza a recompensa acumulada esperada num ambiente (MDP).</p></div>
+      <div class="card"><h3>Auto-supervisionada</h3>
+        <p class="s">O truque dos chatbots: tapar a palavra seguinte de um texto e tentar adivinhá-la, milhares de milhões de vezes.</p>
+        <p class="t">O próprio dado gera o rótulo (próximo token, token mascarado). Permite treinar em texto bruto à escala da internet sem anotação humana.</p></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>3. Um neurónio artificial, à mão</h3>
+    <p class="s">Um neurónio pega em várias informações, dá a cada uma um peso (importância) e produz um número entre 0 e 1. Exemplo: decidir se vais à praia. Mexe nos controlos.</p>
+    <p class="t">Soma ponderada das entradas mais um viés, passada por uma função de ativação (aqui, sigmoide). Treinar é ajustar w e b por descida de gradiente.</p>
+    <div class="two">
+      <div>
+        <div class="ctl"><label for="nx1">Está sol? (entrada x₁)</label><input type="range" id="nx1" min="0" max="1" step="0.05" value="0.9"><output id="ox1"></output></div>
+        <div class="ctl"><label for="nx2">Está vento? (entrada x₂)</label><input type="range" id="nx2" min="0" max="1" step="0.05" value="0.3"><output id="ox2"></output></div>
+        <div class="ctl"><label for="nw1">Importância do sol (peso w₁)</label><input type="range" id="nw1" min="-4" max="4" step="0.1" value="3"><output id="ow1"></output></div>
+        <div class="ctl"><label for="nw2">Importância do vento (peso w₂)</label><input type="range" id="nw2" min="-4" max="4" step="0.1" value="-2.5"><output id="ow2"></output></div>
+        <div class="ctl"><label for="nb">Predisposição (viés b)</label><input type="range" id="nb" min="-4" max="4" step="0.1" value="-0.5"><output id="ob"></output></div>
+      </div>
+      <div>
+        <div class="hint">Saída do neurónio: vontade de ir à praia</div>
+        <div class="bigout" id="nOut">0%</div>
+        <div class="meter"><i id="nBar" style="width:0%"></i></div>
+        <p id="nTxt" style="font-weight:600"></p>
+        <div class="formula t" id="nForm"></div>
+        <p class="hint s">Um peso negativo quer dizer "isto tira-me a vontade". Uma rede moderna tem milhares de milhões destes pesos, e ninguém os escolhe à mão: são ajustados no treino.</p>
+        <p class="hint t" style="margin-top:8px">Uma rede profunda empilha camadas destas unidades. O backpropagation calcula ∂L/∂w para cada peso pela regra da cadeia.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>4. Como um chatbot escolhe a palavra seguinte</h3>
+    <p class="s">Um modelo de linguagem não vai buscar respostas a uma base de dados. Calcula, para cada palavra possível, a probabilidade de ser a seguinte, e sorteia uma. A "temperatura" controla o quão arriscado é o sorteio.</p>
+    <p class="t">O modelo devolve logits z sobre o vocabulário. A amostragem usa p<sub>i</sub> = exp(z<sub>i</sub>/T) / Σ exp(z<sub>j</sub>/T). T→0 aproxima a escolha gulosa (argmax); T alto achata a distribuição.</p>
+    <div class="sentence">O céu hoje está <mark id="tkPick">…</mark></div>
+    <div class="ctl" style="max-width:420px"><label for="temp">Temperatura</label><input type="range" id="temp" min="0.1" max="2" step="0.1" value="0.8"><output id="oTemp"></output></div>
+    <div class="bars" id="tkBars"></div>
+    <button type="button" class="btn" id="tkBtn">Sortear palavra</button>
+    <span class="hint" id="tkHint" style="margin-left:8px"></span>
+    <p class="hint" style="margin-top:10px">Os valores deste exemplo são ilustrativos. Num modelo real, o vocabulário tem dezenas de milhares de tokens.</p>
+  </div>
+
+  <div class="panel">
+    <h3>5. O percurso de uma pergunta dentro de um LLM</h3>
+    <div class="steps">
+      <div class="card"><h3>Tokens</h3><p class="s">O texto é partido em pedaços (palavras ou partes de palavras).</p><p class="t">Tokenização por subpalavras (BPE ou semelhante); cada token é um inteiro do vocabulário.</p></div>
+      <div class="card"><h3>Embeddings</h3><p class="s">Cada pedaço vira uma lista de números que representa o seu significado.</p><p class="t">Tabela de lookup para vetores densos de dimensão d, mais informação posicional.</p></div>
+      <div class="card"><h3>Atenção</h3><p class="s">O modelo vê que palavras se relacionam entre si, mesmo que estejam longe na frase.</p><p class="t">Self-attention: softmax(QKᵀ/√d)·V em várias cabeças, com MLP e ligações residuais, repetido em dezenas de camadas.</p></div>
+      <div class="card"><h3>Previsão</h3><p class="s">Sai uma probabilidade para cada palavra possível. Escolhe-se uma e repete-se tudo.</p><p class="t">Projeção final para logits, amostragem, e o token gerado entra no contexto (geração autorregressiva).</p></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <p class="s"><b>Treino e uso são coisas diferentes.</b> O treino acontece uma vez, demora semanas e custa fortunas. Quando falas com o modelo ele já não está a aprender: só usa o que aprendeu.</p>
+    <p class="t"><b>Treino vs. inferência.</b> O treino atualiza os pesos por gradiente em clusters de GPU. Na inferência os pesos estão congelados e só há passagens para a frente; a "memória" da conversa é apenas a janela de contexto.</p>
+  </div>
+</section>
+
+<!-- CRESCIMENTO -->
+<section class="view" id="v-crescimento">
+  <h2>Porque cresceu tanto ultimamente</h2>
+  <p class="lead s">As ideias centrais existem desde os anos 80. O que mudou foi termos, ao mesmo tempo, dados suficientes, computadores suficientes, uma arquitetura que aproveita ambos e um produto que qualquer pessoa consegue usar.</p>
+  <p class="lead t">Quatro fatores multiplicativos: dados à escala da web com objetivo auto-supervisionado, GPU e aceleradores, o Transformer (paralelizável e escalável) e leis de escala empíricas que justificaram o investimento.</p>
+
+  <div class="grid g2" style="margin-bottom:20px">
+    <div class="card"><span class="tag">Dados</span><h3>A internet como manual escolar</h3>
+      <p class="s">Milhares de milhões de páginas, livros, código e imagens ficaram disponíveis para treinar.</p>
+      <p class="t">Corpora de biliões (10¹²) de tokens; o pré-treino auto-supervisionado dispensa anotação manual, que era o gargalo dos anos 2000.</p></div>
+    <div class="card"><span class="tag">Computação</span><h3>Placas gráficas</h3>
+      <p class="s">Os chips feitos para videojogos são ótimos a fazer as contas das redes neuronais, milhares em paralelo.</p>
+      <p class="t">GPU e ASIC (TPU) para álgebra linear densa; clusters de dezenas de milhares de aceleradores com redes de baixa latência.</p></div>
+    <div class="card"><span class="tag">Algoritmo</span><h3>O Transformer (2017)</h3>
+      <p class="s">Uma forma nova de ler texto em que o modelo olha para a frase toda de uma vez em vez de palavra a palavra.</p>
+      <p class="t">Substitui a recorrência por atenção: treino totalmente paralelizável e dependências longas com caminho O(1) entre tokens.</p></div>
+    <div class="card"><span class="tag">Produto</span><h3>Uma caixa de conversa</h3>
+      <p class="s">O ChatGPT (novembro de 2022) pôs a tecnologia nas mãos de toda a gente, sem instalar nada.</p>
+      <p class="t">Afinamento por instruções e RLHF tornaram os modelos utilizáveis em diálogo; estimativas da altura apontaram 100 milhões de utilizadores em cerca de dois meses.</p></div>
+  </div>
+
+  <div class="panel">
+    <h3>Tamanho dos modelos: parâmetros (escala logarítmica)</h3>
+    <p class="s">Os parâmetros são os "botões" que o treino ajusta. Cada passo na escala abaixo é 10 vezes maior que o anterior.</p>
+    <p class="t">Contagem de parâmetros treináveis de modelos de referência com valores publicados. A maioria dos modelos fechados recentes não divulga este número.</p>
+    <div class="pchart" id="pchart"></div>
+    <div class="axis"><span></span><div><span>10⁴</span><span>10⁶</span><span>10⁸</span><span>10¹⁰</span><span>10¹²</span></div></div>
+    <p class="hint" style="margin-top:10px">De 60 mil para 1 bilião (10¹²) em 28 anos: cerca de 17 milhões de vezes mais.</p>
+  </div>
+
+  <div class="panel">
+    <h3>O que mudou de 2023 para cá</h3>
+    <div class="tw"><table>
+      <thead><tr><th>Mudança</th><th>O que significa</th></tr></thead>
+      <tbody>
+        <tr><td><b>Multimodal</b></td><td class="s">O mesmo modelo lê texto, vê imagens, ouve e fala.</td><td class="t">Codificadores de imagem, áudio e vídeo projetados no mesmo espaço de tokens.</td></tr>
+        <tr><td><b>Raciocínio</b></td><td class="s">Os modelos passaram a "pensar" antes de responder, o que melhora problemas difíceis.</td><td class="t">Cadeias de pensamento geradas em tempo de inferência (test-time compute), treinadas com reforço.</td></tr>
+        <tr><td><b>Agentes</b></td><td class="s">Em vez de só responder, a IA executa tarefas: pesquisa, escreve código, usa programas.</td><td class="t">Ciclo de planeamento, chamada de ferramentas e observação; protocolos de integração como o MCP.</td></tr>
+        <tr><td><b>Contexto longo</b></td><td class="s">Conseguem ler documentos enormes de uma vez.</td><td class="t">Janelas de contexto de centenas de milhares a milhões de tokens.</td></tr>
+        <tr><td><b>Modelos abertos</b></td><td class="s">Há modelos potentes gratuitos que correm no teu próprio computador.</td><td class="t">Pesos abertos (Llama, Mistral, DeepSeek, Qwen, Kimi), quantização e destilação para hardware modesto.</td></tr>
+        <tr><td><b>Custo</b></td><td class="s">O preço de usar um modelo do mesmo nível caiu muito de ano para ano.</td><td class="t">Queda de ordens de grandeza no preço por token para capacidade equivalente, por hardware, destilação e concorrência.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="note">
+    <p><b>O preço deste crescimento é energia.</b> A Agência Internacional de Energia estimou o consumo dos centros de dados em cerca de 415 TWh em 2024 (perto de 1,5% da eletricidade mundial) e projeta cerca de 945 TWh em 2030. É esta pressão que alimenta a ideia de pôr computação em órbita (ver <a href="#espaco">IA no espaço</a>).</p>
+  </div>
+</section>
+
+<!-- CAPACIDADES -->
+<section class="view" id="v-capacidades">
+  <h2>O que consegue fazer</h2>
+  <p class="lead s">Em cada área há coisas que a IA já faz muito bem e outras em que ainda tropeça. Escolhe uma área.</p>
+  <p class="lead t">Capacidades por domínio, com os modos de falha mais comuns em 2026.</p>
+  <div class="chips" id="capChips"></div>
+  <div class="grid g2" id="capGrid"></div>
+  <div class="note" style="margin-top:20px">
+    <p class="s"><b>Regra prática:</b> a IA é excelente como primeiro rascunho, explicador e assistente rápido. Para factos, contas e decisões importantes, confirma sempre.</p>
+    <p class="t"><b>Fronteira irregular:</b> o desempenho não acompanha a dificuldade humana. Um modelo pode resolver um problema de olimpíadas de matemática e falhar numa contagem trivial. Avalia na tua tarefa concreta.</p>
+  </div>
+</section>
+
+<!-- FUTURO -->
+<section class="view" id="v-futuro">
+  <h2>Próximos passos</h2>
+  <p class="lead s">Ninguém sabe ao certo o que vem aí, mas dá para separar o que já está a acontecer do que ainda é aposta.</p>
+  <p class="lead t">Direções de investigação e de produto, classificadas pelo grau de maturidade. As previsões de datas para AGI divergem muito entre especialistas.</p>
+  <div class="grid g2" id="futGrid"></div>
+  <div class="panel" style="margin-top:20px">
+    <h3>Regras do jogo</h3>
+    <p class="s">A União Europeia aprovou a primeira grande lei sobre IA (AI Act, em vigor desde agosto de 2024, aplicada por fases). Proíbe certos usos, como a pontuação social, e exige mais cuidados em áreas sensíveis como saúde, emprego e justiça.</p>
+    <p class="t">O AI Act segue uma abordagem por níveis de risco (práticas proibidas, alto risco, obrigações de transparência, e regras próprias para modelos de uso geral), com entrada em aplicação faseada. Os EUA e a China seguem vias diferentes, o que cria um quadro regulatório fragmentado.</p>
+  </div>
+</section>
+
+<!-- ESPAÇO -->
+<section class="view" id="v-espaco">
+  <h2>IA no espaço</h2>
+  <p class="lead s">Há duas histórias diferentes. Uma é antiga e funciona: IA dentro de sondas e satélites. A outra é a grande aposta de 2026: construir os próprios centros de dados da IA em órbita.</p>
+  <p class="lead t">Dois temas: inferência a bordo (edge computing espacial, já operacional) e centros de dados orbitais para treino e inferência à escala, ainda em fase de protótipo.</p>
+
+  <div class="panel">
+    <h3>A. IA a bordo: já existe</h3>
+    <div class="grid g3">
+      <div class="card"><h3>Rovers em Marte</h3><p class="s">Um sinal demora minutos a chegar a Marte, por isso o Perseverance decide sozinho o caminho entre as pedras.</p><p class="t">AutoNav: perceção estéreo e planeamento local a bordo, por causa da latência de 4 a 24 minutos.</p></div>
+      <div class="card"><h3>Satélites que filtram</h3><p class="s">Em vez de enviar todas as fotos, o satélite deita fora as que só têm nuvens.</p><p class="t">Φ-sat-1 da ESA (2020): rede neuronal a bordo para deteção de nuvens, poupando largura de banda de downlink.</p></div>
+      <div class="card"><h3>Operações</h3><p class="s">A IA ajuda a evitar colisões, a detetar avarias e a analisar dados de telescópios.</p><p class="t">Deteção de anomalias em telemetria, avaliação de conjunções e classificação de sinais em grandes levantamentos.</p></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>B. Centros de dados em órbita: a aposta</h3>
+    <p class="s">A IA precisa de quantidades enormes de eletricidade, e em Terra faltam rede elétrica, terrenos e aceitação das populações. Em certas órbitas há sol quase 24 horas por dia, sem nuvens nem noite. A ideia: lançar satélites com painéis solares e chips de IA, ligados entre si por laser.</p>
+    <p class="t">Constelações em órbita heliossíncrona de crepúsculo (dawn-dusk), com iluminação quase contínua e irradiância de cerca de 1361 W/m², sem atmosfera. A Google estima painéis até 8 vezes mais produtivos do que no solo. Ligações óticas entre satélites em formação cerrada substituem a rede interna do centro de dados.</p>
+
+    <div class="tw"><table>
+      <thead><tr><th>Quem</th><th>O que fez ou anunciou</th></tr></thead>
+      <tbody>
+        <tr><td><b>Starcloud</b></td><td>Em novembro de 2025 pôs em órbita uma GPU Nvidia H100 e correu modelos de IA a partir do espaço. Angariou mais 250 milhões de dólares em agosto de 2026.</td></tr>
+        <tr><td><b>Google</b> (Project Suncatcher)</td><td>Lançou a 1 de outubro de 2026 um satélite protótipo com quatro chips TPU, para testar radiação, vácuo e comunicações. Prevê mais dois satélites em 2027.</td></tr>
+        <tr><td><b>SpaceX</b></td><td>Pediu autorização ao regulador dos EUA, em janeiro de 2026, para até um milhão de satélites de computação. Aponta para os primeiros lançamentos em 2027–2028.</td></tr>
+        <tr><td><b>Blue Origin</b> (Project Sunrise)</td><td>Pedido de abril de 2026 para até 51 600 satélites entre 500 e 1800 km de altitude.</td></tr>
+        <tr><td><b>Outros</b></td><td>Lonestar (armazenamento, incluindo na Lua), Axiom, Aetherflux, Orbital, e a iniciativa europeia ASCEND.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="panel">
+    <h3>Faz contas: o preço de pôr 1 megawatt em órbita</h3>
+    <p class="s">O que decide tudo é quanto custa lançar cada quilo. Arrasta para ver.</p>
+    <p class="t">Custo só de lançamento para 1 MW de computação, usando a densidade que a SpaceX indica como objetivo (100 kW por tonelada, ou seja, 10 t por MW). Exclui hardware, operação e substituição.</p>
+    <div class="ctl" style="max-width:520px"><label for="kg">Custo de lançamento (dólares por kg)</label><input type="range" id="kg" min="50" max="3000" step="50" value="2700"><output id="oKg"></output></div>
+    <div class="scale" aria-hidden="true">
+      <div class="line"></div>
+      <div class="mk" style="left:5.1%">Meta Google<br>≈200 $/kg</div>
+      <div class="mk" style="left:15.3%">Starcloud<br>≈500</div>
+      <div class="mk" style="left:89.8%">Falcon 9 hoje<br>≈2700</div>
+      <div class="me" id="kgDot"></div>
+    </div>
+    <div class="kv">
+      <div><b id="kgCost">–</b><span>só para lançar 1 MW (10 toneladas)</span></div>
+      <div><b id="kgState">–</b><span id="kgNote"></span></div>
+    </div>
+    <p class="hint" style="margin-top:12px">Investigadores da Google calcularam em junho de 2026 que a energia em órbita custa hoje cerca de 14 700 dólares por kW por ano, contra 570 a 3000 num centro de dados nos EUA. As contas só fecham se o lançamento descer para perto de 200 $/kg, o que a Google situa por volta de 2035.</p>
+  </div>
+
+  <div class="panel">
+    <h3>O problema do calor</h3>
+    <p class="s">O espaço é frio, mas arrefecer lá é difícil: não há ar nem água para levar o calor. Só dá para o irradiar, como uma brasa. Isso obriga a radiadores gigantes.</p>
+    <p class="t">Sem convecção, a rejeição térmica é só radiativa: P = ε·σ·A·T⁴ (Stefan-Boltzmann). Cálculo idealizado, a ignorar o calor absorvido do Sol e da Terra.</p>
+    <div class="two">
+      <div>
+        <div class="ctl"><label for="rP">Potência a dissipar (kW)</label><input type="range" id="rP" min="10" max="5000" step="10" value="1000"><output id="oRP"></output></div>
+        <div class="ctl"><label for="rT">Temperatura do radiador (°C)</label><input type="range" id="rT" min="0" max="120" step="5" value="40"><output id="oRT"></output></div>
+        <div class="ctl t"><label for="rS">Faces que irradiam</label><input type="range" id="rS" min="1" max="2" step="1" value="2"><output id="oRS"></output></div>
+      </div>
+      <div>
+        <div class="hint">Área de radiador necessária</div>
+        <div class="bigout" id="rA">–</div>
+        <p id="rCmp" style="margin-top:6px;font-weight:600"></p>
+        <div class="formula t" id="rF"></div>
+        <p class="hint" style="margin-top:8px">Radiadores mais quentes precisam de menos área (cresce com T⁴), mas os chips não gostam de calor.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card"><h3>A favor</h3><ul style="margin:0;padding-left:1.1rem;font-size:.93rem">
+      <li>Energia solar quase contínua, sem baterias grandes</li>
+      <li>Não ocupa terrenos nem gasta água de arrefecimento</li>
+      <li>Foge às filas de ligação à rede elétrica</li>
+      <li>Processa dados de satélites sem os trazer à Terra</li></ul></div>
+    <div class="card"><h3>Contra</h3><ul style="margin:0;padding-left:1.1rem;font-size:.93rem">
+      <li>Lançamento ainda demasiado caro</li>
+      <li>Radiação danifica chips e corrompe memória</li>
+      <li>Reparar ou trocar hardware é quase impossível</li>
+      <li>Mais lixo espacial e risco de colisões</li>
+      <li>Impacto na astronomia e na alta atmosfera</li></ul></div>
+  </div>
+  <div class="note" style="margin-top:20px">
+    <p><b>Onde estamos:</b> existem chips de IA a funcionar em órbita, mas à escala de um satélite. Um centro de dados orbital comparável aos terrestres ainda não existe, e as previsões de quando será viável vão de "dois a três anos" (Elon Musk) a meados da década de 2030 (Google). Trata os prazos mais otimistas como promessas comerciais.</p>
+  </div>
+</section>
+
+<!-- RISCOS -->
+<section class="view" id="v-riscos">
+  <h2>Limites e riscos</h2>
+  <p class="lead s">Perceber onde a IA falha é tão importante como saber o que ela faz.</p>
+  <p class="lead t">Limitações técnicas dos sistemas atuais e riscos sociais, do imediato ao especulativo.</p>
+  <div class="grid g2" id="riskGrid"></div>
+  <div class="panel" style="margin-top:20px">
+    <h3>Usar bem, na prática</h3>
+    <ul style="margin:0;padding-left:1.2rem">
+      <li>Dá contexto e exemplos: quem és, para quem é, que formato queres.</li>
+      <li>Pede as fontes e abre-as. Uma citação inventada tem ótimo aspeto.</li>
+      <li>Não coles dados pessoais ou confidenciais sem saber a política do serviço.</li>
+      <li>Para números, pede o cálculo passo a passo ou que corra código.</li>
+      <li>A responsabilidade pelo resultado continua a ser tua.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- GLOSSÁRIO -->
+<section class="view" id="v-glossario">
+  <h2>Glossário</h2>
+  <p class="lead">A definição acompanha o nível escolhido no topo da página.</p>
+  <label for="gq" class="hint">Procurar termo</label>
+  <input class="search" id="gq" type="search" placeholder="Ex.: token, alucinação, GPU…" autocomplete="off">
+  <p class="hint" id="gCount"></p>
+  <dl class="gl" id="gList"></dl>
+
+  <div class="panel" style="margin-top:28px">
+    <h3>Fontes</h3>
+    <ul class="src">
+      <li><a href="https://arxiv.org/abs/1706.03762">Vaswani et al., "Attention Is All You Need" (2017)</a></li>
+      <li><a href="https://www.iea.org/reports/energy-and-ai">Agência Internacional de Energia, "Energy and AI" (2025)</a></li>
+      <li><a href="https://techcrunch.com/?p=3172746">TechCrunch: lançamento do protótipo Suncatcher da Google (out. 2026)</a></li>
+      <li><a href="https://www.cnn.com/2026/10/01/science/google-ai-data-center-satellites-space">CNN: a Google e a corrida aos centros de dados em órbita (out. 2026)</a></li>
+      <li><a href="https://www.opb.org/article/2026/10/01/google-launches-project-suncatcher-a-step-towards-ai-data-centers-in-space/">NPR/OPB: Project Suncatcher e o calendário da SpaceX</a></li>
+      <li><a href="https://www.techtarget.com/ai/feature/When-orbital-AI-data-centers-become-business-reality">TechTarget: economia dos centros de dados orbitais</a></li>
+      <li><a href="https://qz.com/orbital-data-centers-ai-space-tech">Quartz: centros de dados de IA no espaço (jun. 2026)</a></li>
+      <li><a href="https://www.fierce-network.com/cloud/space-data-centers-starcloud-spacex-and-project-suncatcher-explained">Fierce Network: Starcloud, SpaceX e Suncatcher</a></li>
+      <li><a href="https://runtimewire.com/article/starcloud-raises-250m-orbital-data-centers-launch-capacity">Runtime Wire: financiamento da Starcloud (ago. 2026)</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/Space-based_data_center">Wikipédia: Space-based data center</a></li>
+    </ul>
+  </div>
+</section>
+</main>
+
+<footer class="wrap">Página informativa. Os dados sobre projetos em curso refletem o que era público em novembro de 2026 e mudam depressa.</footer>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
+function st(s,t){return '<span class="s">'+s+'</span><span class="t">'+t+'</span>'}
+
+/* ---------- Nível ---------- */
+function setLevel(l){
+  document.body.setAttribute("data-level",l);
+  $("lvS").setAttribute("aria-pressed",l==="s");
+  $("lvT").setAttribute("aria-pressed",l==="t");
+  try{localStorage.setItem("guia-ia-nivel",l)}catch(e){}
+}
+$("lvS").onclick=function(){setLevel("s")};
+$("lvT").onclick=function(){setLevel("t")};
+try{var sv=localStorage.getItem("guia-ia-nivel");if(sv==="t")setLevel("t")}catch(e){}
+
+/* ---------- Abas ---------- */
+var VIEWS=["origem","conceitos","crescimento","capacidades","futuro","espaco","riscos","glossario"];
+function route(){
+  var h=(location.hash||"").replace("#","");
+  if(VIEWS.indexOf(h)<0)h="origem";
+  VIEWS.forEach(function(v){$("v-"+v).classList.toggle("on",v===h)});
+  var links=$("tabrow").querySelectorAll("a");
+  for(var i=0;i<links.length;i++){
+    var on=links[i].getAttribute("href")==="#"+h;
+    if(on){links[i].setAttribute("aria-current","page");
+      if(links[i].scrollIntoView)try{links[i].scrollIntoView({block:"nearest",inline:"center"})}catch(e){}}
+    else links[i].removeAttribute("aria-current");
+  }
+}
+window.addEventListener("hashchange",function(){route();window.scrollTo(0,0)});
+route();
+
+/* ---------- Linha do tempo ---------- */
+var TL=[
+ ["1943","Neurónio artificial","Dois cientistas descrevem, em matemática, uma versão muito simplificada de um neurónio do cérebro. É a semente das redes neuronais.","McCulloch e Pitts propõem a unidade de limiar lógico e mostram que redes destas unidades computam funções booleanas."],
+ ["1950","A pergunta de Turing","Alan Turing pergunta se as máquinas podem pensar e propõe um teste: se numa conversa escrita não distingues a máquina de uma pessoa, ela passa.","\"Computing Machinery and Intelligence\" introduz o jogo da imitação e antecipa objeções que ainda hoje se discutem."],
+ ["1956","Nasce o nome","Num encontro de verão em Dartmouth (EUA), um grupo de investigadores usa pela primeira vez a expressão \"Inteligência Artificial\". Achavam que bastariam uns anos.","Proposta de McCarthy, Minsky, Rochester e Shannon. Funda a IA simbólica: inteligência como manipulação de símbolos e procura."],
+ ["1958","Perceptron","Frank Rosenblatt constrói uma máquina que aprende a reconhecer formas simples a partir de exemplos.","Classificador linear com regra de aprendizagem que converge para dados linearmente separáveis. Primeira rede treinável."],
+ ["1966","ELIZA","O primeiro chatbot. Fingia ser um terapeuta devolvendo as frases em forma de pergunta. Muita gente achou que ele compreendia.","Correspondência de padrões e regras de reescrita (Weizenbaum). Origem do \"efeito ELIZA\": atribuir compreensão a texto fluente."],
+ ["1974","Primeiro inverno","As promessas não se cumpriram e o dinheiro para investigação foi cortado.","Minsky e Papert (1969) mostram os limites do perceptron de uma camada (XOR); o relatório Lighthill (1973) leva a cortes no Reino Unido e na DARPA.","winter"],
+ ["1980","Sistemas periciais","Programas com milhares de regras escritas por especialistas (\"se febre e tosse, então…\"). Funcionavam em áreas estreitas e eram caros de manter.","Bases de conhecimento com motores de inferência (MYCIN, XCON). Frágeis fora do domínio e com gargalo na aquisição de conhecimento."],
+ ["1986","Backpropagation","Divulga-se o método que permite treinar redes com várias camadas: ver o erro à saída e corrigir os pesos de trás para a frente.","Rumelhart, Hinton e Williams popularizam a retropropagação do gradiente em redes multicamada. É ainda a base de todo o deep learning."],
+ ["1987","Segundo inverno","O mercado dos sistemas periciais colapsa e a IA volta a ficar fora de moda.","Colapso do mercado das máquinas Lisp e fim de grandes programas públicos. A investigação desloca-se para métodos estatísticos (SVM, modelos gráficos).","winter"],
+ ["1997","Deep Blue","Um computador da IBM vence o campeão mundial de xadrez, Garry Kasparov.","Procura alfa-beta massiva em hardware dedicado, com função de avaliação afinada à mão. Força bruta, sem aprendizagem."],
+ ["2012","AlexNet","Uma rede neuronal profunda arrasa a concorrência a reconhecer imagens. É o momento em que o deep learning passa a dominar.","Rede convolucional treinada em GPU vence o ImageNet com 15,3% de erro top-5 contra 26,2% do segundo lugar. ReLU, dropout e dados em massa."],
+ ["2016","AlphaGo","A IA vence Lee Sedol no Go, um jogo que se pensava estar a décadas de distância.","Redes de política e de valor combinadas com procura em árvore de Monte Carlo e aprendizagem por reforço. Resultado: 4–1."],
+ ["2017","Transformer","Investigadores da Google publicam a arquitetura que está por trás de todos os chatbots atuais.","\"Attention Is All You Need\": auto-atenção em vez de recorrência. Paralelizável, escalável, e base de BERT e GPT (2018)."],
+ ["2020","GPT-3 e AlphaFold 2","Um modelo de texto escreve de forma convincente sobre quase tudo. Outro resolve um problema de biologia com 50 anos: a forma das proteínas.","GPT-3 (175 mil milhões de parâmetros) mostra aprendizagem com poucos exemplos no prompt. AlphaFold 2 atinge precisão experimental no CASP14."],
+ ["2022","ChatGPT","A 30 de novembro a OpenAI lança o ChatGPT. Meses antes tinham surgido os geradores de imagens (DALL·E 2, Midjourney, Stable Diffusion). A IA torna-se assunto de toda a gente.","LLM afinado para diálogo com RLHF; modelos de difusão latente para imagem. Adoção em massa e início da corrida entre laboratórios."],
+ ["2023","A corrida","GPT-4, Claude, Gemini, Llama. Os modelos passam a ver imagens e a aguentar documentos longos. As grandes tecnológicas investem dezenas de milhares de milhões.","Modelos multimodais, janelas de contexto de 100 mil tokens ou mais, pesos abertos competitivos, e a Nvidia como fornecedor crítico de computação."],
+ ["2024","Nobel e lei","O Nobel da Física vai para Hopfield e Hinton (redes neuronais) e o da Química inclui Hassabis e Jumper (AlphaFold). A UE põe em vigor o AI Act.","Reconhecimento científico formal da área; primeira regulação horizontal baseada em risco. Surgem os modelos de raciocínio com cômputo em inferência."],
+ ["2025","Raciocínio e agentes","Os modelos passam a pensar passo a passo e a executar tarefas sozinhos: programar, pesquisar, usar o computador. Modelos chineses abertos como o DeepSeek mostram que dá para fazer mais barato.","Agentes de programação em uso profissional, uso de ferramentas padronizado, e pressão de eficiência com o DeepSeek R1 (janeiro)."],
+ ["2026","Agentes no trabalho e chips em órbita","A IA trabalha horas seguidas em tarefas reais. A falta de energia em Terra leva empresas a testar computação no espaço.","Tarefas autónomas de longo horizonte; investimento em infraestrutura à escala de gigawatts; primeiros TPU da Google em órbita (outubro)."]
+];
+var tlList=$("tlList"),tlDetail=$("tlDetail");
+function showTL(i){
+  var d=TL[i];
+  tlDetail.innerHTML='<div class="yr">'+d[0]+'</div><h3 style="margin:.4rem 0 .6rem;font-size:1.3rem">'+d[1]+'</h3><p class="s">'+d[2]+'</p><p class="t">'+d[3]+'</p>'+
+    '<p class="hint mono">'+(i+1)+' / '+TL.length+'</p>'+
+    '<button type="button" class="btn ghost" id="tlPrev">Anterior</button> <button type="button" class="btn" id="tlNext">Seguinte</button>';
+  var bs=tlList.children;
+  for(var k=0;k<bs.length;k++)bs[k].setAttribute("aria-pressed",k===i);
+  $("tlPrev").disabled=i===0;$("tlNext").disabled=i===TL.length-1;
+  $("tlPrev").onclick=function(){showTL(i-1)};
+  $("tlNext").onclick=function(){showTL(i+1)};
+}
+TL.forEach(function(d,i){
+  var b=el("button",d[4]||"",'<span class="y">'+d[0]+'</span><span class="n">'+d[1]+'</span>');
+  b.type="button";b.onclick=function(){showTL(i)};tlList.appendChild(b);
+});
+showTL(1);
+
+/* ---------- Hierarquia ---------- */
+var NEST={
+ ia:["Inteligência Artificial","Qualquer sistema que faz tarefas que associamos a inteligência: jogar xadrez, reconhecer caras, conversar. Inclui programas com regras escritas à mão.","Campo que estuda agentes que percecionam e agem para atingir objetivos. Inclui métodos simbólicos (procura, lógica, planeamento) e estatísticos."],
+ ml:["Aprendizagem automática","Em vez de lhe darmos as regras, damos exemplos e a máquina descobre as regras. O filtro de spam do email funciona assim.","Algoritmos que melhoram o desempenho numa tarefa com a experiência, ajustando parâmetros a dados: regressão, árvores, SVM, redes neuronais."],
+ dl:["Aprendizagem profunda","Aprendizagem automática com redes neuronais de muitas camadas. Aprende sozinha o que é importante nos dados (contornos, formas, objetos).","Redes com muitas camadas não lineares que aprendem representações hierárquicas de ponta a ponta, treinadas por backpropagation em GPU."],
+ gen:["IA generativa","Modelos que criam conteúdo novo (texto, imagens, música, vídeo, código) em vez de apenas classificar o que lhes mostram.","Modelos que aprendem a distribuição dos dados e amostram dela: autorregressivos (texto), de difusão (imagem, vídeo), e variantes."],
+ llm:["Modelos de linguagem grandes","Redes enormes treinadas a prever a palavra seguinte em quantidades gigantes de texto. Ao aprender isso, ganham capacidades gerais: resumir, traduzir, programar, raciocinar.","Transformers autorregressivos com 10⁹ a 10¹² parâmetros, pré-treinados em previsão do próximo token e afinados para seguir instruções."]
+};
+function showNest(k){
+  var d=NEST[k];
+  $("nestOut").innerHTML='<h3 style="font-size:1.25rem">'+d[0]+'</h3><p class="s">'+d[1]+'</p><p class="t">'+d[2]+'</p><p class="hint">Cada caixa está contida na anterior: todo o LLM é IA generativa, mas nem toda a IA é um LLM.</p>';
+  var bs=$("nest").querySelectorAll(".lbl");
+  for(var i=0;i<bs.length;i++)bs[i].setAttribute("aria-pressed",bs[i].getAttribute("data-k")===k);
+}
+(function(){var bs=$("nest").querySelectorAll(".lbl");for(var i=0;i<bs.length;i++)bs[i].onclick=function(){showNest(this.getAttribute("data-k"))}})();
+showNest("ia");
+
+/* ---------- Neurónio ---------- */
+function fmt(n,d){return n.toFixed(d).replace(".",",")}
+function neuron(){
+  var x1=+$("nx1").value,x2=+$("nx2").value,w1=+$("nw1").value,w2=+$("nw2").value,b=+$("nb").value;
+  var z=w1*x1+w2*x2+b,y=1/(1+Math.exp(-z)),p=Math.round(y*100);
+  $("ox1").textContent=fmt(x1,2);$("ox2").textContent=fmt(x2,2);
+  $("ow1").textContent=fmt(w1,1);$("ow2").textContent=fmt(w2,1);$("ob").textContent=fmt(b,1);
+  $("nOut").textContent=p+"%";$("nBar").style.width=p+"%";
+  $("nTxt").textContent=y>0.7?"Vou à praia.":y>0.4?"Estou indeciso.":"Fico em casa.";
+  $("nForm").textContent="z = "+fmt(w1,1)+"·"+fmt(x1,2)+" + ("+fmt(w2,1)+")·"+fmt(x2,2)+" + ("+fmt(b,1)+") = "+fmt(z,2)+"   →   σ(z) = "+fmt(y,3);
+}
+["nx1","nx2","nw1","nw2","nb"].forEach(function(id){$(id).addEventListener("input",neuron)});
+neuron();
+
+/* ---------- Temperatura ---------- */
+var TOK=[["azul",4.0],["limpo",3.1],["nublado",2.7],["cinzento",2.1],["lindo",1.4],["verde",0.1]];
+var lastPick=-1;
+function probs(){
+  var T=+$("temp").value,ex=TOK.map(function(t){return Math.exp(t[1]/T)}),s=ex.reduce(function(a,b){return a+b},0);
+  return ex.map(function(e){return e/s});
+}
+function drawTok(){
+  var T=+$("temp").value,p=probs(),box=$("tkBars");
+  $("oTemp").textContent=fmt(T,1);box.innerHTML="";
+  TOK.forEach(function(t,i){
+    var r=el("div","bar"+(i===lastPick?" hit":""),'<b>'+t[0]+'</b><div class="trk"><i style="width:'+(p[i]*100).toFixed(1)+'%"></i></div><span class="pc">'+fmt(p[i]*100,1)+'%</span>');
+    box.appendChild(r);
+  });
+  $("tkHint").textContent=T<=0.4?"Baixa: quase sempre a mesma palavra. Previsível.":T>=1.4?"Alta: mais variedade, mais risco de disparate.":"Média: equilíbrio entre coerência e variedade.";
+}
+$("temp").addEventListener("input",function(){drawTok()});
+$("tkBtn").onclick=function(){
+  var p=probs(),r=Math.random(),acc=0,i=0;
+  for(;i<p.length;i++){acc+=p[i];if(r<=acc)break}
+  if(i>=p.length)i=p.length-1;
+  lastPick=i;$("tkPick").textContent=TOK[i][0];drawTok();
+};
+drawTok();
+
+/* ---------- Parâmetros ---------- */
+var PAR=[["LeNet-5 · 1998",6e4,"60 mil"],["AlexNet · 2012",6e7,"60 milhões"],["GPT-1 · 2018",1.17e8,"117 milhões"],["GPT-2 · 2019",1.5e9,"1,5 mil milhões"],["GPT-3 · 2020",1.75e11,"175 mil milhões"],["Kimi K2.5 · 2026",1e12,"1 bilião"]];
+PAR.forEach(function(p){
+  var w=(Math.log(p[1])/Math.LN10-4)/8*100;
+  $("pchart").appendChild(el("div","prow",'<span>'+p[0]+'</span><div class="trk"><i style="width:'+w.toFixed(1)+'%"></i><span>'+p[2]+'</span></div>'));
+});
+
+/* ---------- Capacidades ---------- */
+var CAP=[
+ ["Texto","Escrever, resumir, traduzir",["Rascunhos, emails, relatórios, resumos de documentos longos","Tradução e mudança de tom entre dezenas de línguas","Explicar um tema ao nível que pedires"],["Inventa factos e citações com ar seguro","Estilo genérico se não deres exemplos"]],
+ ["Código","Programar",["Escrever, corrigir e explicar código em quase todas as linguagens","Agentes que trabalham num repositório inteiro durante horas","Criar sites e ferramentas a partir de uma descrição"],["Erros subtis em sistemas grandes ou pouco documentados","Pode introduzir falhas de segurança se ninguém rever"]],
+ ["Imagem e som","Ver, ouvir, criar media",["Descrever fotos, ler documentos digitalizados, gráficos e plantas","Gerar imagens, vídeo curto, vozes e música","Transcrever e traduzir fala em tempo real"],["Consistência em vídeos longos","Texto pequeno e detalhes finos em imagens","Facilita falsificações (deepfakes)"]],
+ ["Ciência","Acelerar descoberta",["Prever estruturas de proteínas (AlphaFold)","Previsão meteorológica, novos materiais, apoio a demonstrações matemáticas","Rever literatura e propor hipóteses"],["Resultados precisam de validação em laboratório","Pouco fiável fora dos dados em que treinou"]],
+ ["Agentes","Fazer tarefas de ponta a ponta",["Pesquisar na web e cruzar fontes","Usar ferramentas: email, folhas de cálculo, navegador","Encadear dezenas de passos sem supervisão"],["Erros que se acumulam em tarefas longas","Vulnerável a instruções maliciosas escondidas em páginas","Exige limites claros de permissões"]],
+ ["Mundo físico","Robôs e veículos",["Táxis sem condutor a operar em várias cidades","Robôs de armazém e de inspeção","Modelos que ligam visão, linguagem e ação"],["Destreza manual geral ainda longe da humana","Situações raras e imprevistas","Custo e segurança do hardware"]]
+];
+var capSel="Todas";
+function drawCap(){
+  var chips=$("capChips"),grid=$("capGrid");chips.innerHTML="";grid.innerHTML="";
+  ["Todas"].concat(CAP.map(function(c){return c[0]})).forEach(function(n){
+    var b=el("button","",n);b.type="button";b.setAttribute("aria-pressed",n===capSel);
+    b.onclick=function(){capSel=n;drawCap()};chips.appendChild(b);
+  });
+  CAP.forEach(function(c){
+    if(capSel!=="Todas"&&capSel!==c[0])return;
+    grid.appendChild(el("div","card cap",'<span class="tag">'+c[0]+'</span><h3 style="margin-top:6px">'+c[1]+'</h3><span class="good">Faz bem</span><ul><li>'+c[2].join("</li><li>")+'</li></ul><span class="weak">Ainda falha</span><ul><li>'+c[3].join("</li><li>")+'</li></ul>'));
+  });
+}
+drawCap();
+
+/* ---------- Futuro ---------- */
+var FUT=[
+ ["now","Já a acontecer","Agentes mais autónomos","Passar de \"responde-me\" para \"trata disto\": a IA trabalha horas seguidas e só te chama quando precisa de uma decisão.","Aumento do horizonte de tarefa, orquestração de vários agentes, verificação automática e permissões granulares."],
+ ["now","Já a acontecer","Modelos pequenos e locais","IA que corre no telemóvel ou no portátil, sem internet e sem enviar os teus dados para fora.","Destilação, quantização e NPU nos dispositivos; modelos de poucos milhares de milhões de parâmetros com qualidade útil."],
+ ["now","Já a acontecer","IA para a ciência","Usar IA para descobrir medicamentos, materiais e até para melhorar a própria IA.","Modelos de fundação para biologia e química, laboratórios automatizados, e automação parcial de investigação em ML."],
+ ["soon","Próximos anos","Memória e aprendizagem contínua","Hoje o modelo esquece tudo entre conversas, a não ser que lhe deem notas. O objetivo é aprender com a experiência, como uma pessoa.","Memória externa persistente já existe; atualização contínua de pesos sem esquecimento catastrófico continua em aberto."],
+ ["soon","Próximos anos","Robôs de uso geral","Levar a inteligência dos chatbots para corpos que mexem em objetos reais, em fábricas e depois em casa.","Modelos visão-linguagem-ação e modelos do mundo treinados com vídeo e simulação. O gargalo são os dados de manipulação."],
+ ["soon","Próximos anos","Energia e chips","Construir centros de dados do tamanho de cidades, com centrais próprias, e talvez em órbita.","Campus à escala de gigawatts, nuclear e solar dedicados, aceleradores específicos, e computação orbital em fase de protótipo."],
+ ["open","Em aberto","AGI","Uma IA tão capaz como uma pessoa em quase qualquer tarefa intelectual. Há quem diga que faltam poucos anos e quem diga décadas. Não há consenso, nem sequer sobre a definição.","Sem definição operacional aceite. Discute-se se escalar a arquitetura atual chega ou se faltam avanços em generalização, planeamento e eficiência amostral."],
+ ["open","Em aberto","Segurança e alinhamento","Garantir que sistemas muito capazes fazem o que queremos, e perceber o que se passa dentro deles.","Interpretabilidade mecanicista, avaliações de capacidades perigosas, controlo de agentes e robustez a ataques por injeção de instruções."]
+];
+FUT.forEach(function(f){
+  $("futGrid").appendChild(el("div","card",'<span class="pill '+f[0]+'">'+f[1]+'</span><h3>'+f[2]+'</h3><p class="s">'+f[3]+'</p><p class="t">'+f[4]+'</p>'));
+});
+
+/* ---------- Riscos ---------- */
+var RISK=[
+ ["Alucinações","Responde com toda a confiança coisas que são falsas: datas, leis, citações, links.","O modelo otimiza plausibilidade, sem um mecanismo interno de verificação factual. Mitiga-se com pesquisa (RAG), citações e calibração."],
+ ["Enviesamento","Aprende com textos humanos e herda os preconceitos que lá estão.","Vieses dos dados de treino e do afinamento refletem-se nas saídas; problema sério em crédito, recrutamento e justiça."],
+ ["Privacidade","O que escreves pode ser guardado ou usado para treino, conforme o serviço.","Risco de memorização de dados de treino e de fuga de dados via contexto, ferramentas ou registos."],
+ ["Desinformação e fraude","Vozes clonadas, vídeos falsos e burlas personalizadas tornaram-se baratos.","Custo marginal quase nulo de conteúdo sintético convincente; a deteção e as marcas de água são imperfeitas."],
+ ["Emprego","Muda sobretudo tarefas dentro das profissões; algumas funções encolhem, outras aparecem. O ritmo é incerto.","Exposição maior em trabalho cognitivo rotineiro. A evidência sobre efeitos líquidos no emprego ainda é mista."],
+ ["Energia e água","Treinar e usar estes modelos consome muita eletricidade e água de arrefecimento.","Procura elétrica dos centros de dados a crescer depressa; impacto local na rede e nos recursos hídricos."],
+ ["Concentração de poder","Só meia dúzia de empresas e países têm os chips e o dinheiro para os modelos de ponta.","Barreiras de capital à escala de dezenas de milhares de milhões, dependência de poucos fabricantes de chips, controlos de exportação."],
+ ["Perda de controlo","Quanto mais autonomia damos aos sistemas, mais importa garantir que param quando devem.","Especificação incorreta de objetivos, comportamento enganador em avaliações e dificuldade de supervisão humana em escala."]
+];
+RISK.forEach(function(r){$("riskGrid").appendChild(el("div","card",'<h3>'+r[0]+'</h3><p class="s">'+r[1]+'</p><p class="t">'+r[2]+'</p>'))});
+
+/* ---------- Espaço: custo ---------- */
+function usd(n){return n>=1e6?fmt(n/1e6,n>=1e7?0:1)+" M$":Math.round(n/1e3)+" mil $"}
+function kg(){
+  var v=+$("kg").value;
+  $("oKg").textContent=v;
+  $("kgDot").style.left=((v-50)/2950*100)+"%";
+  $("kgCost").textContent=usd(v*10000);
+  var s,n;
+  if(v<=200){s="Viável";n="Abaixo da meta que a Google aponta para cerca de 2035.";}
+  else if(v<=500){s="Na fronteira";n="Zona em que a Starcloud diz que o negócio começa a fechar.";}
+  else if(v<=1500){s="Caro";n="Só faz sentido para usos de nicho, como processar dados de satélites.";}
+  else{s="Muito caro";n="Perto dos preços de hoje. Bem acima do custo de construir em Terra.";}
+  $("kgState").textContent=s;$("kgNote").textContent=n;
+}
+$("kg").addEventListener("input",kg);kg();
+
+/* ---------- Espaço: radiador ---------- */
+function rad(){
+  var P=+$("rP").value,Tc=+$("rT").value,S=+$("rS").value,T=Tc+273.15,eps=0.9,sig=5.670e-8;
+  var flux=eps*sig*Math.pow(T,4),A=P*1000/(flux*S);
+  $("oRP").textContent=P;$("oRT").textContent=Tc;$("oRS").textContent=S;
+  $("rA").textContent=Math.round(A).toLocaleString("pt-PT")+" m²";
+  var campos=A/7140,cmp;
+  if(A<260)cmp="Mais ou menos a área de um campo de ténis ("+fmt(A/261,1)+"×).";
+  else if(campos<0.9)cmp="Cerca de "+Math.round(campos*100)+"% de um campo de futebol.";
+  else cmp="Cerca de "+fmt(campos,1)+" campos de futebol.";
+  $("rCmp").textContent=cmp;
+  $("rF").textContent="A = P / (ε·σ·T⁴·n) = "+P+" kW / (0,9 · 5,67e-8 · "+fmt(T,0)+"⁴ · "+S+") ≈ "+Math.round(A)+" m²";
+}
+["rP","rT","rS"].forEach(function(id){$(id).addEventListener("input",rad)});rad();
+
+/* ---------- Glossário ---------- */
+var GL=[
+ ["Agente","agent","IA que executa tarefas sozinha, passo a passo, usando ferramentas.","Sistema que itera planeamento, chamada de ferramentas e observação até cumprir um objetivo."],
+ ["AGI","Artificial General Intelligence","IA hipotética tão capaz como uma pessoa em quase tudo.","Sistema com desempenho humano ou superior na generalidade das tarefas cognitivas. Sem definição consensual."],
+ ["Algoritmo","","Receita de passos que um computador segue.","Procedimento finito e bem definido que transforma entradas em saídas."],
+ ["Alinhamento","alignment","Fazer com que a IA queira o mesmo que nós queremos.","Garantir que os objetivos efetivos de um sistema correspondem à intenção dos seus criadores e utilizadores."],
+ ["Alucinação","hallucination","Quando a IA inventa algo falso e o apresenta como certo.","Saída fluente mas factualmente incorreta ou sem suporte nas fontes."],
+ ["Aprendizagem automática","machine learning","Ensinar computadores com exemplos em vez de regras.","Ajuste de parâmetros de um modelo a dados para minimizar uma função de perda."],
+ ["Aprendizagem por reforço","reinforcement learning","Aprender por tentativa e erro, com recompensas.","Otimização de uma política para maximizar a recompensa acumulada num ambiente."],
+ ["Aprendizagem profunda","deep learning","Redes neuronais com muitas camadas.","Aprendizagem de representações hierárquicas com redes profundas treinadas por gradiente."],
+ ["Atenção","attention","Mecanismo que deixa o modelo focar-se nas palavras relevantes.","Média ponderada de vetores, com pesos softmax(QKᵀ/√d). Núcleo do Transformer."],
+ ["Backpropagation","retropropagação","Corrigir os pesos da rede a partir do erro final.","Cálculo eficiente de gradientes pela regra da cadeia, da saída para a entrada."],
+ ["Benchmark","","Teste padrão para comparar modelos.","Conjunto fixo de tarefas e métricas. Tende a saturar e a ser contaminado por dados de treino."],
+ ["Centro de dados","data center","Edifício cheio de computadores onde a IA corre.","Instalação com servidores, energia e arrefecimento. Para IA, mede-se em megawatts ou gigawatts."],
+ ["Centro de dados orbital","","Computadores de IA em satélites, alimentados pelo Sol.","Constelação com computação a bordo, energia solar e arrefecimento radiativo. Em fase de protótipo."],
+ ["Chatbot","","Programa com que conversas por texto ou voz.","Interface conversacional, hoje normalmente sobre um LLM."],
+ ["Contexto","context window","Tudo o que o modelo consegue \"ter à frente\" numa conversa.","Número máximo de tokens que o modelo processa de uma vez (entrada mais saída)."],
+ ["Dados de treino","training data","Os exemplos com que o modelo aprendeu.","Corpus usado para ajustar os pesos. Determina conhecimentos, vieses e data de corte."],
+ ["Deepfake","","Vídeo, imagem ou voz falsos feitos por IA.","Media sintética que imita uma pessoa real, gerada por modelos generativos."],
+ ["Difusão","diffusion","Técnica que cria imagens a partir de ruído, limpando-o aos poucos.","Modelo treinado a inverter um processo gradual de adição de ruído gaussiano."],
+ ["Embedding","","Lista de números que representa o significado de uma palavra.","Vetor denso num espaço onde a proximidade reflete semelhança semântica."],
+ ["Fine-tuning","afinamento","Treino extra para especializar um modelo.","Continuação do treino de um modelo pré-treinado em dados de uma tarefa. Inclui métodos leves como LoRA."],
+ ["GPU","Graphics Processing Unit","Chip de placas gráficas, ideal para IA.","Processador massivamente paralelo, eficiente em multiplicação de matrizes."],
+ ["IA generativa","","IA que cria texto, imagens, som ou vídeo.","Modelos que amostram de uma distribuição aprendida sobre os dados."],
+ ["Inferência","inference","Usar o modelo já treinado para obter respostas.","Passagem para a frente com pesos fixos. Domina o custo de operação."],
+ ["Injeção de instruções","prompt injection","Texto escondido que engana a IA para fazer o que não devia.","Ataque em que conteúdo não confiável no contexto é interpretado como instrução."],
+ ["Interpretabilidade","","Estudar o que se passa dentro do modelo.","Análise de ativações e circuitos internos para explicar o comportamento de uma rede."],
+ ["LLM","Large Language Model","O tipo de modelo por trás dos chatbots.","Transformer autorregressivo de grande escala treinado em previsão do próximo token."],
+ ["Modelo","","O \"cérebro\" treinado: um ficheiro enorme de números.","Função parametrizada f(x; θ), em que θ são os pesos aprendidos."],
+ ["Modelo de fundação","foundation model","Modelo geral que serve de base a muitas aplicações.","Modelo pré-treinado em dados amplos, adaptável a tarefas diversas."],
+ ["Multimodal","","Que trabalha com texto, imagem, som e vídeo.","Modelo que processa ou gera várias modalidades num espaço de representação partilhado."],
+ ["Neurónio artificial","","Pequena unidade de cálculo que soma entradas com pesos.","y = φ(w·x + b), com φ uma função de ativação não linear."],
+ ["Órbita heliossíncrona","sun-synchronous orbit","Órbita em que o satélite pode ter sol quase sempre.","Órbita quase polar cujo plano precessa cerca de 1° por dia. Na variante dawn-dusk quase não há eclipses."],
+ ["Overfitting","sobreajuste","Decorar os exemplos em vez de aprender a regra.","Baixo erro de treino com alto erro de generalização."],
+ ["Parâmetros","pesos, weights","Os números que o treino ajusta. Mais parâmetros, mais capacidade.","Coeficientes aprendidos da rede. Os LLM têm de 10⁹ a 10¹²."],
+ ["Pesos abertos","open weights","Modelos que podes descarregar e correr tu.","Parâmetros publicados, com licenças que variam; não implica dados ou código de treino abertos."],
+ ["Prompt","","O pedido que escreves à IA.","Sequência de entrada que condiciona a geração, incluindo instruções de sistema e exemplos."],
+ ["RAG","Retrieval-Augmented Generation","A IA vai buscar documentos antes de responder.","Recuperação de passagens relevantes, inseridas no contexto para fundamentar a resposta."],
+ ["Raciocínio","reasoning model","Modelo que pensa passo a passo antes de responder.","Geração de uma cadeia de pensamento intermédia, gastando mais cômputo em inferência."],
+ ["Rede neuronal","neural network","Muitos neurónios artificiais ligados em camadas.","Composição de transformações lineares e não lineares, diferenciável e treinável por gradiente."],
+ ["Temperatura","","Controla se as respostas são mais previsíveis ou mais criativas.","Escalar T aplicado aos logits antes do softmax na amostragem."],
+ ["Token","","Pedaço de texto (palavra ou parte dela) com que o modelo trabalha.","Unidade do vocabulário de subpalavras. Em português, cerca de 1,3 a 1,5 tokens por palavra."],
+ ["TPU","Tensor Processing Unit","Chip da Google feito só para IA.","ASIC otimizado para álgebra de tensores, alternativa às GPU."],
+ ["Transformer","","A arquitetura dos modelos modernos, criada em 2017.","Rede baseada em auto-atenção e MLP com ligações residuais, sem recorrência."],
+ ["Treino","training","A fase em que o modelo aprende com os dados.","Otimização dos pesos por descida de gradiente estocástica sobre uma função de perda."],
+ ["Viés","bias","Preconceito herdado dos dados. Também o nome de um parâmetro do neurónio.","(1) Erro sistemático nas saídas. (2) Termo aditivo b numa camada."]
+];
+function norm(s){return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")}
+function drawGl(){
+  var q=norm($("gq").value.trim()),box=$("gList"),n=0;box.innerHTML="";
+  GL.forEach(function(g){
+    if(q&&norm(g.join(" ")).indexOf(q)<0)return;n++;
+    var d=el("div");
+    d.appendChild(el("dt","",g[0]+(g[1]?'<small>'+g[1]+'</small>':"")));
+    d.appendChild(el("dd","",st(g[2],g[3])));
+    box.appendChild(d);
+  });
+  $("gCount").textContent=n?n+" de "+GL.length+" termos":"Nenhum termo encontrado. Tenta outra palavra.";
+}
+$("gq").addEventListener("input",drawGl);drawGl();
+})();
+</script>
+</body>
+</html>
